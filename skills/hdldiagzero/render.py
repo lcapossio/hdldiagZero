@@ -18,7 +18,7 @@ JSON schema:
   "grid": {                             # optional - all keys defaulted
     "cell_w":   220,
     "cell_h":   90,
-    "gutter_x": 80,
+    "gutter_x": 120,
     "gutter_y": 60,
     "margin":   30
   },
@@ -45,7 +45,7 @@ at the same point.
 import json
 import sys
 
-DEFAULT_GRID = dict(cell_w=220, cell_h=90, gutter_x=90, gutter_y=70, margin=36)
+DEFAULT_GRID = dict(cell_w=220, cell_h=90, gutter_x=120, gutter_y=70, margin=36)
 
 FONT_STACK = ("ui-sans-serif, system-ui, -apple-system, 'Segoe UI', "
               "Roboto, 'Helvetica Neue', Arial, sans-serif")
@@ -277,26 +277,18 @@ def label_anchor(points):
     """Anchor the label at the path's bend region — that's the gutter between
     the two endpoint blocks, where there's clear space.
 
-    For 4-point Manhattan paths (single bend with two corners), use the centroid
-    of the two inner waypoints. For 3-point corners, use the bend point itself.
-    For straight 2-point segments, use the segment midpoint. This keeps the
-    label centroid close to the path (so the validator owns it) and out of the
-    adjacent block bodies."""
-    n = len(points)
-    if n == 2:
-        x = (points[0][0] + points[1][0]) / 2
-        y = (points[0][1] + points[1][1]) / 2
-    elif n == 3:
-        x, y = points[1]
-    else:
-        # 4+ points: take centroid of the two innermost waypoints.
-        mid = n // 2
-        if n % 2 == 0:
-            x = (points[mid - 1][0] + points[mid][0]) / 2
-            y = (points[mid - 1][1] + points[mid][1]) / 2
-        else:
-            x, y = points[mid]
-    return x, y, "h"
+    For larger labels, prefer the longest available segment instead of the bend
+    centroid so text stays clear of adjacent block bodies."""
+    best = (0, points[0], points[-1])
+    for a, b in zip(points, points[1:]):
+        length = abs(a[0] - b[0]) + abs(a[1] - b[1])
+        if length > best[0]:
+            best = (length, a, b)
+    _, a, b = best
+    x = (a[0] + b[0]) / 2
+    y = (a[1] + b[1]) / 2
+    orient = "h" if abs(a[0] - b[0]) >= abs(a[1] - b[1]) else "v"
+    return x, y, orient
 
 
 def edge_label(e):
@@ -545,7 +537,7 @@ def render(spec_path, out_path, theme_override=None):
 
     if spec.get("title"):
         out.append(f'  <text x="{canvas_w/2:.1f}" y="24" text-anchor="middle" '
-                   f'font-size="19" font-weight="600" fill="{theme["ink"]}" '
+                   f'font-size="21" font-weight="600" fill="{theme["ink"]}" '
                    f'letter-spacing="0.2">{esc(spec["title"])}</text>')
 
     for b in blocks:
@@ -577,16 +569,16 @@ def render(spec_path, out_path, theme_override=None):
             cy_main = y + h / 2 - 2
             cy_sub = y + h / 2 + 14
             out.append(f'  <text x="{cx:.0f}" y="{cy_main:.0f}" '
-                       f'text-anchor="middle" font-size="16" font-weight="600" '
+                       f'text-anchor="middle" font-size="18" font-weight="600" '
                        f'fill="{text_fill}">{esc(label)}</text>')
             out.append(f'  <text x="{cx:.0f}" y="{cy_sub:.0f}" '
-                       f'text-anchor="middle" font-size="13" '
+                       f'text-anchor="middle" font-size="15" '
                        f'font-style="italic" fill="{text_fill}" '
                        f'opacity="0.85">{esc(sublabel)}</text>')
         else:
             cy = y + h / 2 + 5
             out.append(f'  <text x="{cx:.0f}" y="{cy:.0f}" '
-                       f'text-anchor="middle" font-size="16" font-weight="600" '
+                       f'text-anchor="middle" font-size="18" font-weight="600" '
                        f'fill="{text_fill}">{esc(label)}</text>')
 
     for e, from_pt, to_pt, fs, ts, lane_offset in routed:
@@ -605,7 +597,7 @@ def render(spec_path, out_path, theme_override=None):
         if not label:
             continue
         mx, my, orient = label_anchor(pts)
-        font = 13
+        font = 15
         text_w = max(len(label) * font * 0.55, font * 0.6)
         text_h = font
         if orient == "h":
@@ -613,6 +605,11 @@ def render(spec_path, out_path, theme_override=None):
         else:
             ly = my + 3
         lx = mx
+        clear_x = text_w / 2 + 6
+        low_x = min(from_pt[0], to_pt[0])
+        high_x = max(from_pt[0], to_pt[0])
+        if high_x - low_x > clear_x * 2:
+            lx = min(max(lx, low_x + clear_x), high_x - clear_x)
         anchor = "middle"
         box_x = lx - text_w / 2 - 3
         box_y = ly - text_h * 0.85 - 2
@@ -626,7 +623,7 @@ def render(spec_path, out_path, theme_override=None):
     sy_legend = legend_y0
     if domains:
         out.append(f'  <text x="{g["margin"]}" y="{sy_legend:.0f}" '
-                   f'font-size="13" font-weight="600" fill="{theme["ink_soft"]}" '
+                   f'font-size="15" font-weight="600" fill="{theme["ink_soft"]}" '
                    f'letter-spacing="0.5">CLOCK DOMAINS</text>')
         sx = g["margin"]
         sy = sy_legend + 14
@@ -637,14 +634,14 @@ def render(spec_path, out_path, theme_override=None):
                        f'stroke-width="0.8" rx="3"/>')
             freq = info.get("freq_mhz")
             label_text = f'{name}  {freq} MHz' if freq is not None else name
-            out.append(f'  <text x="{sx + 24}" y="{sy + 11}" font-size="13" '
+            out.append(f'  <text x="{sx + 24}" y="{sy + 11}" font-size="15" '
                        f'fill="{theme["ink"]}">{esc(label_text)}</text>')
-            sx += 24 + len(label_text) * 7 + 22
+            sx += 24 + len(label_text) * 10 + 22
         sy_legend += 50
 
     if used_kinds:
         out.append(f'  <text x="{g["margin"]}" y="{sy_legend:.0f}" '
-                   f'font-size="13" font-weight="600" fill="{theme["ink_soft"]}" '
+                   f'font-size="15" font-weight="600" fill="{theme["ink_soft"]}" '
                    f'letter-spacing="0.5">CONNECTION STYLES</text>')
         descriptions = {
             "axi-mm":     "AXI-MM data bus",
@@ -667,9 +664,9 @@ def render(spec_path, out_path, theme_override=None):
                        f'marker-end="url(#{attrs["marker"]})"{dash}/>')
             text_x = sx + sample_w + 10
             txt = descriptions.get(k, k)
-            out.append(f'  <text x="{text_x}" y="{sy + 11}" font-size="13" '
+            out.append(f'  <text x="{text_x}" y="{sy + 11}" font-size="15" '
                        f'fill="{theme["ink"]}">{esc(txt)}</text>')
-            sx = text_x + len(txt) * 7 + 22
+            sx = text_x + len(txt) * 10 + 22
 
     out.append('</svg>')
 

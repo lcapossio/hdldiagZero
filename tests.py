@@ -232,7 +232,7 @@ def test_renderer_routes_same_row_reverse_edges_in_gutter() -> None:
         if out.is_file():
             run([PY, VALIDATE, str(out)], label="same-row-reverse-validate")
             svg = out.read_text(encoding="utf-8")
-            if "L 611.0,161.0 L 301.0,161.0" not in svg:
+            if "L 656.0,161.0 L 316.0,161.0" not in svg:
                 FAILURES.append("[same-row-reverse-render] missing row-gutter lane segment")
 
 

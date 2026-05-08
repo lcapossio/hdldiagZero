@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1532" height="442" viewBox="0 0 1532 442" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" style="background:#000000">
+<svg xmlns="http://www.w3.org/2000/svg" width="1652" height="442" viewBox="0 0 1652 442" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" style="background:#000000">
   <defs>
     <marker id="ah-solid" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#e2e8f0"/></marker>
     <marker id="ah-thin" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#9ca3af"/></marker>
@@ -9,62 +9,62 @@
     <marker id="ah-open" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0.5,0.5 L0.5,5.5 L8,3 z" fill="#000000" stroke="#e2e8f0" stroke-width="1"/></marker>
     <linearGradient id="grad-pix_packer" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="50%" stop-color="#FFA726"/><stop offset="50%" stop-color="#42A5F5"/></linearGradient>
   </defs>
-  <rect width="1532" height="442" fill="#000000" id="_canvas_bg"/>
-  <text x="766.0" y="24" text-anchor="middle" font-size="19" font-weight="600" fill="#e2e8f0" letter-spacing="0.2">Sample SoC architecture (renderer smoke test)</text>
+  <rect width="1652" height="442" fill="#000000" id="_canvas_bg"/>
+  <text x="826.0" y="24" text-anchor="middle" font-size="21" font-weight="600" fill="#e2e8f0" letter-spacing="0.2">Sample SoC architecture (renderer smoke test)</text>
   <rect id="phy" x="36" y="66" width="220" height="90" fill="#374151" stroke="#9ca3af" stroke-width="1.4" rx="8"/>
-  <text x="146" y="109" text-anchor="middle" font-size="16" font-weight="600" fill="#e2e8f0">Video Source</text>
-  <text x="146" y="125" text-anchor="middle" font-size="13" font-style="italic" fill="#e2e8f0" opacity="0.85">[16 lanes x 16b]</text>
-  <rect id="pix_packer" x="346" y="66" width="220" height="90" fill="url(#grad-pix_packer)" stroke="#4b5563" stroke-width="1.4" rx="8"/>
-  <text x="456" y="109" text-anchor="middle" font-size="16" font-weight="600" fill="#1f2937">pix_packer</text>
-  <text x="456" y="125" text-anchor="middle" font-size="13" font-style="italic" fill="#1f2937" opacity="0.85">video / axi CDC</text>
-  <rect id="rx_dma" x="656" y="66" width="220" height="90" fill="#42A5F5" stroke="#0D47A1" stroke-width="1.4" rx="8"/>
-  <text x="766" y="116" text-anchor="middle" font-size="16" font-weight="600" fill="#1f2937">RX DMA</text>
-  <rect id="tx_dma" x="656" y="226" width="220" height="90" fill="#42A5F5" stroke="#0D47A1" stroke-width="1.4" rx="8"/>
-  <text x="766" y="276" text-anchor="middle" font-size="16" font-weight="600" fill="#1f2937">TX DMA</text>
-  <rect id="video_out" x="346" y="226" width="220" height="90" fill="#374151" stroke="#9ca3af" stroke-width="1.4" rx="8"/>
-  <text x="456" y="269" text-anchor="middle" font-size="16" font-weight="600" fill="#e2e8f0">Video Output</text>
-  <text x="456" y="285" text-anchor="middle" font-size="13" font-style="italic" fill="#e2e8f0" opacity="0.85">display sink</text>
-  <rect id="interconnect" x="966" y="66" width="220" height="90" fill="#42A5F5" stroke="#0D47A1" stroke-width="1.4" rx="8"/>
-  <text x="1076" y="116" text-anchor="middle" font-size="16" font-weight="600" fill="#1f2937">AXI Interconnect</text>
-  <rect id="cpu" x="1276" y="66" width="220" height="90" fill="#42A5F5" stroke="#0D47A1" stroke-width="1.4" rx="8"/>
-  <text x="1386" y="116" text-anchor="middle" font-size="16" font-weight="600" fill="#1f2937">SoftCore MCU</text>
-  <rect id="ddr_ctrl" x="1276" y="226" width="220" height="90" fill="#66BB6A" stroke="#1B5E20" stroke-width="1.4" rx="8"/>
-  <text x="1386" y="276" text-anchor="middle" font-size="16" font-weight="600" fill="#1f2937">DDR Ctrl</text>
-  <path id="edge_phy_to_pix_packer" d="M 256.0,111.0 L 301.0,111.0 L 346.0,111.0" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
-  <rect x="276.6" y="94.0" width="48.9" height="17.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
-  <text x="301.0" y="107.0" text-anchor="middle" font-size="13" fill="#e2e8f0">16x16b</text>
-  <path id="edge_pix_packer_to_rx_dma" d="M 566.0,111.0 L 611.0,111.0 L 656.0,111.0" stroke="#d9f99d" stroke-width="2.2" fill="none" marker-end="url(#ah-stream)"/>
-  <rect x="575.8" y="94.0" width="70.4" height="17.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
-  <text x="611.0" y="107.0" text-anchor="middle" font-size="13" fill="#e2e8f0">AXI-S 64b</text>
-  <path id="edge_tx_dma_to_video_out" d="M 656.0,271.0 L 611.0,271.0 L 566.0,271.0" stroke="#d9f99d" stroke-width="2.2" fill="none" marker-end="url(#ah-stream)"/>
-  <rect x="575.8" y="253.9" width="70.4" height="17.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
-  <text x="611.0" y="267.0" text-anchor="middle" font-size="13" fill="#e2e8f0">AXI-S 64b</text>
-  <path id="edge_rx_dma_to_interconnect" d="M 876.0,111.0 L 916.0,111.0 L 916.0,96.0 L 966.0,96.0" stroke="#e2e8f0" stroke-width="2.5" fill="none" marker-end="url(#ah-solid)"/>
-  <rect x="877.2" y="86.5" width="77.5" height="17.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
-  <text x="916.0" y="99.5" text-anchor="middle" font-size="13" fill="#e2e8f0">AXI-MM 64b</text>
-  <path id="edge_tx_dma_to_interconnect" d="M 876.0,271.0 L 926.0,271.0 L 926.0,126.0 L 966.0,126.0" stroke="#e2e8f0" stroke-width="2.5" fill="none" marker-end="url(#ah-solid)"/>
-  <rect x="887.2" y="181.4" width="77.5" height="17.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
-  <text x="926.0" y="194.5" text-anchor="middle" font-size="13" fill="#e2e8f0">AXI-MM 64b</text>
-  <path id="edge_cpu_to_interconnect" d="M 1276.0,111.0 L 1226.0,111.0 L 1226.0,96.0 L 1186.0,96.0" stroke="#93c5fd" stroke-width="2.5" fill="none" marker-end="url(#ah-axil)"/>
-  <rect x="1190.8" y="86.5" width="70.4" height="17.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
-  <text x="1226.0" y="99.5" text-anchor="middle" font-size="13" fill="#e2e8f0">AXI-L 32b</text>
-  <path id="edge_interconnect_to_ddr_ctrl" d="M 1186.0,126.0 L 1236.0,126.0 L 1236.0,271.0 L 1276.0,271.0" stroke="#e2e8f0" stroke-width="2.5" fill="none" marker-end="url(#ah-solid)"/>
-  <rect x="1193.7" y="181.4" width="84.7" height="17.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
-  <text x="1236.0" y="194.5" text-anchor="middle" font-size="13" fill="#e2e8f0">AXI-MM 128b</text>
-  <text x="36" y="362" font-size="13" font-weight="600" fill="#9ca3af" letter-spacing="0.5">CLOCK DOMAINS</text>
+  <text x="146" y="109" text-anchor="middle" font-size="18" font-weight="600" fill="#e2e8f0">Video Source</text>
+  <text x="146" y="125" text-anchor="middle" font-size="15" font-style="italic" fill="#e2e8f0" opacity="0.85">[16 lanes x 16b]</text>
+  <rect id="pix_packer" x="376" y="66" width="220" height="90" fill="url(#grad-pix_packer)" stroke="#4b5563" stroke-width="1.4" rx="8"/>
+  <text x="486" y="109" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">pix_packer</text>
+  <text x="486" y="125" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">video / axi CDC</text>
+  <rect id="rx_dma" x="716" y="66" width="220" height="90" fill="#42A5F5" stroke="#0D47A1" stroke-width="1.4" rx="8"/>
+  <text x="826" y="116" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">RX DMA</text>
+  <rect id="tx_dma" x="716" y="226" width="220" height="90" fill="#42A5F5" stroke="#0D47A1" stroke-width="1.4" rx="8"/>
+  <text x="826" y="276" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">TX DMA</text>
+  <rect id="video_out" x="376" y="226" width="220" height="90" fill="#374151" stroke="#9ca3af" stroke-width="1.4" rx="8"/>
+  <text x="486" y="269" text-anchor="middle" font-size="18" font-weight="600" fill="#e2e8f0">Video Output</text>
+  <text x="486" y="285" text-anchor="middle" font-size="15" font-style="italic" fill="#e2e8f0" opacity="0.85">display sink</text>
+  <rect id="interconnect" x="1056" y="66" width="220" height="90" fill="#42A5F5" stroke="#0D47A1" stroke-width="1.4" rx="8"/>
+  <text x="1166" y="116" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">AXI Interconnect</text>
+  <rect id="cpu" x="1396" y="66" width="220" height="90" fill="#42A5F5" stroke="#0D47A1" stroke-width="1.4" rx="8"/>
+  <text x="1506" y="116" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">SoftCore MCU</text>
+  <rect id="ddr_ctrl" x="1396" y="226" width="220" height="90" fill="#66BB6A" stroke="#1B5E20" stroke-width="1.4" rx="8"/>
+  <text x="1506" y="276" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">DDR Ctrl</text>
+  <path id="edge_phy_to_pix_packer" d="M 256.0,111.0 L 316.0,111.0 L 376.0,111.0" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
+  <rect x="259.0" y="92.2" width="55.5" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
+  <text x="286.8" y="107.0" text-anchor="middle" font-size="15" fill="#e2e8f0">16x16b</text>
+  <path id="edge_pix_packer_to_rx_dma" d="M 596.0,111.0 L 656.0,111.0 L 716.0,111.0" stroke="#d9f99d" stroke-width="2.2" fill="none" marker-end="url(#ah-stream)"/>
+  <rect x="599.0" y="92.2" width="80.2" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
+  <text x="639.1" y="107.0" text-anchor="middle" font-size="15" fill="#e2e8f0">AXI-S 64b</text>
+  <path id="edge_tx_dma_to_video_out" d="M 716.0,271.0 L 656.0,271.0 L 596.0,271.0" stroke="#d9f99d" stroke-width="2.2" fill="none" marker-end="url(#ah-stream)"/>
+  <rect x="632.8" y="252.2" width="80.2" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
+  <text x="672.9" y="267.0" text-anchor="middle" font-size="15" fill="#e2e8f0">AXI-S 64b</text>
+  <path id="edge_rx_dma_to_interconnect" d="M 936.0,111.0 L 976.0,111.0 L 976.0,96.0 L 1056.0,96.0" stroke="#e2e8f0" stroke-width="2.5" fill="none" marker-end="url(#ah-solid)"/>
+  <rect x="964.5" y="77.2" width="88.5" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
+  <text x="1008.8" y="92.0" text-anchor="middle" font-size="15" fill="#e2e8f0">AXI-MM 64b</text>
+  <path id="edge_tx_dma_to_interconnect" d="M 936.0,271.0 L 1016.0,271.0 L 1016.0,126.0 L 1056.0,126.0" stroke="#e2e8f0" stroke-width="2.5" fill="none" marker-end="url(#ah-solid)"/>
+  <rect x="964.5" y="186.8" width="88.5" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
+  <text x="1008.8" y="201.5" text-anchor="middle" font-size="15" fill="#e2e8f0">AXI-MM 64b</text>
+  <path id="edge_cpu_to_interconnect" d="M 1396.0,111.0 L 1316.0,111.0 L 1316.0,96.0 L 1276.0,96.0" stroke="#93c5fd" stroke-width="2.5" fill="none" marker-end="url(#ah-axil)"/>
+  <rect x="1312.8" y="92.2" width="80.2" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
+  <text x="1352.9" y="107.0" text-anchor="middle" font-size="15" fill="#e2e8f0">AXI-L 32b</text>
+  <path id="edge_interconnect_to_ddr_ctrl" d="M 1276.0,126.0 L 1356.0,126.0 L 1356.0,271.0 L 1396.0,271.0" stroke="#e2e8f0" stroke-width="2.5" fill="none" marker-end="url(#ah-solid)"/>
+  <rect x="1296.2" y="186.8" width="96.8" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
+  <text x="1344.6" y="201.5" text-anchor="middle" font-size="15" fill="#e2e8f0">AXI-MM 128b</text>
+  <text x="36" y="362" font-size="15" font-weight="600" fill="#9ca3af" letter-spacing="0.5">CLOCK DOMAINS</text>
   <rect x="36" y="376" width="18" height="14" fill="#42A5F5" stroke="#0D47A1" stroke-width="0.8" rx="3"/>
-  <text x="60" y="387" font-size="13" fill="#e2e8f0">axi  100 MHz</text>
-  <rect x="166" y="376" width="18" height="14" fill="#FFA726" stroke="#E65100" stroke-width="0.8" rx="3"/>
-  <text x="190" y="387" font-size="13" fill="#e2e8f0">video  148 MHz</text>
-  <rect x="310" y="376" width="18" height="14" fill="#66BB6A" stroke="#1B5E20" stroke-width="0.8" rx="3"/>
-  <text x="334" y="387" font-size="13" fill="#e2e8f0">ddr  333 MHz</text>
-  <text x="36" y="412" font-size="13" font-weight="600" fill="#9ca3af" letter-spacing="0.5">CONNECTION STYLES</text>
+  <text x="60" y="387" font-size="15" fill="#e2e8f0">axi  100 MHz</text>
+  <rect x="202" y="376" width="18" height="14" fill="#FFA726" stroke="#E65100" stroke-width="0.8" rx="3"/>
+  <text x="226" y="387" font-size="15" fill="#e2e8f0">video  148 MHz</text>
+  <rect x="388" y="376" width="18" height="14" fill="#66BB6A" stroke="#1B5E20" stroke-width="0.8" rx="3"/>
+  <text x="412" y="387" font-size="15" fill="#e2e8f0">ddr  333 MHz</text>
+  <text x="36" y="412" font-size="15" font-weight="600" fill="#9ca3af" letter-spacing="0.5">CONNECTION STYLES</text>
   <path id="legend-arrow-generic" d="M 36,433 L 72,433" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
-  <text x="82" y="437" font-size="13" fill="#e2e8f0">Generic / discrete</text>
-  <path id="legend-arrow-axi-stream" d="M 230,433 L 266,433" stroke="#d9f99d" stroke-width="2.2" fill="none" marker-end="url(#ah-stream)"/>
-  <text x="276" y="437" font-size="13" fill="#e2e8f0">AXI-Stream</text>
-  <path id="legend-arrow-axi-mm" d="M 368,433 L 404,433" stroke="#e2e8f0" stroke-width="2.5" fill="none" marker-end="url(#ah-solid)"/>
-  <text x="414" y="437" font-size="13" fill="#e2e8f0">AXI-MM data bus</text>
-  <path id="legend-arrow-axi-lite" d="M 541,433 L 577,433" stroke="#93c5fd" stroke-width="2.5" fill="none" marker-end="url(#ah-axil)"/>
-  <text x="587" y="437" font-size="13" fill="#e2e8f0">AXI4-Lite control</text>
+  <text x="82" y="437" font-size="15" fill="#e2e8f0">Generic / discrete</text>
+  <path id="legend-arrow-axi-stream" d="M 284,433 L 320,433" stroke="#d9f99d" stroke-width="2.2" fill="none" marker-end="url(#ah-stream)"/>
+  <text x="330" y="437" font-size="15" fill="#e2e8f0">AXI-Stream</text>
+  <path id="legend-arrow-axi-mm" d="M 452,433 L 488,433" stroke="#e2e8f0" stroke-width="2.5" fill="none" marker-end="url(#ah-solid)"/>
+  <text x="498" y="437" font-size="15" fill="#e2e8f0">AXI-MM data bus</text>
+  <path id="legend-arrow-axi-lite" d="M 670,433 L 706,433" stroke="#93c5fd" stroke-width="2.5" fill="none" marker-end="url(#ah-axil)"/>
+  <text x="716" y="437" font-size="15" fill="#e2e8f0">AXI4-Lite control</text>
 </svg>
