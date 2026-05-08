@@ -545,7 +545,7 @@ def render(spec_path, out_path, theme_override=None):
 
     if spec.get("title"):
         out.append(f'  <text x="{canvas_w/2:.1f}" y="24" text-anchor="middle" '
-                   f'font-size="18" font-weight="600" fill="{theme["ink"]}" '
+                   f'font-size="19" font-weight="600" fill="{theme["ink"]}" '
                    f'letter-spacing="0.2">{esc(spec["title"])}</text>')
 
     for b in blocks:
@@ -577,16 +577,16 @@ def render(spec_path, out_path, theme_override=None):
             cy_main = y + h / 2 - 2
             cy_sub = y + h / 2 + 14
             out.append(f'  <text x="{cx:.0f}" y="{cy_main:.0f}" '
-                       f'text-anchor="middle" font-size="15" font-weight="600" '
+                       f'text-anchor="middle" font-size="16" font-weight="600" '
                        f'fill="{text_fill}">{esc(label)}</text>')
             out.append(f'  <text x="{cx:.0f}" y="{cy_sub:.0f}" '
-                       f'text-anchor="middle" font-size="12" '
+                       f'text-anchor="middle" font-size="13" '
                        f'font-style="italic" fill="{text_fill}" '
                        f'opacity="0.85">{esc(sublabel)}</text>')
         else:
             cy = y + h / 2 + 5
             out.append(f'  <text x="{cx:.0f}" y="{cy:.0f}" '
-                       f'text-anchor="middle" font-size="15" font-weight="600" '
+                       f'text-anchor="middle" font-size="16" font-weight="600" '
                        f'fill="{text_fill}">{esc(label)}</text>')
 
     for e, from_pt, to_pt, fs, ts, lane_offset in routed:
@@ -605,7 +605,7 @@ def render(spec_path, out_path, theme_override=None):
         if not label:
             continue
         mx, my, orient = label_anchor(pts)
-        font = 12
+        font = 13
         text_w = max(len(label) * font * 0.55, font * 0.6)
         text_h = font
         if orient == "h":
@@ -626,7 +626,7 @@ def render(spec_path, out_path, theme_override=None):
     sy_legend = legend_y0
     if domains:
         out.append(f'  <text x="{g["margin"]}" y="{sy_legend:.0f}" '
-                   f'font-size="12" font-weight="600" fill="{theme["ink_soft"]}" '
+                   f'font-size="13" font-weight="600" fill="{theme["ink_soft"]}" '
                    f'letter-spacing="0.5">CLOCK DOMAINS</text>')
         sx = g["margin"]
         sy = sy_legend + 14
@@ -637,14 +637,14 @@ def render(spec_path, out_path, theme_override=None):
                        f'stroke-width="0.8" rx="3"/>')
             freq = info.get("freq_mhz")
             label_text = f'{name}  {freq} MHz' if freq is not None else name
-            out.append(f'  <text x="{sx + 24}" y="{sy + 11}" font-size="12" '
+            out.append(f'  <text x="{sx + 24}" y="{sy + 11}" font-size="13" '
                        f'fill="{theme["ink"]}">{esc(label_text)}</text>')
             sx += 24 + len(label_text) * 7 + 22
         sy_legend += 50
 
     if used_kinds:
         out.append(f'  <text x="{g["margin"]}" y="{sy_legend:.0f}" '
-                   f'font-size="12" font-weight="600" fill="{theme["ink_soft"]}" '
+                   f'font-size="13" font-weight="600" fill="{theme["ink_soft"]}" '
                    f'letter-spacing="0.5">CONNECTION STYLES</text>')
         descriptions = {
             "axi-mm":     "AXI-MM data bus",
@@ -667,7 +667,7 @@ def render(spec_path, out_path, theme_override=None):
                        f'marker-end="url(#{attrs["marker"]})"{dash}/>')
             text_x = sx + sample_w + 10
             txt = descriptions.get(k, k)
-            out.append(f'  <text x="{text_x}" y="{sy + 11}" font-size="12" '
+            out.append(f'  <text x="{text_x}" y="{sy + 11}" font-size="13" '
                        f'fill="{theme["ink"]}">{esc(txt)}</text>')
             sx = text_x + len(txt) * 7 + 22
 
