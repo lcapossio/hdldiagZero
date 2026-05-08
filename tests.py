@@ -18,6 +18,10 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
+SKILL_DIR = ROOT / "skills" / "hdldiagzero"
+RENDER = str(SKILL_DIR / "render.py")
+VALIDATE = str(SKILL_DIR / "validate.py")
+VALIDATE_SPEC = str(SKILL_DIR / "validate_spec.py")
 PY = sys.executable
 
 
@@ -54,14 +58,14 @@ def run(cmd: list[str], expect_rc: int = 0, label: str = "") -> subprocess.Compl
 
 def test_validator_fixture() -> None:
     run(
-        [PY, "validate.py", "not_sample_broken_validator_fixture.svg"],
+        [PY, VALIDATE, "not_sample_broken_validator_fixture.svg"],
         expect_rc=EXPECTED_FIXTURE_VIOLATIONS,
         label="validator-fixture",
     )
 
 
 def test_spec_validator_passes_on_test_spec() -> None:
-    run([PY, "validate_spec.py", "test_spec.json"], label="spec-validator-pass")
+    run([PY, VALIDATE_SPEC, "test_spec.json"], label="spec-validator-pass")
 
 
 def test_spec_validator_catches_bad_spec() -> None:
@@ -76,7 +80,7 @@ def test_spec_validator_catches_bad_spec() -> None:
             '}\n',
             encoding="utf-8",
         )
-        run([PY, "validate_spec.py", str(bad)], expect_rc=1, label="spec-validator-fail")
+        run([PY, VALIDATE_SPEC, str(bad)], expect_rc=1, label="spec-validator-fail")
 
 
 _BASE_SPEC = {
@@ -97,7 +101,7 @@ def _spec_with(**override_block_fields):
 def _write_and_check(tmp: Path, name: str, spec_obj, expect_rc: int, label: str) -> None:
     p = tmp / name
     p.write_text(json.dumps(spec_obj), encoding="utf-8")
-    run([PY, "validate_spec.py", str(p)], expect_rc=expect_rc, label=label)
+    run([PY, VALIDATE_SPEC, str(p)], expect_rc=expect_rc, label=label)
 
 
 def test_spec_validator_strict_types() -> None:
@@ -171,20 +175,20 @@ def test_spec_validator_strict_types() -> None:
 def test_renderer_light() -> None:
     with _tmpdir() as tmp:
         out = Path(tmp) / "out.svg"
-        run([PY, "render.py", "test_spec.json", str(out)], label="render-light")
+        run([PY, RENDER, "test_spec.json", str(out)], label="render-light")
         if out.is_file():
-            run([PY, "validate.py", str(out)], label="validate-light-output")
+            run([PY, VALIDATE, str(out)], label="validate-light-output")
 
 
 def test_renderer_dark() -> None:
     with _tmpdir() as tmp:
         out = Path(tmp) / "out_dark.svg"
         run(
-            [PY, "render.py", "--theme", "dark", "test_spec.json", str(out)],
+            [PY, RENDER, "--theme", "dark", "test_spec.json", str(out)],
             label="render-dark",
         )
         if out.is_file():
-            run([PY, "validate.py", str(out)], label="validate-dark-output")
+            run([PY, VALIDATE, str(out)], label="validate-dark-output")
 
 
 def test_renderer_omits_unknown_clock_frequency() -> None:
@@ -198,8 +202,8 @@ def test_renderer_omits_unknown_clock_frequency() -> None:
         spec_path = tmp / "unknown_freq.json"
         out = tmp / "unknown_freq.svg"
         spec_path.write_text(json.dumps(spec), encoding="utf-8")
-        run([PY, "validate_spec.py", str(spec_path)], label="unknown-freq-spec")
-        run([PY, "render.py", str(spec_path), str(out)], label="unknown-freq-render")
+        run([PY, VALIDATE_SPEC, str(spec_path)], label="unknown-freq-spec")
+        run([PY, RENDER, str(spec_path), str(out)], label="unknown-freq-render")
         if out.is_file():
             svg = out.read_text(encoding="utf-8")
             if "? MHz" in svg:
@@ -223,10 +227,10 @@ def test_renderer_routes_same_row_reverse_edges_in_gutter() -> None:
         spec_path = tmp / "same_row_reverse.json"
         out = tmp / "same_row_reverse.svg"
         spec_path.write_text(json.dumps(spec), encoding="utf-8")
-        run([PY, "validate_spec.py", str(spec_path)], label="same-row-reverse-spec")
-        run([PY, "render.py", str(spec_path), str(out)], label="same-row-reverse-render")
+        run([PY, VALIDATE_SPEC, str(spec_path)], label="same-row-reverse-spec")
+        run([PY, RENDER, str(spec_path), str(out)], label="same-row-reverse-render")
         if out.is_file():
-            run([PY, "validate.py", str(out)], label="same-row-reverse-validate")
+            run([PY, VALIDATE, str(out)], label="same-row-reverse-validate")
             svg = out.read_text(encoding="utf-8")
             if "L 611.0,161.0 L 301.0,161.0" not in svg:
                 FAILURES.append("[same-row-reverse-render] missing row-gutter lane segment")

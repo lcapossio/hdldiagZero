@@ -1,0 +1,24 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "hdldiag-marketplace",
+  "description": "hdldiagZero — JSON-spec-driven SVG block diagrams of HDL/RTL designs.",
+  "owner": {
+    "name": "Leonardo Capossio",
+    "email": "hello@bard0.com"
+  },
+  "plugins": [
+    {
+      "name": "hdldiagzero",
+      "displayName": "hdldiagZero",
+      "description": "Generate clean SVG block diagrams of HDL/RTL/SoC designs. Color-codes by clock domain, distinguishes AXI-MM/Lite/Stream, draws CDC blocks with split fill, omits clock/reset/JTAG/debug clutter, and validates output geometry.",
+      "author": { "name": "Leonardo Capossio" },
+      "category": "fpga",
+      "source": {
+        "source": "git",
+        "url": "https://github.com/lcapossio/hdldiagZero.git",
+        "ref": "main"
+      },
+      "homepage": "https://github.com/lcapossio/hdldiagZero"
+    }
+  ]
+}

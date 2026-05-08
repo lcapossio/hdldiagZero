@@ -1,0 +1,25 @@
+{
+  "name": "hdldiagzero",
+  "displayName": "hdldiagZero",
+  "description": "Generate clean SVG block diagrams of HDL/RTL/SoC designs. Color-codes by clock domain, distinguishes AXI-MM/Lite/Stream, draws CDC blocks with split fill, omits clock/reset/JTAG/debug clutter, and validates output geometry.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Leonardo Capossio",
+    "email": "hello@bard0.com",
+    "url": "https://www.bard0.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/lcapossio/hdldiagZero",
+  "repository": "https://github.com/lcapossio/hdldiagZero",
+  "keywords": [
+    "hdl",
+    "rtl",
+    "verilog",
+    "systemverilog",
+    "vhdl",
+    "fpga",
+    "soc",
+    "diagram",
+    "svg"
+  ]
+}

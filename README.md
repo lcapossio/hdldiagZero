@@ -2,7 +2,7 @@
 
 An agent skill that turns an HDL / RTL / SoC architecture description into a clean SVG block diagram. Color-codes blocks by clock domain, distinguishes AXI variants, draws CDC blocks with a split fill, omits clock / reset / JTAG / debug clutter by default, and validates the output geometry so lines never pass through blocks.
 
-The skill itself is runtime-neutral — `SKILL.md`, `render.py`, `validate.py`, `validate_spec.py`, and `references/` make no assumption about which agent harness loads them. `install.py` has built-in defaults for Claude Code (`~/.claude/skills/hdldiagzero/`) and Codex (`~/.codex/skills/hdldiagzero/`); pass `--dst` for a custom runtime path.
+The skill is packaged as a Claude Code plugin: the runtime files live under [skills/hdldiagzero/](skills/hdldiagzero/) and are described by [.claude-plugin/plugin.json](.claude-plugin/plugin.json) and [.claude-plugin/marketplace.json](.claude-plugin/marketplace.json). Claude Code users install via the marketplace flow; other agent runtimes (Codex, custom) can use [install.py](install.py) for a direct copy.
 
 ## Sample Output
 
@@ -46,45 +46,65 @@ Dark mode:
 
 ## Files
 
-### Runtime (installed into the skill directory)
+### Plugin runtime (installed into the agent's skill directory)
+
+All runtime files live under [`skills/hdldiagzero/`](skills/hdldiagzero/) — the plugin shape Claude Code expects. `install.py` mirrors this directory into the destination, so a manual install ends up with the same files in the same relative layout.
 
 | File | Purpose |
 | --- | --- |
-| [SKILL.md](SKILL.md) | Skill definition consumed by the agent runtime (description, workflow). |
-| [LICENSE](LICENSE) | MIT license included with installed runtime files. |
-| [agents/openai.yaml](agents/openai.yaml) | Marketplace/UI metadata for skill lists and default prompts. |
-| [assets/hdldiagzero-small.svg](assets/hdldiagzero-small.svg) | Small icon used by marketplace/UI metadata. |
-| [render.py](render.py) | JSON → SVG renderer. |
-| [validate.py](validate.py) | SVG geometry validator (exit code = violation count). |
-| [validate_spec.py](validate_spec.py) | JSON spec validator — run before the renderer to catch structural errors. |
-| [references/schema.md](references/schema.md) | Full JSON schema, loaded on demand. |
-| [references/extraction.md](references/extraction.md) | HDL extraction patterns: top discovery, hierarchy walking, exclusions, AXI classification. |
-| [references/validation.md](references/validation.md) | Fix recipes for each validator violation. |
+| [skills/hdldiagzero/SKILL.md](skills/hdldiagzero/SKILL.md) | Skill definition consumed by the agent runtime (description, workflow). |
+| [skills/hdldiagzero/LICENSE](skills/hdldiagzero/LICENSE) | MIT license bundled with the runtime. |
+| [skills/hdldiagzero/agents/openai.yaml](skills/hdldiagzero/agents/openai.yaml) | Marketplace/UI metadata for skill lists and default prompts. |
+| [skills/hdldiagzero/assets/hdldiagzero-small.svg](skills/hdldiagzero/assets/hdldiagzero-small.svg) | Small icon used by marketplace/UI metadata. |
+| [skills/hdldiagzero/render.py](skills/hdldiagzero/render.py) | JSON → SVG renderer. |
+| [skills/hdldiagzero/validate.py](skills/hdldiagzero/validate.py) | SVG geometry validator (exit code = violation count). |
+| [skills/hdldiagzero/validate_spec.py](skills/hdldiagzero/validate_spec.py) | JSON spec validator — run before the renderer to catch structural errors. |
+| [skills/hdldiagzero/references/schema.md](skills/hdldiagzero/references/schema.md) | Full JSON schema, loaded on demand. |
+| [skills/hdldiagzero/references/extraction.md](skills/hdldiagzero/references/extraction.md) | HDL extraction patterns: top discovery, hierarchy walking, exclusions, AXI classification. |
+| [skills/hdldiagzero/references/validation.md](skills/hdldiagzero/references/validation.md) | Fix recipes for each validator violation. |
 
-### Repo-only (not copied by `install.py`)
+### Plugin / marketplace metadata
 
 | File | Purpose |
 | --- | --- |
-| [install.py](install.py) | Copies the runtime files into a skills directory (Claude and Codex defaults, override with `--dst`). |
+| [.claude-plugin/plugin.json](.claude-plugin/plugin.json) | Plugin manifest (name, version, author, license, repository). Claude Code reads this when installing. |
+| [.claude-plugin/marketplace.json](.claude-plugin/marketplace.json) | Marketplace manifest. Lets the same repo also serve as a one-plugin marketplace; users add it with `/plugin marketplace add lcapossio/hdldiagZero`. |
+
+### Repo-only (not in the plugin runtime)
+
+| File | Purpose |
+| --- | --- |
+| [install.py](install.py) | Direct (non-marketplace) install path: copies `skills/hdldiagzero/` into a destination dir. Claude defaults; override with `--dst` for Codex / custom runtimes. |
 | [tests.py](tests.py) | Self-tests: validators, renderer light + dark, install dry-run. |
 | [test_spec.json](test_spec.json) | Clean renderer smoke-test spec. Render it manually to inspect normal output. |
 | [sample_output.svg](sample_output.svg) | Tracked example of normal renderer output generated from `test_spec.json`. |
 | [not_sample_broken_validator_fixture.svg](not_sample_broken_validator_fixture.svg) | Intentionally broken validator regression fixture. It is supposed to fail with exactly 8 violations; it is not sample output. |
 | [pyproject.toml](pyproject.toml) | Ruff lint config. |
 | [.github/workflows/ci.yml](.github/workflows/ci.yml) | GitHub Actions: ruff + `python tests.py` on Linux / macOS / Windows × Python 3.10, 3.12. |
-| [README.md](README.md) | Repo docs. |
+| [LICENSE](LICENSE), [README.md](README.md) | Repo-root license and docs (the plugin runtime carries its own copy of LICENSE under `skills/hdldiagzero/`). |
 
 ## Install
+
+### Claude Code (recommended)
+
+```
+/plugin marketplace add lcapossio/hdldiagZero
+/plugin install hdldiagzero@hdldiag-marketplace
+```
+
+Claude Code clones the repo, reads [.claude-plugin/marketplace.json](.claude-plugin/marketplace.json), and mounts [skills/hdldiagzero/](skills/hdldiagzero/) as the active skill. Restart Claude Code afterward.
+
+### Other runtimes (Codex, custom)
 
 Requires Python 3.10+. From the repo root:
 
 ```
-python install.py                                # Claude default: ~/.claude/skills/hdldiagzero
+python install.py                                # Claude Code direct copy: ~/.claude/skills/hdldiagzero
 python install.py --runtime codex                # Codex default: ~/.codex/skills/hdldiagzero
 python install.py --dst /opt/agent-skills/hdldiagzero
 ```
 
-Copies `SKILL.md`, `LICENSE`, `agents/openai.yaml`, `assets/`, `render.py`, `validate.py`, `validate_spec.py`, and the `references/*.md` files into the target directory. Restart your agent runtime to pick up the new skill.
+Copies the contents of [skills/hdldiagzero/](skills/hdldiagzero/) into the destination directory. Restart your runtime.
 
 ## Usage
 

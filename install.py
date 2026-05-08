@@ -1,13 +1,22 @@
 """
 Install the hdldiagZero skill into an agent runtime's skills directory.
 
-By default targets Claude Code's ~/.claude/skills/hdldiagzero. For Codex, use
---runtime codex to target ~/.codex/skills/hdldiagzero. For custom installs,
-pass --dst with the exact destination directory.
+This is the alternative install path for runtimes that DON'T support the
+Claude Code plugin marketplace. Claude Code users should prefer the
+marketplace flow:
 
+    /plugin marketplace add lcapossio/hdldiagZero
+    /plugin install hdldiagzero@hdldiag-marketplace
+
+By default this script targets Claude Code's ~/.claude/skills/hdldiagzero.
+For Codex use --runtime codex (~/.codex/skills/hdldiagzero). For any other
+runtime, pass --dst with the exact destination directory.
+
+Source files live under skills/hdldiagzero/ in the repo (the plugin shape).
 Runtime installs include SKILL.md, LICENSE, agents/openai.yaml, assets,
 renderer/validator scripts, and the references/ tree. Test fixtures, README,
-CI config, and the bundled tests stay in the repo and are NOT copied.
+install.py, tests, CI, and pyproject.toml stay in the repo and are NOT
+copied.
 
 Author: Leonardo Capossio - bard0 design - hello@bard0.com
 Year:   2026
@@ -73,7 +82,8 @@ def main() -> int:
     )
     args = p.parse_args()
 
-    src = Path(__file__).resolve().parent
+    # Source = the plugin's skill directory inside the repo.
+    src = Path(__file__).resolve().parent / "skills" / "hdldiagzero"
     dst: Path = (args.dst or default_dst(args.runtime)).expanduser().resolve()
 
     missing = [rel for rel in SKILL_PATHS if not (src / rel).is_file()]
