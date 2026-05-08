@@ -1,0 +1,28 @@
+{
+  "title": "Sample SoC architecture (renderer smoke test)",
+  "top": "soc_top",
+  "domains": {
+    "axi":   {"freq_mhz": 100, "color": "#42A5F5", "border": "#0D47A1"},
+    "video": {"freq_mhz": 148, "color": "#FFA726", "border": "#E65100"},
+    "ddr":   {"freq_mhz": 333, "color": "#66BB6A", "border": "#1B5E20"}
+  },
+  "blocks": [
+    {"id": "phy",          "label": "Video Source",   "external": true,                                  "row": 0, "col": 0, "sublabel": "[16 lanes x 16b]"},
+    {"id": "pix_packer",   "label": "pix_packer",     "domain": "video", "domain_b": "axi",              "row": 0, "col": 1, "sublabel": "video / axi CDC"},
+    {"id": "rx_dma",       "label": "RX DMA",         "domain": "axi",                                   "row": 0, "col": 2},
+    {"id": "tx_dma",       "label": "TX DMA",         "domain": "axi",                                   "row": 1, "col": 2},
+    {"id": "video_out",    "label": "Video Output",   "external": true,                                  "row": 1, "col": 1, "sublabel": "display sink"},
+    {"id": "interconnect", "label": "AXI Interconnect","domain": "axi",                                  "row": 0, "col": 3},
+    {"id": "cpu",          "label": "SoftCore MCU",   "domain": "axi",                                   "row": 0, "col": 4},
+    {"id": "ddr_ctrl",     "label": "DDR Ctrl",       "domain": "ddr",                                   "row": 1, "col": 4}
+  ],
+  "edges": [
+    {"from": "phy",          "to": "pix_packer",   "kind": "generic",    "width": "16x16b"},
+    {"from": "pix_packer",   "to": "rx_dma",       "kind": "axi-stream", "width": 64},
+    {"from": "tx_dma",       "to": "video_out",    "kind": "axi-stream", "width": 64},
+    {"from": "rx_dma",       "to": "interconnect", "kind": "axi-mm",     "width": 64},
+    {"from": "tx_dma",       "to": "interconnect", "kind": "axi-mm",     "width": 64},
+    {"from": "cpu",          "to": "interconnect", "kind": "axi-lite",   "width": 32},
+    {"from": "interconnect", "to": "ddr_ctrl",     "kind": "axi-mm",     "width": 128}
+  ]
+}

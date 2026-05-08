@@ -1,0 +1,105 @@
+# JSON spec schema
+
+Reference for the JSON the renderer expects. The agent SHOULD validate the
+spec with `validate_spec.py` before rendering — it catches structural errors
+(missing block ids in edges, duplicate cells, unknown domains) that would
+otherwise produce a broken SVG.
+
+## Example
+
+```json
+{
+  "title": "Diagram title (optional)",
+  "top": "soc_top",
+  "theme": "light",
+  "domains": {
+    "axi":   {"freq_mhz": 100, "color": "#42A5F5", "border": "#0D47A1"},
+    "video": {"freq_mhz": 148, "color": "#FFA726", "border": "#E65100"},
+    "ddr":   {"freq_mhz": 333, "color": "#66BB6A", "border": "#1B5E20"}
+  },
+  "blocks": [
+    {"id": "phy",          "label": "Video Source",   "external": true,                            "row": 0, "col": 0, "sublabel": "[16 lanes x 16b]"},
+    {"id": "pix_packer",   "label": "pix_packer",     "domain": "video", "domain_b": "axi",        "row": 0, "col": 1, "sublabel": "video / axi CDC"},
+    {"id": "rx_dma",       "label": "RX DMA",         "domain": "axi",                             "row": 0, "col": 2},
+    {"id": "interconnect", "label": "AXI Interconnect","domain": "axi",                            "row": 0, "col": 3},
+    {"id": "cpu",          "label": "SoftCore MCU",   "domain": "axi",                             "row": 0, "col": 4},
+    {"id": "ddr_ctrl",     "label": "DDR Ctrl",       "domain": "ddr",                             "row": 1, "col": 4}
+  ],
+  "edges": [
+    {"from": "phy",          "to": "pix_packer",   "kind": "generic",    "width": "16x16b"},
+    {"from": "pix_packer",   "to": "rx_dma",       "kind": "axi-stream", "width": 64},
+    {"from": "rx_dma",       "to": "interconnect", "kind": "axi-mm",     "width": 64},
+    {"from": "cpu",          "to": "interconnect", "kind": "axi-lite",   "width": 32},
+    {"from": "interconnect", "to": "ddr_ctrl",     "kind": "axi-mm",     "width": 128}
+  ]
+}
+```
+
+## Top-level fields
+
+| Field     | Type   | Required  | Description |
+|-----------|--------|-----------|-------------|
+| `title`   | string | optional  | Title rendered at top-center. |
+| `top`     | string | optional  | Informational; identifies the top module. |
+| `theme`   | string | optional  | `"light"` (default) or `"dark"`. |
+| `grid`    | object | optional  | Grid sizing overrides; see below. |
+| `domains` | object | required* | Map of domain key → `{freq_mhz, color, border}`. *Required unless every block is external. |
+| `blocks`  | array  | required  | One or more blocks. |
+| `edges`   | array  | required  | May be empty. |
+
+## domains[name]
+
+| Field      | Type   | Required | Description |
+|------------|--------|----------|-------------|
+| `freq_mhz` | number | optional | Shown in the legend when known. Omit this field when the frequency is unknown; never use placeholders like `?` or `? MHz`. |
+| `color`    | string | optional | Block fill (`#RRGGBB`). Auto-assigned from a Material palette if missing. |
+| `border`   | string | optional | Block stroke. Auto-paired to the fill if missing. |
+
+## blocks[]
+
+| Field      | Type    | Required  | Description |
+|------------|---------|-----------|-------------|
+| `id`       | string  | required  | Unique non-empty string. |
+| `label`    | string  | optional  | Defaults to `id`. |
+| `sublabel` | string  | optional  | Italic line under the label. Keep it terse. |
+| `domain`   | string  | required* | Domain key from `domains`. *Optional if `external=true`. |
+| `domain_b` | string  | optional  | CDC blocks only. Half fill of each domain's color. Must differ from `domain` and reference a declared domain. |
+| `external` | boolean | optional  | True = off-chip / off-die. Neutral grey fill, ignores `domain`. |
+| `row`      | int     | required  | 0-indexed grid row. |
+| `col`      | int     | required  | 0-indexed grid column. One block per `(row, col)`. |
+
+## edges[]
+
+| Field   | Type          | Required | Description |
+|---------|---------------|----------|-------------|
+| `from`  | string        | required | Block id (must exist in `blocks`). |
+| `to`    | string        | required | Block id (must exist in `blocks`). |
+| `kind`  | string        | required | One of `axi-mm`, `axi-lite`, `axi-stream`, `cdc`, `generic`. |
+| `width` | int \| string | optional | Bit width as int (rendered `<n>b`), or protocol / parameter as string. Long arrows without a label fail the BITWIDTH validator check. |
+
+## kind catalog
+
+| Kind          | What it is                                       | Stroke              |
+|---------------|--------------------------------------------------|---------------------|
+| `axi-mm`      | Full AXI4 / AXI3 memory-mapped (with bursts).    | Thick dark.         |
+| `axi-lite`    | AXI4-Lite control bus. **Distinct from axi-mm.** | Slimmer dark blue.  |
+| `axi-stream`  | AXI4-Stream data path.                           | Olive, open head.   |
+| `cdc`         | Signal/bus crossing clock domains in flight.     | Purple dashed.      |
+| `generic`     | Anything else (RGMII, SPI, custom, discretes).   | Thin grey.          |
+
+AXI4 (full) and AXI4-Lite are separate `kind` values even though they share
+port-name conventions. Pick `axi-lite` if the bus has *no* burst-related
+ports (`awlen`, `awburst`, `arlen`, `wlast`, `rlast` all absent).
+
+## grid (optional)
+
+| Field      | Default | Description |
+|------------|---------|-------------|
+| `cell_w`   | 220     | Block width (px). |
+| `cell_h`   | 90      | Block height. |
+| `gutter_x` | 90      | Horizontal gutter between columns. |
+| `gutter_y` | 70      | Vertical gutter between rows. |
+| `margin`   | 36      | Canvas margin around the grid. |
+
+Widen `gutter_x` if edge labels overflow into adjacent blocks.
+Widen `cell_w` if block names truncate.

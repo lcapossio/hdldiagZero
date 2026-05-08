@@ -1,0 +1,7 @@
+interface:
+  display_name: "hdldiagZero"
+  short_description: "Generate validated RTL block diagrams"
+  icon_small: "./assets/hdldiagzero-small.svg"
+  icon_large: "./assets/hdldiagzero-small.svg"
+  brand_color: "#42A5F5"
+  default_prompt: "Use $hdldiagzero to render a validated SVG block diagram for this HDL design."

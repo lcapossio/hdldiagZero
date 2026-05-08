@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Smoke-test fixture for validate.py. Each arrow that should NOT trigger
+  BITWIDTH carries a digit-bearing label within TEXT_LABEL_PROXIMITY (12px) of
+  its path. The 'no_label' arrow is the dedicated BITWIDTH violator.
+
+  Expected output: 8 violations
+    1 CROSSING   (bad_crossing through B)
+    1 SPACING    (bus_a vs bus_b parallel and close)
+    1 STUB       (stub shaft shorter than arrowhead)
+    1 TEXT_ARROW (ver_through_text crossing 'label 32b' owned by hor_label_owner)
+    1 TEXT_BLOCK (block F overlapping the long stray label)
+    2 PORT       (bus_a/bus_b sharing a point on D and on E)
+    1 BITWIDTH   (no_label has no digit-bearing label near its midpoint)
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <defs>
+    <style>
+      .block { stroke: #334155; stroke-width: 1.5; rx: 8; }
+      .label { fill: #0f172a; font: 600 13px Arial, sans-serif; text-anchor: middle; }
+      .small { fill: #475569; font: 12px Arial, sans-serif; }
+      .note { fill: #64748b; font: 11px Arial, sans-serif; }
+      .bad { stroke: #dc2626; stroke-width: 2; fill: none; }
+      .warn { stroke: #9333ea; stroke-width: 2; fill: none; }
+      .ok { stroke: #16a34a; stroke-width: 2; fill: none; }
+      .bus { stroke: #0f172a; stroke-width: 2; fill: none; }
+    </style>
+    <marker id="ah" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#0f172a"/>
+    </marker>
+    <marker id="ah-red" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#dc2626"/>
+    </marker>
+    <marker id="ah-purple" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#9333ea"/>
+    </marker>
+    <marker id="ah-green" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#16a34a"/>
+    </marker>
+  </defs>
+
+  <text class="label" x="400" y="26">Intentionally Broken Validator Fixture</text>
+  <text class="note" x="400" y="44" text-anchor="middle">This is not sample output; it deliberately contains 8 geometry violations.</text>
+
+  <rect id="A" class="block" x="50" y="80" width="150" height="100" fill="#bfdbfe"/>
+  <text class="label" x="125" y="135">A</text>
+
+  <rect id="B" class="block" x="350" y="80" width="150" height="100" fill="#fde68a"/>
+  <text class="label" x="425" y="135">B</text>
+
+  <rect id="C" class="block" x="600" y="80" width="150" height="100" fill="#bbf7d0"/>
+  <text class="label" x="675" y="135">C</text>
+
+  <rect id="D" class="block" x="50" y="310" width="150" height="100" fill="#fecdd3"/>
+  <text class="label" x="125" y="365">D</text>
+
+  <rect id="E" class="block" x="350" y="310" width="150" height="100" fill="#ddd6fe"/>
+  <text class="label" x="425" y="365">E</text>
+
+  <!-- BAD: CROSSING - arrow A->C straight through B (carries '32' so no BITWIDTH).
+       Label is placed away from good's vertical leg at x=275 so 'good' doesn't claim it. -->
+  <path id="bad_crossing" class="bad" d="M 200,130 L 600,130" marker-end="url(#ah-red)"/>
+  <text class="small" x="320" y="126" text-anchor="middle">32</text>
+
+  <!-- BAD: SPACING + PORT - parallel D->E arrows 8px apart -->
+  <path id="bus_a" class="bus" d="M 200,320 L 350,320" marker-end="url(#ah)"/>
+  <text class="small" x="275" y="314" text-anchor="middle">16b</text>
+  <path id="bus_b" class="bus" d="M 200,328 L 350,328" marker-end="url(#ah)"/>
+  <text class="small" x="275" y="342" text-anchor="middle">16b</text>
+
+  <!-- BAD: STUB - shaft (8px) shorter than arrowhead. Floats free in space so the
+       bitwidth label doesn't need to dodge any block. Length < BITWIDTH_MIN_ARROW_LEN
+       so BITWIDTH is also skipped automatically. -->
+  <path id="stub" class="bus" d="M 550,455 L 558,455" marker-end="url(#ah)"/>
+
+  <!-- GOOD: A->C routed around B. 'AXI-S 64b' label placed away from ver_through_text -->
+  <path id="good" class="ok" d="M 200,105 L 275,105 L 275,220 L 575,220 L 575,105 L 600,105" marker-end="url(#ah-green)"/>
+  <text class="small" x="500" y="215">AXI-S 64b</text>
+
+  <!-- BAD: TEXT_ARROW - vertical arrow crosses an edge label that belongs to the horizontal arrow.
+       'label 32b' contains a digit so hor_label_owner satisfies BITWIDTH; ver_through_text
+       carries its own '8' label off to the right of its path. -->
+  <text class="small" x="380" y="245" text-anchor="middle">label 32b</text>
+  <path id="hor_label_owner" class="bus" d="M 100,245 L 700,245" marker-end="url(#ah)"/>
+  <path id="ver_through_text" class="warn" d="M 400,205 L 400,285" marker-end="url(#ah-purple)"/>
+  <text class="small" x="408" y="265">8</text>
+
+  <!-- BAD: TEXT_BLOCK - block F overlaps a long stray label whose centroid is outside F -->
+  <text class="small" x="50" y="505">very long external interface label spanning area</text>
+  <rect id="F" class="block" x="280" y="495" width="100" height="40" fill="#fdba74"/>
+  <text class="label" x="330" y="520">F</text>
+
+  <!-- BAD: BITWIDTH - F->G arrow with no bitwidth label anywhere near its midpoint -->
+  <rect id="G" class="block" x="600" y="495" width="120" height="40" fill="#67e8f9"/>
+  <text class="label" x="660" y="520">G</text>
+  <path id="no_label" class="bus" d="M 380,515 L 600,515" marker-end="url(#ah)"/>
+</svg>

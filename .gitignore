@@ -1,0 +1,18 @@
+# Generated SVG outputs from running the renderer manually
+test_output*.svg
+
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+
+# Per-checkout Claude Code permissions / settings (machine-specific)
+.claude/settings.local.json
+
+# Local-only scratch / one-off scripts / bug list (never tracked, per
+# c:\Projects\PROJECTS.md)
+no_commit/
+
+# Repo-local temp dir used by tests.py when system temp isn't writable.
+# Override the location with HDLDIAG_TEST_TMP=<dir>.
+/tmp/

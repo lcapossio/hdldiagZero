@@ -1,0 +1,678 @@
+#!/usr/bin/env python3
+"""Validate an HDL block-diagram SVG for layout violations.
+
+Author: Leonardo Capossio - bard0 design - hello@bard0.com
+Year:   2026
+
+Checks:
+  1. CROSSING    - arrow paths passing through blocks they don't connect to
+  2. SPACING     - parallel arrows closer than MIN_SPACING px (unreadable bundles)
+  3. STUB        - arrows whose shaft is shorter than ~1.5x the arrowhead
+  4. TEXT_BLOCK  - a block overlapping text that is not its own label
+  5. TEXT_ARROW  - an arrow passing through text that is not its own edge label
+  6. PORT        - two arrows attaching to the same block within MIN_PORT_SEP px
+                   (i.e. effectively meeting at the same point)
+  7. BITWIDTH    - an arrow longer than BITWIDTH_MIN_ARROW_LEN with no nearby
+                   text containing a digit (no bitwidth indicator at midpoint)
+
+Exit code = number of violations (0 = pass). Writes a structured report to stdout
+that the calling agent can feed back into the next generation pass.
+
+Caveats:
+  - Assumes a flat coordinate space (no nested <g transform="...">).
+  - Path parser handles M/L/H/V/Z. Curves (C/Q/A) are sampled at endpoints only.
+  - Block detection: any <rect> with width >= 40 and height >= 25 is treated as a
+    block. Smaller rects (legend swatches, decorations) are ignored.
+  - Text bbox is estimated from font-size and character count (no font metrics);
+    width is roughly len(text) * font_size * 0.55.
+"""
+
+import sys
+import re
+import math
+import xml.etree.ElementTree as ET
+from dataclasses import dataclass
+
+MIN_SPACING = 15.0       # px - parallel arrows closer than this are unreadable
+EDGE_TOLERANCE = 4.0     # px - endpoint within this distance of rect edge = connected
+MIN_BLOCK_W = 40.0
+MIN_BLOCK_H = 25.0
+STUB_RATIO = 1.5         # shaft length must be >= STUB_RATIO * marker width
+MIN_PORT_SEP = 12.0      # px - two arrow endpoints on the same block must be this far apart
+DEFAULT_FONT_SIZE = 12.0
+TEXT_WIDTH_FACTOR = 0.55 # rough character-width / font-size ratio
+TEXT_LABEL_PROXIMITY = 12.0  # text within this distance of an arrow is treated as its label
+BITWIDTH_MIN_ARROW_LEN = 50.0  # px - arrows shorter than this are exempt from bitwidth check
+
+SVG_NS = "http://www.w3.org/2000/svg"
+NS = {"svg": SVG_NS}
+
+
+@dataclass
+class Block:
+    id: str
+    label: str
+    x: float
+    y: float
+    w: float
+    h: float
+
+    @property
+    def rect(self):
+        return (self.x, self.y, self.x + self.w, self.y + self.h)
+
+
+@dataclass
+class Arrow:
+    id: str
+    points: list
+    marker_id: str | None = None
+    stroke_width: float = 1.0
+
+
+@dataclass
+class Marker:
+    id: str
+    width: float
+    height: float
+
+
+@dataclass
+class TextBox:
+    text: str
+    x1: float
+    y1: float
+    x2: float
+    y2: float
+
+    @property
+    def rect(self):
+        return (self.x1, self.y1, self.x2, self.y2)
+
+    @property
+    def cx(self):
+        return (self.x1 + self.x2) / 2
+
+    @property
+    def cy(self):
+        return (self.y1 + self.y2) / 2
+
+
+def localname(tag):
+    return tag.split("}", 1)[-1] if "}" in tag else tag
+
+
+def find_label_for_rect(root, rect_elem, block):
+    """Find a <text> element near the rect to use as a human-readable label."""
+    cx = block.x + block.w / 2
+    cy = block.y + block.h / 2
+    best = None
+    best_dist = float("inf")
+    for t in root.iter():
+        if localname(t.tag) != "text":
+            continue
+        try:
+            tx = float(t.get("x", 0))
+            ty = float(t.get("y", 0))
+        except (TypeError, ValueError):
+            continue
+        if not (block.x - 5 <= tx <= block.x + block.w + 5):
+            continue
+        if not (block.y - 5 <= ty <= block.y + block.h + 5):
+            continue
+        d = math.hypot(tx - cx, ty - cy)
+        if d < best_dist:
+            best_dist = d
+            best = (t.text or "").strip()
+    return best or rect_elem.get("id", "")
+
+
+_PATH_TOKEN = re.compile(r"[MLHVZmlhvzCcQqAaSsTt]|-?\d*\.?\d+(?:[eE][+-]?\d+)?")
+
+
+def text_bbox(elem):
+    """Estimate the bounding box of an SVG <text> element."""
+    try:
+        x = float(elem.get("x", 0))
+        y = float(elem.get("y", 0))
+    except (TypeError, ValueError):
+        return None
+    s = (elem.text or "").strip()
+    if not s:
+        return None
+    fs = elem.get("font-size", "")
+    font = DEFAULT_FONT_SIZE
+    if fs:
+        m = re.search(r"-?\d*\.?\d+", fs)
+        if m:
+            try:
+                font = float(m.group(0))
+            except ValueError:
+                pass
+    anchor = elem.get("text-anchor", "start")
+    width = max(len(s) * font * TEXT_WIDTH_FACTOR, font * 0.6)
+    height = font
+    if anchor == "middle":
+        x -= width / 2
+    elif anchor == "end":
+        x -= width
+    # SVG text y is the baseline; bbox spans ~85% above and ~15% below.
+    return TextBox(s, x, y - height * 0.85, x + width, y + height * 0.15)
+
+
+def parse_path(d):
+    """Parse SVG path 'd' to a list of (x,y) waypoints. Curves -> endpoints only."""
+    tokens = _PATH_TOKEN.findall(d)
+    points = []
+    cx = cy = 0.0
+    sx = sy = 0.0
+    cmd = None
+    i = 0
+    n = len(tokens)
+    def take_num():
+        nonlocal i
+        v = float(tokens[i]); i += 1
+        return v
+    while i < n:
+        t = tokens[i]
+        if t.isalpha():
+            cmd = t
+            i += 1
+            if cmd in "Zz":
+                points.append((sx, sy))
+                cx, cy = sx, sy
+            continue
+        if cmd is None:
+            i += 1
+            continue
+        rel = cmd.islower()
+        c = cmd.upper()
+        if c == "M":
+            x = take_num(); y = take_num()
+            if rel and points:
+                x += cx; y += cy
+            cx, cy = x, y
+            sx, sy = cx, cy
+            points.append((cx, cy))
+            cmd = "l" if rel else "L"
+        elif c == "L":
+            x = take_num(); y = take_num()
+            if rel:
+                x += cx; y += cy
+            cx, cy = x, y
+            points.append((cx, cy))
+        elif c == "H":
+            x = take_num()
+            if rel: x += cx
+            cx = x
+            points.append((cx, cy))
+        elif c == "V":
+            y = take_num()
+            if rel: y += cy
+            cy = y
+            points.append((cx, cy))
+        elif c == "C":
+            take_num(); take_num(); take_num(); take_num()
+            x = take_num(); y = take_num()
+            if rel: x += cx; y += cy
+            cx, cy = x, y
+            points.append((cx, cy))
+        elif c == "S" or c == "Q":
+            take_num(); take_num()
+            x = take_num(); y = take_num()
+            if rel: x += cx; y += cy
+            cx, cy = x, y
+            points.append((cx, cy))
+        elif c == "T":
+            x = take_num(); y = take_num()
+            if rel: x += cx; y += cy
+            cx, cy = x, y
+            points.append((cx, cy))
+        elif c == "A":
+            take_num(); take_num(); take_num(); take_num(); take_num()
+            x = take_num(); y = take_num()
+            if rel: x += cx; y += cy
+            cx, cy = x, y
+            points.append((cx, cy))
+        else:
+            i += 1
+    return points
+
+
+def parse_svg(path):
+    tree = ET.parse(path)
+    root = tree.getroot()
+
+    # Build the set of elements that live inside <defs> so we can skip them when
+    # collecting blocks/arrows/texts. Marker arrowhead paths are NOT real arrows;
+    # gradient stops are NOT real text; etc.
+    defs_descendants = set()
+    for defs in root.iter():
+        if localname(defs.tag) != "defs":
+            continue
+        for child in defs.iter():
+            defs_descendants.add(id(child))
+
+    markers = {}
+    for m in root.iter():
+        if localname(m.tag) != "marker":
+            continue
+        mid = m.get("id", "")
+        try:
+            mw = float(m.get("markerWidth", 0))
+            mh = float(m.get("markerHeight", 0))
+        except (TypeError, ValueError):
+            continue
+        markers[mid] = Marker(mid, mw, mh)
+
+    # SVG canvas dimensions, used to skip background rects that span the whole
+    # drawing.
+    try:
+        svg_w = float(root.get("width", 0))
+        svg_h = float(root.get("height", 0))
+    except (TypeError, ValueError):
+        svg_w = svg_h = 0.0
+
+    blocks = []
+    for r in root.iter():
+        if localname(r.tag) != "rect":
+            continue
+        if id(r) in defs_descendants:
+            continue
+        try:
+            x = float(r.get("x", 0))
+            y = float(r.get("y", 0))
+            w = float(r.get("width", 0))
+            h = float(r.get("height", 0))
+        except (TypeError, ValueError):
+            continue
+        if w < MIN_BLOCK_W or h < MIN_BLOCK_H:
+            continue
+        # Skip the canvas background rect (spans the full SVG).
+        if svg_w and svg_h and w >= svg_w * 0.95 and h >= svg_h * 0.95:
+            continue
+        bid = r.get("id", f"rect{len(blocks)}")
+        b = Block(bid, bid, x, y, w, h)
+        b.label = find_label_for_rect(root, r, b)
+        blocks.append(b)
+
+    arrows = []
+    for elem in root.iter():
+        if id(elem) in defs_descendants:
+            continue
+        tag = localname(elem.tag)
+        marker_attr = elem.get("marker-end") or elem.get("marker-start") or ""
+        m = re.search(r"url\(#([^)]+)\)", marker_attr)
+        mid = m.group(1) if m else None
+        sw = 1.0
+        try:
+            sw = float(elem.get("stroke-width", 1))
+        except (TypeError, ValueError):
+            pass
+        if tag == "path":
+            d = elem.get("d", "")
+            pts = parse_path(d)
+            if len(pts) < 2:
+                continue
+            aid = elem.get("id", f"path{len(arrows)}")
+            arrows.append(Arrow(aid, pts, mid, sw))
+        elif tag == "line":
+            try:
+                x1 = float(elem.get("x1", 0)); y1 = float(elem.get("y1", 0))
+                x2 = float(elem.get("x2", 0)); y2 = float(elem.get("y2", 0))
+            except (TypeError, ValueError):
+                continue
+            aid = elem.get("id", f"line{len(arrows)}")
+            arrows.append(Arrow(aid, [(x1, y1), (x2, y2)], mid, sw))
+        elif tag == "polyline":
+            pts_attr = elem.get("points", "")
+            nums = [float(n) for n in re.findall(r"-?\d*\.?\d+", pts_attr)]
+            pts = list(zip(nums[0::2], nums[1::2]))
+            if len(pts) < 2:
+                continue
+            aid = elem.get("id", f"polyline{len(arrows)}")
+            arrows.append(Arrow(aid, pts, mid, sw))
+
+    texts = []
+    for t in root.iter():
+        if localname(t.tag) != "text":
+            continue
+        if id(t) in defs_descendants:
+            continue
+        bb = text_bbox(t)
+        if bb is not None:
+            texts.append(bb)
+
+    return blocks, arrows, markers, texts
+
+
+def segments(arrow):
+    return list(zip(arrow.points, arrow.points[1:]))
+
+
+def seg_rect_clip(seg, rect):
+    """Liang-Barsky: returns True if segment crosses rect interior."""
+    (px1, py1), (px2, py2) = seg
+    x1, y1, x2, y2 = rect
+    dx = px2 - px1
+    dy = py2 - py1
+    t_min, t_max = 0.0, 1.0
+    for p, q in [(-dx, px1 - x1), (dx, x2 - px1), (-dy, py1 - y1), (dy, y2 - py1)]:
+        if p == 0:
+            if q < 0:
+                return False
+        else:
+            t = q / p
+            if p < 0:
+                if t > t_max: return False
+                if t > t_min: t_min = t
+            else:
+                if t < t_min: return False
+                if t < t_max: t_max = t
+    return (t_max - t_min) > 1e-3
+
+
+def endpoint_on_rect(point, rect, tol=EDGE_TOLERANCE):
+    px, py = point
+    x1, y1, x2, y2 = rect
+    near_left = abs(px - x1) <= tol
+    near_right = abs(px - x2) <= tol
+    near_top = abs(py - y1) <= tol
+    near_bot = abs(py - y2) <= tol
+    in_x = (x1 - tol) <= px <= (x2 + tol)
+    in_y = (y1 - tol) <= py <= (y2 + tol)
+    return ((near_left or near_right) and in_y) or ((near_top or near_bot) and in_x)
+
+
+def check_crossings(blocks, arrows):
+    violations = []
+    for a in arrows:
+        connected = set()
+        for ep in (a.points[0], a.points[-1]):
+            for b in blocks:
+                if endpoint_on_rect(ep, b.rect):
+                    connected.add(b.id)
+        for seg in segments(a):
+            for b in blocks:
+                if b.id in connected:
+                    continue
+                if seg_rect_clip(seg, b.rect):
+                    mx = (seg[0][0] + seg[1][0]) / 2
+                    my = (seg[0][1] + seg[1][1]) / 2
+                    violations.append(
+                        f"CROSSING: arrow '{a.id}' passes through block "
+                        f"'{b.label}' near ({mx:.0f},{my:.0f}). "
+                        f"Reroute around block (which occupies "
+                        f"x={b.x:.0f}..{b.x+b.w:.0f}, y={b.y:.0f}..{b.y+b.h:.0f})."
+                    )
+                    break
+    return violations
+
+
+def point_seg_dist(p, seg):
+    (ax, ay), (bx, by) = seg
+    px, py = p
+    dx, dy = bx - ax, by - ay
+    if dx == 0 and dy == 0:
+        return math.hypot(px - ax, py - ay)
+    t = max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy)))
+    return math.hypot(px - (ax + t * dx), py - (ay + t * dy))
+
+
+def seg_distance(s1, s2):
+    return min(
+        point_seg_dist(s1[0], s2),
+        point_seg_dist(s1[1], s2),
+        point_seg_dist(s2[0], s1),
+        point_seg_dist(s2[1], s1),
+    )
+
+
+def seg_angle(seg):
+    (ax, ay), (bx, by) = seg
+    return math.degrees(math.atan2(by - ay, bx - ax)) % 180
+
+
+def projections_overlap(s1, s2):
+    """Do the two parallel segments share any along-axis overlap?"""
+    a = seg_angle(s1)
+    if abs(a - 90) < 5:
+        a1, a2 = sorted([s1[0][1], s1[1][1]])
+        b1, b2 = sorted([s2[0][1], s2[1][1]])
+    else:
+        a1, a2 = sorted([s1[0][0], s1[1][0]])
+        b1, b2 = sorted([s2[0][0], s2[1][0]])
+    return max(a1, b1) < min(a2, b2)
+
+
+def is_parallel(s1, s2, angle_tol=5):
+    a = abs(seg_angle(s1) - seg_angle(s2))
+    return a < angle_tol or abs(a - 180) < angle_tol
+
+
+def check_spacing(arrows):
+    violations = []
+    seen = set()
+    for i, a in enumerate(arrows):
+        for j, b in enumerate(arrows):
+            if i >= j:
+                continue
+            for s1 in segments(a):
+                for s2 in segments(b):
+                    if not is_parallel(s1, s2):
+                        continue
+                    if not projections_overlap(s1, s2):
+                        continue
+                    d = seg_distance(s1, s2)
+                    if 0 < d < MIN_SPACING:
+                        key = (a.id, b.id)
+                        if key in seen:
+                            continue
+                        seen.add(key)
+                        mx = (s1[0][0] + s1[1][0]) / 2
+                        my = (s1[0][1] + s1[1][1]) / 2
+                        violations.append(
+                            f"SPACING: arrows '{a.id}' and '{b.id}' run parallel "
+                            f"only {d:.0f}px apart (min {MIN_SPACING:.0f}px) "
+                            f"near ({mx:.0f},{my:.0f}). Increase separation or "
+                            f"merge them into a single bus arrow."
+                        )
+    return violations
+
+
+def path_length(arrow):
+    total = 0.0
+    for (x1, y1), (x2, y2) in segments(arrow):
+        total += math.hypot(x2 - x1, y2 - y1)
+    return total
+
+
+def rects_overlap(r1, r2):
+    x1a, y1a, x2a, y2a = r1
+    x1b, y1b, x2b, y2b = r2
+    return not (x2a <= x1b or x2b <= x1a or y2a <= y1b or y2b <= y1a)
+
+
+def point_in_rect(px, py, rect):
+    x1, y1, x2, y2 = rect
+    return x1 <= px <= x2 and y1 <= py <= y2
+
+
+def check_text_overlap(blocks, arrows, texts):
+    """A block can overlap its own label; an arrow can pass through its own
+    edge label. Anything else is a violation."""
+    violations = []
+    for tb in texts:
+        # Identify the owning block: smallest block whose rect contains the text centroid.
+        owner_block = None
+        for b in blocks:
+            if point_in_rect(tb.cx, tb.cy, b.rect):
+                if owner_block is None or (b.w * b.h) < (owner_block.w * owner_block.h):
+                    owner_block = b
+        # Identify the owning arrow: closest arrow within proximity threshold.
+        owner_arrow_id = None
+        best = TEXT_LABEL_PROXIMITY
+        for a in arrows:
+            for seg in segments(a):
+                d = point_seg_dist((tb.cx, tb.cy), seg)
+                if d < best:
+                    best = d
+                    owner_arrow_id = a.id
+
+        for b in blocks:
+            if owner_block is not None and b.id == owner_block.id:
+                continue
+            if rects_overlap(tb.rect, b.rect):
+                violations.append(
+                    f"TEXT_BLOCK: block '{b.label}' (x={b.x:.0f}..{b.x+b.w:.0f}, "
+                    f"y={b.y:.0f}..{b.y+b.h:.0f}) overlaps the text '{tb.text}' "
+                    f"at ({tb.cx:.0f},{tb.cy:.0f}). Move the block or the text "
+                    f"so they don't intersect."
+                )
+        for a in arrows:
+            if a.id == owner_arrow_id:
+                continue
+            for seg in segments(a):
+                if seg_rect_clip(seg, tb.rect):
+                    violations.append(
+                        f"TEXT_ARROW: arrow '{a.id}' passes through text "
+                        f"'{tb.text}' at ({tb.cx:.0f},{tb.cy:.0f}). Reroute the "
+                        f"arrow around the text, or move the text label to "
+                        f"clear space."
+                    )
+                    break
+    return violations
+
+
+def check_port_separation(blocks, arrows):
+    """Two arrow endpoints attached to the same block must be visibly distinct."""
+    violations = []
+    by_block = {}
+    for a in arrows:
+        for ep in (a.points[0], a.points[-1]):
+            for b in blocks:
+                if endpoint_on_rect(ep, b.rect):
+                    by_block.setdefault(b.id, []).append((a.id, ep, b))
+                    break
+    seen = set()
+    for bid, eps in by_block.items():
+        for i in range(len(eps)):
+            for j in range(i + 1, len(eps)):
+                aid_i, p_i, bi = eps[i]
+                aid_j, p_j, _ = eps[j]
+                if aid_i == aid_j:
+                    continue
+                d = math.hypot(p_i[0] - p_j[0], p_i[1] - p_j[1])
+                if d < MIN_PORT_SEP:
+                    key = tuple(sorted([aid_i, aid_j])) + (bid,)
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    violations.append(
+                        f"PORT: arrows '{aid_i}' and '{aid_j}' both attach to "
+                        f"block '{bi.label}' only {d:.1f}px apart at "
+                        f"({p_i[0]:.0f},{p_i[1]:.0f}) and "
+                        f"({p_j[0]:.0f},{p_j[1]:.0f}) (min {MIN_PORT_SEP:.0f}px). "
+                        f"Spread the connection points along the block edge."
+                    )
+    return violations
+
+
+def arrow_midpoint(arrow):
+    """Return (x,y) at half the path length along the arrow."""
+    total = path_length(arrow)
+    half = total / 2
+    accum = 0.0
+    for (x1, y1), (x2, y2) in segments(arrow):
+        seg_len = math.hypot(x2 - x1, y2 - y1)
+        if seg_len <= 0:
+            continue
+        if accum + seg_len >= half:
+            t = (half - accum) / seg_len
+            return (x1 + t * (x2 - x1), y1 + t * (y2 - y1))
+        accum += seg_len
+    return arrow.points[0]
+
+
+def check_bitwidth_labels(arrows, texts):
+    """Each long arrow must have a text label (containing a digit) within
+    TEXT_LABEL_PROXIMITY of its path. Short arrows and ones with 'legend' in
+    their id are exempt (they're typically swatches in a key)."""
+    violations = []
+    arrow_owned_texts = {a.id: [] for a in arrows}
+    for tb in texts:
+        owner_id = None
+        best = TEXT_LABEL_PROXIMITY
+        for a in arrows:
+            for seg in segments(a):
+                d = point_seg_dist((tb.cx, tb.cy), seg)
+                if d < best:
+                    best = d
+                    owner_id = a.id
+        if owner_id is not None:
+            arrow_owned_texts[owner_id].append(tb.text)
+    for a in arrows:
+        if path_length(a) < BITWIDTH_MIN_ARROW_LEN:
+            continue
+        if "legend" in a.id.lower():
+            continue
+        labels = arrow_owned_texts[a.id]
+        if not any(t.strip() for t in labels):
+            mx, my = arrow_midpoint(a)
+            violations.append(
+                f"BITWIDTH: arrow '{a.id}' has no label near its midpoint "
+                f"(~{mx:.0f},{my:.0f}). Add a text label (bitwidth like '32' "
+                f"or '[31:0]', or a protocol name like 'RGMII' / 'AXI-S 64b') "
+                f"within {TEXT_LABEL_PROXIMITY:.0f}px of the arrow path."
+            )
+    return violations
+
+
+def check_stub_arrows(arrows, markers):
+    violations = []
+    for a in arrows:
+        if not a.marker_id or a.marker_id not in markers:
+            continue
+        m = markers[a.marker_id]
+        marker_px = m.width * a.stroke_width
+        plen = path_length(a)
+        if plen < marker_px * STUB_RATIO:
+            violations.append(
+                f"STUB: arrow '{a.id}' shaft is {plen:.0f}px but arrowhead is "
+                f"~{marker_px:.0f}px wide. Move the source/target blocks farther "
+                f"apart or reroute so the shaft is at least "
+                f"{marker_px * STUB_RATIO:.0f}px."
+            )
+    return violations
+
+
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: validate.py <svg-file>", file=sys.stderr)
+        sys.exit(2)
+    svg_path = sys.argv[1]
+    blocks, arrows, markers, texts = parse_svg(svg_path)
+
+    violations = []
+    violations += check_crossings(blocks, arrows)
+    violations += check_spacing(arrows)
+    violations += check_stub_arrows(arrows, markers)
+    violations += check_text_overlap(blocks, arrows, texts)
+    violations += check_port_separation(blocks, arrows)
+    violations += check_bitwidth_labels(arrows, texts)
+
+    summary = (
+        f"{len(blocks)} blocks, {len(arrows)} arrows, "
+        f"{len(markers)} markers, {len(texts)} texts"
+    )
+    if not violations:
+        print(f"PASS: {summary}, 0 violations")
+        sys.exit(0)
+    print(f"FAIL: {summary}, {len(violations)} violations")
+    for i, v in enumerate(violations, 1):
+        print(f"  {i}. {v}")
+    sys.exit(min(len(violations), 250))
+
+
+if __name__ == "__main__":
+    main()

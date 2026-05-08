@@ -1,0 +1,12 @@
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+# Defaults catch real bugs (F-codes) and obvious style issues.
+# E701 / E702 (multiple statements on one line) flag a compact form
+# (`if cond: action`, `a = take(); b = take()`) that's intentional in the
+# numeric path-parsing and Liang-Barsky-clipping code in validate.py and
+# render.py. Splitting those onto multiple lines hurts readability without
+# adding clarity.
+ignore = ["E701", "E702"]
