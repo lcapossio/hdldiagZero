@@ -613,10 +613,11 @@ def render(spec_path, out_path, theme_override=None):
             # already baked in. Do NOT re-apply content_y0 here.
             pts = [(float(p[0]), float(p[1])) for p in explicit_points]
         else:
-            if route_mode == "direct":
-                pts = [from_pt, to_pt]
-            else:
-                pts = manhattan(g, from_pt, to_pt, fs, ts, lane_offset)
+            # `direct` = Manhattan with no lane offset: collinear endpoints
+            # produce a single horizontal/vertical segment, non-collinear ones
+            # an L. Never a diagonal — that's the whole point.
+            eff_lane = 0 if route_mode == "direct" else lane_offset
+            pts = manhattan(g, from_pt, to_pt, fs, ts, eff_lane)
             pts = [(p[0], p[1] + content_y0) for p in pts]
         d = path_d(pts)
         eid = f"edge_{e['from']}_to_{e['to']}"

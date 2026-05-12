@@ -14,6 +14,9 @@ Checks:
                    (i.e. effectively meeting at the same point)
   7. BITWIDTH    - an arrow longer than BITWIDTH_MIN_ARROW_LEN with no nearby
                    text containing a digit (no bitwidth indicator at midpoint)
+  8. DIAGONAL    - an arrow segment that is neither horizontal nor vertical.
+                   The layout language is strictly orthogonal; diagonals are
+                   always a routing bug.
 
 Exit code = number of violations (0 = pass). Writes a structured report to stdout
 that the calling agent can feed back into the next generation pass.
@@ -628,6 +631,32 @@ def check_bitwidth_labels(arrows, texts):
     return violations
 
 
+def check_diagonal_arrows(arrows):
+    """Every arrow segment must be horizontal or vertical. A segment that moves
+    in both x and y is a diagonal — banned outright.
+
+    Tolerance of 0.5px absorbs sub-pixel float drift from upstream coord
+    computation without admitting visibly-diagonal segments."""
+    violations = []
+    seen = set()
+    for a in arrows:
+        if "legend" in a.id.lower():
+            continue
+        for (x1, y1), (x2, y2) in segments(a):
+            if abs(x1 - x2) > 0.5 and abs(y1 - y2) > 0.5:
+                if a.id in seen:
+                    break
+                seen.add(a.id)
+                violations.append(
+                    f"DIAGONAL: arrow '{a.id}' has a diagonal segment from "
+                    f"({x1:.0f},{y1:.0f}) to ({x2:.0f},{y2:.0f}). All wires "
+                    f"must be strictly horizontal or vertical; insert an "
+                    f"orthogonal bend."
+                )
+                break
+    return violations
+
+
 def check_stub_arrows(arrows, markers):
     violations = []
     for a in arrows:
@@ -660,6 +689,7 @@ def main():
     violations += check_text_overlap(blocks, arrows, texts)
     violations += check_port_separation(blocks, arrows)
     violations += check_bitwidth_labels(arrows, texts)
+    violations += check_diagonal_arrows(arrows)
 
     summary = (
         f"{len(blocks)} blocks, {len(arrows)} arrows, "

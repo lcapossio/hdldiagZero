@@ -284,6 +284,7 @@ def validate(spec):
                             f"[x, y] pairs (got {pts!r})"
                         )
                     else:
+                        well_formed = True
                         for j, p in enumerate(pts):
                             if not (
                                 isinstance(p, list)
@@ -295,6 +296,25 @@ def validate(spec):
                                     f"{prefix}.route.points[{j}]: must be "
                                     f"[x, y] with numeric coords (got {p!r})"
                                 )
+                                well_formed = False
+                        # Every consecutive pair must share x or y. Diagonal
+                        # wires are banned outright — the whole layout language
+                        # is orthogonal.
+                        if well_formed:
+                            for j in range(len(pts) - 1):
+                                x1, y1 = pts[j]
+                                x2, y2 = pts[j + 1]
+                                if (
+                                    abs(float(x1) - float(x2)) > 1e-6
+                                    and abs(float(y1) - float(y2)) > 1e-6
+                                ):
+                                    errors.append(
+                                        f"{prefix}.route.points[{j}..{j+1}]: "
+                                        f"diagonal segment from ({x1},{y1}) to "
+                                        f"({x2},{y2}). Consecutive points must "
+                                        f"share x or y; insert an intermediate "
+                                        f"orthogonal waypoint."
+                                    )
 
         label = e.get("label")
         if label is not None:

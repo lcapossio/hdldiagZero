@@ -318,10 +318,23 @@ def test_renderer_honors_explicit_route_points() -> None:
                 )
 
 
-def test_renderer_direct_mode_produces_single_segment() -> None:
-    """route.mode='direct' must produce a 2-point straight line between side
-    endpoints, not a Manhattan bend."""
+def _path_d_for(svg: str, edge_id: str):
     import re
+    m = re.search(rf'id="{re.escape(edge_id)}" d="([^"]+)"', svg)
+    return m.group(1) if m else None
+
+
+def _segments_from_d(d: str):
+    """Parse 'M x,y L x,y L x,y ...' into a list of ((x1,y1),(x2,y2)) segments."""
+    import re
+    nums = [float(n) for n in re.findall(r"-?\d+\.?\d*", d)]
+    pts = list(zip(nums[0::2], nums[1::2]))
+    return list(zip(pts, pts[1:]))
+
+
+def test_renderer_direct_mode_is_orthogonal() -> None:
+    """route.mode='direct' must never emit a diagonal segment, even between
+    blocks at different rows and columns."""
     with _tmpdir() as tmp:
         tmp = Path(tmp)
         spec = {
@@ -340,18 +353,65 @@ def test_renderer_direct_mode_produces_single_segment() -> None:
         spec_path.write_text(json.dumps(spec), encoding="utf-8")
         run([PY, VALIDATE_SPEC, str(spec_path)], label="direct-route-spec")
         run([PY, RENDER, str(spec_path), str(out)], label="direct-route-render")
+        run([PY, VALIDATE, str(out)], label="direct-route-validate")
         if out.is_file():
             svg = out.read_text(encoding="utf-8")
-            m = re.search(r'id="edge_a_to_b" d="([^"]+)"', svg)
-            if not m:
+            d = _path_d_for(svg, "edge_a_to_b")
+            if d is None:
                 FAILURES.append("[direct-route-render] could not find edge path")
             else:
-                d = m.group(1)
-                if d.count(" L ") != 1:
-                    FAILURES.append(
-                        "[direct-route-render] expected single-segment path "
-                        f"(one L), got: {d!r}"
-                    )
+                for (x1, y1), (x2, y2) in _segments_from_d(d):
+                    if abs(x1 - x2) > 0.5 and abs(y1 - y2) > 0.5:
+                        FAILURES.append(
+                            f"[direct-route-render] diagonal segment "
+                            f"({x1},{y1})->({x2},{y2}) in path: {d!r}"
+                        )
+                        break
+
+
+def test_spec_validator_rejects_diagonal_route_points() -> None:
+    """route.points must be axis-aligned pairwise; diagonals are banned."""
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        spec = {
+            "domains": {"d": {"color": "#42A5F5"}},
+            "blocks": [
+                {"id": "a", "domain": "d", "row": 0, "col": 0},
+                {"id": "b", "domain": "d", "row": 0, "col": 1},
+            ],
+            "edges": [
+                {"from": "a", "to": "b", "kind": "generic",
+                 "route": {"points": [[10, 20], [30, 40]]}},
+            ],
+        }
+        _write_and_check(tmp, "diag.json", spec, 1, "spec-route-diagonal")
+
+
+def test_validator_flags_diagonal_segment_in_svg() -> None:
+    """A hand-crafted SVG with a diagonal arrow must trigger DIAGONAL."""
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        svg = (
+            '<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200" '
+            'viewBox="0 0 400 200">\n'
+            '  <rect id="a" x="10"  y="10"  width="80" height="40" fill="#42A5F5" '
+            'stroke="#0D47A1"/>\n'
+            '  <rect id="b" x="300" y="140" width="80" height="40" fill="#42A5F5" '
+            'stroke="#0D47A1"/>\n'
+            '  <path id="diag" d="M 90,30 L 300,160" stroke="#000" '
+            'stroke-width="2" fill="none"/>\n'
+            '</svg>\n'
+        )
+        out = tmp / "diag.svg"
+        out.write_text(svg, encoding="utf-8")
+        # The arrow has no nearby text label so BITWIDTH also fires; total = 2.
+        proc = run([PY, VALIDATE, str(out)], expect_rc=2, label="validate-diagonal")
+        if "DIAGONAL" not in proc.stdout:
+            FAILURES.append(
+                f"[validate-diagonal] expected DIAGONAL in report, "
+                f"got: {proc.stdout.strip()!r}"
+            )
 
 
 def test_install() -> None:
@@ -396,7 +456,9 @@ def main() -> int:
     test_spec_validator_accepts_route_and_label()
     test_spec_validator_rejects_bad_route_label()
     test_renderer_honors_explicit_route_points()
-    test_renderer_direct_mode_produces_single_segment()
+    test_renderer_direct_mode_is_orthogonal()
+    test_spec_validator_rejects_diagonal_route_points()
+    test_validator_flags_diagonal_segment_in_svg()
     test_install()
 
     if FAILURES:

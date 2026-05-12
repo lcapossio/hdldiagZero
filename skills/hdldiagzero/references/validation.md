@@ -49,6 +49,12 @@ before calling the renderer.
 - `kind` must be one of `axi-mm`, `axi-lite`, `axi-stream`, `cdc`,
   `generic`.
 - `width` must be int or string when present (lists / null / objects fail).
+- `route.mode` (if set) is `"auto"`, `"direct"`, or `"orthogonal"`.
+- `route.points` (if set) is a list of at least two `[x, y]` pairs with numeric
+  coords. **Consecutive points must share x or y** — diagonal segments are
+  rejected; insert an orthogonal waypoint instead.
+- `label.dx` and `label.dy` are numeric; `label.segment` is int; `label.t` is
+  in `[0, 1]`.
 
 **Grid**
 - All keys are known (`cell_w`, `cell_h`, `gutter_x`, `gutter_y`, `margin`).
@@ -65,6 +71,7 @@ before calling the renderer.
 | `TEXT_ARROW` | An arrow passes through text that isn't its own edge label. |
 | `PORT`       | Two arrow endpoints on the same block within 12px.          |
 | `BITWIDTH`   | A long arrow has no nearby text label.                      |
+| `DIAGONAL`   | An arrow segment is neither horizontal nor vertical.        |
 
 ## Fix recipes
 
@@ -99,6 +106,12 @@ Almost always a hand-edited SVG, not the renderer. Re-render from the JSON.
 ### STUB / SPACING
 Almost never with the renderer. If they fire, it's a renderer bug — capture
 the JSON and the SVG and report.
+
+### DIAGONAL
+Either a hand-edited SVG or explicit `route.points` whose consecutive entries
+don't share an x or y coordinate. The renderer itself never emits diagonals.
+Re-render from the JSON, or insert an intermediate orthogonal waypoint
+(`[x1, y1] -> [x2, y1] -> [x2, y2]` instead of `[x1, y1] -> [x2, y2]`).
 
 ## When iteration doesn't converge
 

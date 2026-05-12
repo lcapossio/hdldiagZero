@@ -87,8 +87,8 @@ on one edge without disturbing the rest.
 
 | Field    | Type             | Default  | Description |
 |----------|------------------|----------|-------------|
-| `mode`   | string           | `"auto"` | `"auto"` keeps the standard Manhattan routing. `"direct"` draws a straight line between the auto-selected side endpoints. `"orthogonal"` is a synonym for `"auto"`. |
-| `points` | `[[x, y], ...]`  | omitted  | Explicit waypoints in **final SVG coordinates** (i.e. the same numbers you'd read off the rendered file). When provided, this *is* the path — the renderer skips both endpoint selection and Manhattan routing. The list must have at least two points. |
+| `mode`   | string           | `"auto"` | `"auto"` keeps the standard Manhattan routing with parallel-edge lane offsets. `"direct"` is Manhattan with **no** lane offset — collinear endpoints produce a single straight segment, non-collinear ones a single orthogonal bend. `"orthogonal"` is a synonym for `"auto"`. Diagonal output is impossible in every mode. |
+| `points` | `[[x, y], ...]`  | omitted  | Explicit waypoints in **final SVG coordinates** (i.e. the same numbers you'd read off the rendered file). When provided, this *is* the path — the renderer skips both endpoint selection and Manhattan routing. The list must have at least two points. **Consecutive points must share x or y**; diagonal segments are rejected at spec-validation time. To go from `(x1, y1)` to `(x2, y2)` insert an intermediate `(x2, y1)` or `(x1, y2)`. |
 
 Prefer `mode` over `points` when possible: absolute coords get stale when
 blocks move, while `mode: "direct"` survives layout edits. Use `points` only
