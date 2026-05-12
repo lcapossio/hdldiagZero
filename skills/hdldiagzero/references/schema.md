@@ -76,6 +76,39 @@ otherwise produce a broken SVG.
 | `to`    | string        | required | Block id (must exist in `blocks`). |
 | `kind`  | string        | required | One of `axi-mm`, `axi-lite`, `axi-stream`, `cdc`, `generic`. |
 | `width` | int \| string | optional | Bit width as int (rendered `<n>b`), or protocol / parameter as string. Long arrows without a label fail the BITWIDTH validator check. |
+| `route` | object        | optional | Per-edge routing override. See *edges[].route* below. |
+| `label` | object        | optional | Per-edge label placement override. See *edges[].label* below. |
+
+### edges[].route
+
+By default the renderer picks side endpoints and a single-bend Manhattan path
+with lane offsets to keep parallel edges apart. Use `route` to override that
+on one edge without disturbing the rest.
+
+| Field    | Type             | Default  | Description |
+|----------|------------------|----------|-------------|
+| `mode`   | string           | `"auto"` | `"auto"` keeps the standard Manhattan routing. `"direct"` draws a straight line between the auto-selected side endpoints. `"orthogonal"` is a synonym for `"auto"`. |
+| `points` | `[[x, y], ...]`  | omitted  | Explicit waypoints in **final SVG coordinates** (i.e. the same numbers you'd read off the rendered file). When provided, this *is* the path — the renderer skips both endpoint selection and Manhattan routing. The list must have at least two points. |
+
+Prefer `mode` over `points` when possible: absolute coords get stale when
+blocks move, while `mode: "direct"` survives layout edits. Use `points` only
+for an awkward wire where automatic routing collides with a neighbor.
+
+### edges[].label
+
+The renderer auto-places labels at the longest segment of the path. Use
+`label` to nudge a single label out of the way of an unrelated wire.
+
+| Field     | Type   | Default | Description |
+|-----------|--------|---------|-------------|
+| `dx`      | number | `0`     | Horizontal pixel offset added to the auto anchor. Negative moves left. |
+| `dy`      | number | `0`     | Vertical pixel offset added to the auto anchor. Negative moves up. |
+| `segment` | int    | omitted | When set, place the label on segment index *N* of the path (0 = first segment, -1 = last). Overrides the longest-segment heuristic. |
+| `t`       | number | `0.5`   | When `segment` is set, fractional position along that segment (0..1). |
+
+Setting any of `dx`/`dy`/`segment`/`t` also disables the auto-clamp that
+normally pulls the label back onto the endpoints' span — the assumption is
+that you know where you want the label and don't want it dragged back.
 
 ## kind catalog
 

@@ -21,12 +21,15 @@ from pathlib import Path
 
 VALID_KINDS = {"axi-mm", "axi-lite", "axi-stream", "cdc", "generic"}
 VALID_THEMES = {"light", "dark"}
+VALID_ROUTE_MODES = {"auto", "direct", "orthogonal"}
 GRID_FIELDS = {"cell_w", "cell_h", "gutter_x", "gutter_y", "margin"}
 DOMAIN_FIELDS = {"freq_mhz", "color", "border"}
 BLOCK_FIELDS = {
     "id", "label", "sublabel", "domain", "domain_b", "external", "row", "col",
 }
-EDGE_FIELDS = {"from", "to", "kind", "width"}
+EDGE_FIELDS = {"from", "to", "kind", "width", "route", "label"}
+ROUTE_FIELDS = {"mode", "points"}
+LABEL_FIELDS = {"dx", "dy", "segment", "t"}
 TOP_FIELDS = {"title", "top", "theme", "grid", "domains", "blocks", "edges"}
 
 _HEX_COLOR = re.compile(r"^#[0-9a-fA-F]{6}$")
@@ -260,6 +263,63 @@ def validate(spec):
                 f"{prefix}: 'width' must be int or string "
                 f"(got {type(width).__name__} = {width!r})"
             )
+
+        route = e.get("route")
+        if route is not None:
+            if not isinstance(route, dict):
+                errors.append(f"{prefix}: 'route' must be an object")
+            else:
+                _check_unknown_keys(route, ROUTE_FIELDS, f"{prefix}.route", errors)
+                mode = route.get("mode")
+                if mode is not None and mode not in VALID_ROUTE_MODES:
+                    errors.append(
+                        f"{prefix}.route: mode '{mode}' is not one of "
+                        f"{sorted(VALID_ROUTE_MODES)}"
+                    )
+                pts = route.get("points")
+                if pts is not None:
+                    if not isinstance(pts, list) or len(pts) < 2:
+                        errors.append(
+                            f"{prefix}.route.points: must be a list of at least 2 "
+                            f"[x, y] pairs (got {pts!r})"
+                        )
+                    else:
+                        for j, p in enumerate(pts):
+                            if not (
+                                isinstance(p, list)
+                                and len(p) == 2
+                                and _is_number(p[0])
+                                and _is_number(p[1])
+                            ):
+                                errors.append(
+                                    f"{prefix}.route.points[{j}]: must be "
+                                    f"[x, y] with numeric coords (got {p!r})"
+                                )
+
+        label = e.get("label")
+        if label is not None:
+            if not isinstance(label, dict):
+                errors.append(f"{prefix}: 'label' must be an object")
+            else:
+                _check_unknown_keys(label, LABEL_FIELDS, f"{prefix}.label", errors)
+                for f in ("dx", "dy"):
+                    if f in label and not _is_number(label[f]):
+                        errors.append(
+                            f"{prefix}.label.{f}: must be a number "
+                            f"(got {type(label[f]).__name__} = {label[f]!r})"
+                        )
+                if "segment" in label and not _is_int(label["segment"]):
+                    errors.append(
+                        f"{prefix}.label.segment: must be an int "
+                        f"(got {type(label['segment']).__name__} = {label['segment']!r})"
+                    )
+                if "t" in label:
+                    tv = label["t"]
+                    if not _is_number(tv) or not (0.0 <= float(tv) <= 1.0):
+                        errors.append(
+                            f"{prefix}.label.t: must be a number in [0, 1] "
+                            f"(got {tv!r})"
+                        )
 
     return errors
 

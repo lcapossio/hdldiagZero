@@ -236,6 +236,124 @@ def test_renderer_routes_same_row_reverse_edges_in_gutter() -> None:
                 FAILURES.append("[same-row-reverse-render] missing row-gutter lane segment")
 
 
+def test_spec_validator_accepts_route_and_label() -> None:
+    """Well-formed route/label objects must pass spec validation."""
+    with _tmpdir() as tmp:
+        good = Path(tmp) / "good_route_label.json"
+        good.write_text(
+            json.dumps({
+                "domains": {"d": {"color": "#42A5F5"}},
+                "blocks": [
+                    {"id": "a", "domain": "d", "row": 0, "col": 0},
+                    {"id": "b", "domain": "d", "row": 0, "col": 1},
+                ],
+                "edges": [
+                    {"from": "a", "to": "b", "kind": "generic",
+                     "route": {"mode": "direct"},
+                     "label": {"dx": -20, "dy": 10, "segment": 0, "t": 0.42}},
+                    {"from": "a", "to": "b", "kind": "generic",
+                     "route": {"points": [[10, 20], [30, 20], [30, 40]]}},
+                ],
+            }),
+            encoding="utf-8",
+        )
+        run([PY, VALIDATE_SPEC, str(good)], label="spec-route-label-pass")
+
+
+def test_spec_validator_rejects_bad_route_label() -> None:
+    """Malformed route/label objects must fail spec validation."""
+    cases = [
+        ({"route": {"mode": "diagonal"}}, "spec-route-bad-mode"),
+        ({"route": {"points": [[1, 2]]}}, "spec-route-too-few-points"),
+        ({"route": {"points": [[1, 2], [3, "x"]]}}, "spec-route-non-numeric"),
+        ({"route": {"unknown": 1}}, "spec-route-unknown-field"),
+        ({"label": {"dx": "10"}}, "spec-label-bad-dx"),
+        ({"label": {"segment": 1.5}}, "spec-label-bad-segment"),
+        ({"label": {"t": 1.5}}, "spec-label-t-out-of-range"),
+        ({"label": {"weird": 0}}, "spec-label-unknown-field"),
+    ]
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        for extra, label in cases:
+            spec = {
+                "domains": {"d": {"color": "#42A5F5"}},
+                "blocks": [
+                    {"id": "a", "domain": "d", "row": 0, "col": 0},
+                    {"id": "b", "domain": "d", "row": 0, "col": 1},
+                ],
+                "edges": [{"from": "a", "to": "b", "kind": "generic", **extra}],
+            }
+            _write_and_check(tmp, f"{label}.json", spec, 1, label)
+
+
+def test_renderer_honors_explicit_route_points() -> None:
+    """When route.points is set, the rendered <path> must use those exact coords."""
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        pts = [[123, 234], [123, 456], [567, 456]]
+        spec = {
+            "domains": {"d": {"color": "#42A5F5"}},
+            "blocks": [
+                {"id": "a", "domain": "d", "row": 0, "col": 0},
+                {"id": "b", "domain": "d", "row": 0, "col": 2},
+            ],
+            "edges": [
+                {"from": "a", "to": "b", "kind": "generic", "width": "bus",
+                 "route": {"points": pts},
+                 "label": {"dx": -20, "dy": 10}},
+            ],
+        }
+        spec_path = tmp / "explicit_route.json"
+        out = tmp / "explicit_route.svg"
+        spec_path.write_text(json.dumps(spec), encoding="utf-8")
+        run([PY, VALIDATE_SPEC, str(spec_path)], label="explicit-route-spec")
+        run([PY, RENDER, str(spec_path), str(out)], label="explicit-route-render")
+        if out.is_file():
+            svg = out.read_text(encoding="utf-8")
+            expected = "M 123.0,234.0 L 123.0,456.0 L 567.0,456.0"
+            if expected not in svg:
+                FAILURES.append(
+                    "[explicit-route-render] rendered <path> does not contain "
+                    f"the explicit waypoints: missing '{expected}'"
+                )
+
+
+def test_renderer_direct_mode_produces_single_segment() -> None:
+    """route.mode='direct' must produce a 2-point straight line between side
+    endpoints, not a Manhattan bend."""
+    import re
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        spec = {
+            "domains": {"d": {"color": "#42A5F5"}},
+            "blocks": [
+                {"id": "a", "domain": "d", "row": 0, "col": 0},
+                {"id": "b", "domain": "d", "row": 1, "col": 1},
+            ],
+            "edges": [
+                {"from": "a", "to": "b", "kind": "generic", "width": "x",
+                 "route": {"mode": "direct"}},
+            ],
+        }
+        spec_path = tmp / "direct.json"
+        out = tmp / "direct.svg"
+        spec_path.write_text(json.dumps(spec), encoding="utf-8")
+        run([PY, VALIDATE_SPEC, str(spec_path)], label="direct-route-spec")
+        run([PY, RENDER, str(spec_path), str(out)], label="direct-route-render")
+        if out.is_file():
+            svg = out.read_text(encoding="utf-8")
+            m = re.search(r'id="edge_a_to_b" d="([^"]+)"', svg)
+            if not m:
+                FAILURES.append("[direct-route-render] could not find edge path")
+            else:
+                d = m.group(1)
+                if d.count(" L ") != 1:
+                    FAILURES.append(
+                        "[direct-route-render] expected single-segment path "
+                        f"(one L), got: {d!r}"
+                    )
+
+
 def test_install() -> None:
     with _tmpdir() as tmp:
         dst = Path(tmp) / "skill-install"
@@ -275,6 +393,10 @@ def main() -> int:
     test_renderer_dark()
     test_renderer_omits_unknown_clock_frequency()
     test_renderer_routes_same_row_reverse_edges_in_gutter()
+    test_spec_validator_accepts_route_and_label()
+    test_spec_validator_rejects_bad_route_label()
+    test_renderer_honors_explicit_route_points()
+    test_renderer_direct_mode_produces_single_segment()
     test_install()
 
     if FAILURES:

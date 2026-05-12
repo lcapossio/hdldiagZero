@@ -273,21 +273,41 @@ def path_d(points):
     return " ".join(cmds)
 
 
-def label_anchor(points):
+def label_anchor(points, label_cfg=None):
     """Anchor the label at the path's bend region — that's the gutter between
     the two endpoint blocks, where there's clear space.
 
-    For larger labels, prefer the longest available segment instead of the bend
-    centroid so text stays clear of adjacent block bodies."""
-    best = (0, points[0], points[-1])
-    for a, b in zip(points, points[1:]):
-        length = abs(a[0] - b[0]) + abs(a[1] - b[1])
-        if length > best[0]:
-            best = (length, a, b)
-    _, a, b = best
-    x = (a[0] + b[0]) / 2
-    y = (a[1] + b[1]) / 2
+    `label_cfg` (optional) supports per-edge overrides:
+        segment: int  index into the path's segments (0..N-2). Negative wraps.
+        t:       0..1 fractional position along that segment.
+        dx, dy:  pixel offsets added to the chosen anchor.
+
+    Without `segment`/`t`, prefer the longest available segment so larger
+    labels stay clear of adjacent block bodies."""
+    cfg = label_cfg or {}
+    if "segment" in cfg or "t" in cfg:
+        segs = list(zip(points, points[1:]))
+        n_segs = len(segs)
+        seg_idx = int(cfg.get("segment", 0))
+        if seg_idx < 0:
+            seg_idx += n_segs
+        seg_idx = max(0, min(seg_idx, n_segs - 1))
+        a, b = segs[seg_idx]
+        t = float(cfg.get("t", 0.5))
+        x = a[0] + (b[0] - a[0]) * t
+        y = a[1] + (b[1] - a[1]) * t
+    else:
+        best = (0, points[0], points[-1])
+        for a, b in zip(points, points[1:]):
+            length = abs(a[0] - b[0]) + abs(a[1] - b[1])
+            if length > best[0]:
+                best = (length, a, b)
+        _, a, b = best
+        x = (a[0] + b[0]) / 2
+        y = (a[1] + b[1]) / 2
     orient = "h" if abs(a[0] - b[0]) >= abs(a[1] - b[1]) else "v"
+    x += float(cfg.get("dx", 0))
+    y += float(cfg.get("dy", 0))
     return x, y, orient
 
 
@@ -584,8 +604,20 @@ def render(spec_path, out_path, theme_override=None):
     for e, from_pt, to_pt, fs, ts, lane_offset in routed:
         kind = e.get("kind", "generic")
         attrs = kind_attrs.get(kind, kind_attrs["generic"])
-        pts = manhattan(g, from_pt, to_pt, fs, ts, lane_offset)
-        pts = [(p[0], p[1] + content_y0) for p in pts]
+        route_cfg = e.get("route") or {}
+        explicit_points = route_cfg.get("points")
+        route_mode = route_cfg.get("mode", "auto")
+        if explicit_points:
+            # Explicit waypoints are taken as final SVG coordinates: the user
+            # copied them off a previous render, so the title-bar offset is
+            # already baked in. Do NOT re-apply content_y0 here.
+            pts = [(float(p[0]), float(p[1])) for p in explicit_points]
+        else:
+            if route_mode == "direct":
+                pts = [from_pt, to_pt]
+            else:
+                pts = manhattan(g, from_pt, to_pt, fs, ts, lane_offset)
+            pts = [(p[0], p[1] + content_y0) for p in pts]
         d = path_d(pts)
         eid = f"edge_{e['from']}_to_{e['to']}"
         dash_attr = f' stroke-dasharray="{attrs["dash"]}"' if attrs.get("dash") else ""
@@ -596,7 +628,7 @@ def render(spec_path, out_path, theme_override=None):
         label = edge_label(e)
         if not label:
             continue
-        mx, my, orient = label_anchor(pts)
+        mx, my, orient = label_anchor(pts, e.get("label"))
         font = 15
         text_w = max(len(label) * font * 0.55, font * 0.6)
         text_h = font
@@ -605,11 +637,15 @@ def render(spec_path, out_path, theme_override=None):
         else:
             ly = my + 3
         lx = mx
-        clear_x = text_w / 2 + 6
-        low_x = min(from_pt[0], to_pt[0])
-        high_x = max(from_pt[0], to_pt[0])
-        if high_x - low_x > clear_x * 2:
-            lx = min(max(lx, low_x + clear_x), high_x - clear_x)
+        # Auto-clamp the label into the endpoints' horizontal span so it stays
+        # over the wire. Skip when the user has supplied an explicit override
+        # (dx/dy/segment/t) — they're deliberately placing it themselves.
+        if not e.get("label"):
+            clear_x = text_w / 2 + 6
+            low_x = min(from_pt[0], to_pt[0])
+            high_x = max(from_pt[0], to_pt[0])
+            if high_x - low_x > clear_x * 2:
+                lx = min(max(lx, low_x + clear_x), high_x - clear_x)
         anchor = "middle"
         box_x = lx - text_w / 2 - 3
         box_y = ly - text_h * 0.85 - 2
