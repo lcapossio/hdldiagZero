@@ -16,7 +16,7 @@
       "source": {
         "source": "git",
         "url": "https://github.com/lcapossio/hdldiagZero.git",
-        "ref": "main"
+        "ref": "v1.1.5"
       },
       "homepage": "https://github.com/lcapossio/hdldiagZero"
     }
