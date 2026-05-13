@@ -25,6 +25,7 @@ VALID_ROUTE_MODES = {"auto", "direct", "orthogonal"}
 GRID_FIELDS = {"cell_w", "cell_h", "gutter_x", "gutter_y", "margin"}
 DOMAIN_FIELDS = {"freq_mhz", "color", "border"}
 GROUP_FIELDS = {"label"}
+LANE_FIELDS = {"rows"}
 BLOCK_FIELDS = {
     "id", "label", "sublabel", "domain", "domain_b", "external", "row", "col",
     "group",
@@ -33,7 +34,8 @@ EDGE_FIELDS = {"from", "to", "kind", "width", "route", "label"}
 ROUTE_FIELDS = {"mode", "points"}
 LABEL_FIELDS = {"dx", "dy", "segment", "t"}
 TOP_FIELDS = {
-    "title", "top", "theme", "grid", "domains", "groups", "blocks", "edges",
+    "title", "top", "theme", "grid", "domains", "groups", "lanes", "blocks",
+    "edges",
 }
 
 _HEX_COLOR = re.compile(r"^#[0-9a-fA-F]{6}$")
@@ -142,6 +144,37 @@ def validate(spec):
                 errors.append(f"group '{name}': label must be a string")
     else:
         groups = {}
+
+    # lanes (optional). Full-width tinted backgrounds per clock domain. Each
+    # entry maps a declared domain key to the rows that domain's blocks occupy.
+    lanes = spec.get("lanes")
+    if lanes is not None and not isinstance(lanes, dict):
+        errors.append("lanes: must be an object (domain key -> {rows: [...]})")
+        lanes = {}
+    elif isinstance(lanes, dict):
+        for dname, info in lanes.items():
+            prefix_l = f"lane '{dname}'"
+            if not isinstance(dname, str) or not dname:
+                errors.append(f"lanes: key '{dname!r}' must be a non-empty string")
+                continue
+            if not isinstance(info, dict):
+                errors.append(f"{prefix_l}: must be an object")
+                continue
+            _check_unknown_keys(info, LANE_FIELDS, prefix_l, errors)
+            if isinstance(domains, dict) and dname not in domains:
+                errors.append(
+                    f"{prefix_l}: domain '{dname}' is not declared in 'domains'"
+                )
+            rows = info.get("rows")
+            if not isinstance(rows, list) or not rows:
+                errors.append(f"{prefix_l}: 'rows' must be a non-empty list of ints")
+            else:
+                for r in rows:
+                    if not _is_int(r) or r < 0:
+                        errors.append(
+                            f"{prefix_l}: 'rows' entries must be non-negative ints "
+                            f"(got {r!r}; booleans not accepted)"
+                        )
 
     # blocks
     blocks = spec.get("blocks")

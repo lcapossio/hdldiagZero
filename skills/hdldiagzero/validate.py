@@ -295,9 +295,10 @@ def parse_svg(path):
         if svg_w and svg_h and w >= svg_w * 0.95 and h >= svg_h * 0.95:
             continue
         bid = r.get("id", f"rect{len(blocks)}")
-        # Skip hierarchical group containers — they're decorative outlines,
-        # not real blocks, and edges are expected to cross their borders.
-        if bid.startswith("group_"):
+        # Skip hierarchical group containers, clock-domain lane backgrounds,
+        # and the legend card — they're decorative, not real blocks, and edges
+        # are expected to cross their borders / draw over their fills.
+        if bid.startswith(("group_", "lane_", "legend_")):
             continue
         b = Block(bid, bid, x, y, w, h)
         b.label = find_label_for_rect(root, r, b)
@@ -664,6 +665,8 @@ def check_diagonal_arrows(arrows):
 def check_stub_arrows(arrows, markers):
     violations = []
     for a in arrows:
+        if "legend" in a.id.lower():
+            continue
         if not a.marker_id or a.marker_id not in markers:
             continue
         m = markers[a.marker_id]

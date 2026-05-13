@@ -22,6 +22,22 @@ Dark mode:
   <img src="sample_output_dark.svg" alt="Sample hdldiagZero dark-mode SVG output">
 </a>
 
+### Clock-domain lanes
+
+Generated from [test_spec_lanes.json](test_spec_lanes.json) — an RHS-style acquisition pipeline where each clock domain gets its own tinted lane spanning the canvas:
+
+Light mode:
+
+<a href="sample_lanes.svg">
+  <img src="sample_lanes.svg" alt="Sample hdldiagZero lane-style SVG output">
+</a>
+
+Dark mode:
+
+<a href="sample_lanes_dark.svg">
+  <img src="sample_lanes_dark.svg" alt="Sample hdldiagZero lane-style dark-mode SVG output">
+</a>
+
 ### Hierarchy depth 2 — children + grandchildren
 
 Generated from [test_spec_depth2.json](test_spec_depth2.json) — a GbE MAC where the TX/RX paths are expanded into their internal descriptor → FIFO/CDC → MAC pipelines:
@@ -96,8 +112,10 @@ All runtime files live under [`skills/hdldiagzero/`](skills/hdldiagzero/) — th
 | [tests.py](tests.py) | Self-tests: validators, renderer light + dark, install dry-run. |
 | [test_spec.json](test_spec.json) | Clean renderer smoke-test spec (hierarchy depth 1 — top + direct children). |
 | [test_spec_depth2.json](test_spec_depth2.json) | Depth-2 sample spec (GbE MAC with TX/RX pipelines expanded). |
+| [test_spec_lanes.json](test_spec_lanes.json) | Clock-domain lanes sample (RHS-style acquisition pipeline). |
 | [sample_output.svg](sample_output.svg) / [sample_output_dark.svg](sample_output_dark.svg) | Tracked light/dark renderer output from `test_spec.json`. |
 | [sample_depth2.svg](sample_depth2.svg) / [sample_depth2_dark.svg](sample_depth2_dark.svg) | Tracked light/dark renderer output from `test_spec_depth2.json`. |
+| [sample_lanes.svg](sample_lanes.svg) / [sample_lanes_dark.svg](sample_lanes_dark.svg) | Tracked light/dark renderer output from `test_spec_lanes.json`. |
 | [not_sample_broken_validator_fixture.svg](not_sample_broken_validator_fixture.svg) | Intentionally broken validator regression fixture. It is supposed to fail with exactly 8 violations; it is not sample output. |
 | [pyproject.toml](pyproject.toml) | Ruff lint config. |
 | [.github/workflows/ci.yml](.github/workflows/ci.yml) | GitHub Actions: ruff + `python tests.py` on Linux / macOS / Windows × Python 3.10, 3.12. |

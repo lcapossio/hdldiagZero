@@ -180,6 +180,92 @@ def test_renderer_light() -> None:
             run([PY, VALIDATE, str(out)], label="validate-light-output")
 
 
+def test_lanes_render_and_skip_geometry() -> None:
+    """A spec with `lanes` must render full-width tinted bands behind blocks
+    with a `lane_*` id and pass geometry validation. Lane backgrounds must
+    NOT be treated as blocks (otherwise arrows between blocks would all be
+    flagged as crossings)."""
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        spec = {
+            "title": "lanes test",
+            "domains": {
+                "a": {"freq_mhz": 100, "color": "#42A5F5", "border": "#0D47A1"},
+                "b": {"freq_mhz": 200, "color": "#66BB6A", "border": "#1B5E20"},
+            },
+            "lanes": {"a": {"rows": [0]}, "b": {"rows": [1]}},
+            "blocks": [
+                {"id": "x", "domain": "a", "row": 0, "col": 0},
+                {"id": "y", "domain": "a", "row": 0, "col": 1},
+                {"id": "z", "domain": "b", "row": 1, "col": 0},
+                {"id": "w", "domain": "b", "row": 1, "col": 1},
+            ],
+            "edges": [
+                {"from": "x", "to": "y", "kind": "axi-mm", "width": 64},
+                {"from": "y", "to": "w", "kind": "cdc", "width": "cdc"},
+                {"from": "z", "to": "w", "kind": "axi-mm", "width": 64},
+            ],
+        }
+        spec_path = tmp / "lanes.json"
+        out = tmp / "lanes.svg"
+        spec_path.write_text(json.dumps(spec), encoding="utf-8")
+        run([PY, VALIDATE_SPEC, str(spec_path)], label="lanes-spec")
+        run([PY, RENDER, str(spec_path), str(out)], label="lanes-render")
+        if out.is_file():
+            svg = out.read_text(encoding="utf-8")
+            for needle in ('id="lane_a"', 'id="lane_b"', "a domain", "b domain"):
+                if needle not in svg:
+                    FAILURES.append(f"[lanes-render] missing '{needle}' in SVG")
+            run([PY, VALIDATE, str(out)], label="lanes-validate")
+
+
+def test_spec_validator_rejects_unknown_lane_domain() -> None:
+    """A lane keyed on a domain not declared in `domains` must fail."""
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        spec = {
+            "domains": {"a": {"color": "#42A5F5"}},
+            "lanes": {"ghost": {"rows": [0]}},
+            "blocks": [{"id": "x", "domain": "a", "row": 0, "col": 0}],
+            "edges": [],
+        }
+        _write_and_check(tmp, "bad_lane.json", spec, 1, "spec-unknown-lane-domain")
+
+
+def test_legend_card_renders_top_right() -> None:
+    """The new top-right legend card must appear in every output and the
+    `legend_card` rect must be excluded from the validator's block list."""
+    with _tmpdir() as tmp:
+        out = Path(tmp) / "smoke.svg"
+        run([PY, RENDER, "test_spec.json", str(out)], label="legend-render")
+        if out.is_file():
+            svg = out.read_text(encoding="utf-8")
+            for needle in (
+                'id="legend_card"',
+                "Clock domains",
+                "Connection styles",
+            ):
+                if needle not in svg:
+                    FAILURES.append(f"[legend-render] missing '{needle}' in SVG")
+            run([PY, VALIDATE, str(out)], label="legend-validate")
+
+
+def test_renderer_lanes_sample() -> None:
+    """The bundled lanes sample renders and validates clean in both themes."""
+    with _tmpdir() as tmp:
+        out_light = Path(tmp) / "lanes.svg"
+        out_dark = Path(tmp) / "lanes_dark.svg"
+        run([PY, VALIDATE_SPEC, "test_spec_lanes.json"], label="lanes-sample-spec")
+        run([PY, RENDER, "test_spec_lanes.json", str(out_light)],
+            label="lanes-sample-light")
+        if out_light.is_file():
+            run([PY, VALIDATE, str(out_light)], label="lanes-sample-light-validate")
+        run([PY, RENDER, "--theme", "dark", "test_spec_lanes.json", str(out_dark)],
+            label="lanes-sample-dark")
+        if out_dark.is_file():
+            run([PY, VALIDATE, str(out_dark)], label="lanes-sample-dark-validate")
+
+
 def test_groups_render_and_skip_geometry() -> None:
     """A spec with `groups` and `group` block fields must validate, render a
     dashed `group_*` rect with a header label, and the SVG geometry validator
@@ -519,6 +605,10 @@ def main() -> int:
     test_renderer_dark()
     test_groups_render_and_skip_geometry()
     test_spec_validator_rejects_unknown_group_ref()
+    test_lanes_render_and_skip_geometry()
+    test_spec_validator_rejects_unknown_lane_domain()
+    test_legend_card_renders_top_right()
+    test_renderer_lanes_sample()
     test_renderer_depth2_sample()
     test_renderer_omits_unknown_clock_frequency()
     test_renderer_routes_same_row_reverse_edges_in_gutter()

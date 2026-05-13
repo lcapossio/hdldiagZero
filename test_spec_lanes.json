@@ -1,0 +1,37 @@
+{
+  "title": "Acquisition pipeline with clock-domain lanes",
+  "top": "rhs_top",
+  "grid": {"gutter_x": 160, "gutter_y": 90},
+  "domains": {
+    "usb": {"freq_mhz": 100, "color": "#42A5F5", "border": "#0D47A1"},
+    "acq": {"freq_mhz": 84,  "color": "#66BB6A", "border": "#1B5E20"},
+    "ui":  {"freq_mhz": 100, "color": "#EF5350", "border": "#B71C1C"}
+  },
+  "lanes": {
+    "usb": {"rows": [0]},
+    "acq": {"rows": [1]},
+    "ui":  {"rows": [2]}
+  },
+  "blocks": [
+    {"id": "usb_phy",   "label": "USB 3.0 PHY",   "external": true,                 "row": 0, "col": 0, "sublabel": "host link"},
+    {"id": "ok_host",   "label": "okHost",        "domain": "usb",                  "row": 0, "col": 1, "sublabel": "FrontPanel bus"},
+    {"id": "ok_endpts", "label": "okEndpoints",   "domain": "usb",                  "row": 0, "col": 2, "sublabel": "WireIn / PipeOut"},
+    {"id": "fsm",       "label": "main_state",    "domain": "acq",                  "row": 1, "col": 1, "sublabel": "SPI cmd FSM"},
+    {"id": "adc_in",    "label": "ADC_input",     "domain": "acq",                  "row": 1, "col": 2, "sublabel": "RHS frame builder"},
+    {"id": "spi_dac",   "label": "DAC out",       "external": true,                 "row": 1, "col": 3, "sublabel": "AD5662 SPI"},
+    {"id": "fifo_cdc",  "label": "SDRAM_FIFO",    "domain": "acq", "domain_b": "ui","row": 2, "col": 2, "sublabel": "3-stage CDC"},
+    {"id": "ddr_fsm",   "label": "ddr3_state",    "domain": "ui",                   "row": 2, "col": 3, "sublabel": "rd/wr arbiter"},
+    {"id": "mig",       "label": "MIG 7-Series",  "external": true,                 "row": 2, "col": 4, "sublabel": "DDR3 controller"}
+  ],
+  "edges": [
+    {"from": "usb_phy",   "to": "ok_host",   "kind": "generic",    "width": "USB3"},
+    {"from": "ok_host",   "to": "ok_endpts", "kind": "generic",    "width": "host bus"},
+    {"from": "ok_endpts", "to": "fsm",       "kind": "cdc",        "width": "cfg"},
+    {"from": "fsm",       "to": "adc_in",    "kind": "axi-stream", "width": 16,
+                                                                   "label": {"dy": 10}},
+    {"from": "adc_in",    "to": "spi_dac",   "kind": "generic",    "width": "SPI"},
+    {"from": "adc_in",    "to": "fifo_cdc",  "kind": "axi-stream", "width": 16},
+    {"from": "fifo_cdc",  "to": "ddr_fsm",   "kind": "axi-mm",     "width": 32},
+    {"from": "ddr_fsm",   "to": "mig",       "kind": "axi-mm",     "width": 256}
+  ]
+}

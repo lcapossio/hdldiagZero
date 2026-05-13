@@ -45,6 +45,7 @@ otherwise produce a broken SVG.
 | `grid`    | object | optional  | Grid sizing overrides; see below. |
 | `domains` | object | required* | Map of domain key → `{freq_mhz, color, border}`. *Required unless every block is external. |
 | `groups`  | object | optional  | Map of group id → `{label}`. Used to draw dashed hierarchy containers around member blocks (depth > 1). |
+| `lanes`   | object | optional  | Map of domain id → `{rows: [...]}`. Draws full-width tinted bands per clock domain across the canvas. See *lanes* below. |
 | `blocks`  | array  | required  | One or more blocks. |
 | `edges`   | array  | required  | May be empty. |
 
@@ -69,6 +70,32 @@ otherwise produce a broken SVG.
 | `row`      | int     | required  | 0-indexed grid row. |
 | `col`      | int     | required  | 0-indexed grid column. One block per `(row, col)`. |
 | `group`    | string  | optional  | Group id from `groups`. Member blocks are wrapped in a dashed rectangle at render time. Use this when expanding a parent block at depth > 1 — the group represents the parent. |
+
+## lanes (optional)
+
+Clock-domain "swim lanes" — full-canvas-width tinted bands that visually
+group all blocks of one domain. Each entry maps a domain id (must exist in
+`domains`) to the list of grid rows that domain occupies. The renderer
+draws each lane as a low-opacity tint of the domain's color with a dashed
+border in the domain's accent color, and prints the domain header
+(`<name> domain  <freq> MHz`) at the top-left of the lane.
+
+| Field  | Type    | Required | Description |
+|--------|---------|----------|-------------|
+| `rows` | int[]   | required | Non-empty list of grid row indices the domain occupies. Rows do not need to be contiguous; the lane spans from `min(rows)` to `max(rows)`. |
+
+```json
+"lanes": {
+  "usb": {"rows": [0]},
+  "acq": {"rows": [1]},
+  "ui":  {"rows": [2]}
+}
+```
+
+Use lanes when your layout puts each clock domain on its own row(s) — a
+common pattern for designs where data flows top-to-bottom through CDC
+boundaries. Skip lanes if rows mix domains; the visual collision will look
+worse than the default per-block color.
 
 ## groups (optional)
 

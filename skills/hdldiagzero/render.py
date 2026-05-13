@@ -57,6 +57,24 @@ GROUP_PAD_X    = 16
 GROUP_PAD_TOP  = 28
 GROUP_PAD_BOT  = 14
 
+# Clock-domain lanes (full-width tinted bands behind blocks).
+LANE_DASH       = "6,4"
+LANE_PAD_TOP    = 30
+LANE_PAD_BOT    = 14
+LANE_SIDE_PAD   = 10
+LANE_FILL_OPACITY = 0.13
+
+# Top-right legend card.
+LEGEND_W           = 240
+LEGEND_PAD_OUTER   = 16
+LEGEND_PAD_INNER   = 14
+LEGEND_HEADER_H    = 22
+LEGEND_ROW_H       = 22
+LEGEND_SECTION_GAP = 8
+LEGEND_SWATCH_W    = 22
+LEGEND_SWATCH_H    = 14
+LEGEND_ARROW_W     = 42
+
 # Two themes. Switch via spec["theme"] = "dark" or --theme dark on the CLI.
 # Dark theme uses a deep-navy canvas with brightened accent colors for arrows
 # and labels so they read against the background.
@@ -74,6 +92,8 @@ THEMES = {
         "stream":       "#5C5C00",   # AXI-S accent
         "axil":         "#0D47A1",   # AXI-L accent
         "cdc":          "#6A1B9A",   # CDC accent
+        "legend_bg":    "#ffffff",
+        "legend_bord":  "#cbd5e1",
     },
     "dark": {
         "ink":          "#e2e8f0",
@@ -88,6 +108,8 @@ THEMES = {
         "stream":       "#d9f99d",
         "axil":         "#93c5fd",
         "cdc":          "#d8b4fe",
+        "legend_bg":    "#0f172a",
+        "legend_bord":  "#475569",
     },
 }
 
@@ -504,16 +526,28 @@ def render(spec_path, out_path, theme_override=None):
         if k in kind_attrs and k not in seen:
             seen.add(k)
             used_kinds.append(k)
+
+    # Legend card lives at the top-right of the canvas, so we reserve a column
+    # of width LEGEND_W + 2 * LEGEND_PAD_OUTER on the right side of the grid.
+    has_legend = bool(domains) or bool(used_kinds)
     legend_h = 0
-    if spec.get("domains"):
-        legend_h += 50          # one row of domain swatches
-    if used_kinds:
-        legend_h += 40          # one row of arrow samples
-    canvas_w = g["margin"] * 2 + (max_col + 1) * g["cell_w"] + max_col * g["gutter_x"]
-    canvas_h = (g["margin"] * 2 + (max_row + 1) * g["cell_h"] + max_row * g["gutter_y"]
-                + title_h + legend_h)
+    if has_legend:
+        if domains:
+            legend_h += LEGEND_HEADER_H + len(domains) * LEGEND_ROW_H
+        if used_kinds:
+            if domains:
+                legend_h += LEGEND_SECTION_GAP
+            legend_h += LEGEND_HEADER_H + len(used_kinds) * LEGEND_ROW_H
+        legend_h += LEGEND_PAD_INNER * 2
+
+    grid_w = g["margin"] * 2 + (max_col + 1) * g["cell_w"] + max_col * g["gutter_x"]
+    legend_area_w = (LEGEND_W + LEGEND_PAD_OUTER * 2) if has_legend else 0
+    canvas_w = grid_w + legend_area_w
+    grid_h = (g["margin"] * 2 + (max_row + 1) * g["cell_h"] + max_row * g["gutter_y"]
+              + title_h)
+    legend_min_h = (title_h + LEGEND_PAD_OUTER + legend_h + g["margin"]) if has_legend else 0
+    canvas_h = max(grid_h, legend_min_h)
     content_y0 = title_h
-    legend_y0 = canvas_h - legend_h + 10
 
     routed = route_all(spec, blocks_by_id, g)
 
@@ -560,9 +594,48 @@ def render(spec_path, out_path, theme_override=None):
                f'fill="{theme["bg"]}" id="_canvas_bg"/>')
 
     if spec.get("title"):
-        out.append(f'  <text x="{canvas_w/2:.1f}" y="24" text-anchor="middle" '
+        # Title is centered on the GRID portion of the canvas, not the full
+        # canvas — otherwise the legend column pulls the title visually off to
+        # the right and away from the diagram it describes.
+        out.append(f'  <text x="{grid_w/2:.1f}" y="24" text-anchor="middle" '
                    f'font-size="21" font-weight="600" fill="{theme["ink"]}" '
                    f'letter-spacing="0.2">{esc(spec["title"])}</text>')
+
+    # Clock-domain lanes (full-width tinted bands). Opt-in via top-level
+    # `lanes: {<domain>: {rows: [...]}}`. Drawn UNDER everything else; blocks
+    # and groups render on top.
+    spec_lanes = spec.get("lanes") or {}
+    if isinstance(spec_lanes, dict) and spec_lanes:
+        for dname, info in spec_lanes.items():
+            rows = info.get("rows") or []
+            if not rows:
+                continue
+            rmin = min(rows)
+            rmax = max(rows)
+            y_top = (g["margin"] + rmin * (g["cell_h"] + g["gutter_y"])
+                     + content_y0 - LANE_PAD_TOP)
+            y_bot = (g["margin"] + rmax * (g["cell_h"] + g["gutter_y"])
+                     + g["cell_h"] + content_y0 + LANE_PAD_BOT)
+            dinfo = domains.get(dname, {})
+            fill = dinfo.get("color", "#cccccc")
+            border = dinfo.get("border", theme["border"])
+            out.append(
+                f'  <rect id="lane_{esc(dname)}" '
+                f'x="{LANE_SIDE_PAD}" y="{y_top:.0f}" '
+                f'width="{canvas_w - 2 * LANE_SIDE_PAD}" '
+                f'height="{y_bot - y_top:.0f}" '
+                f'fill="{fill}" fill-opacity="{LANE_FILL_OPACITY}" '
+                f'stroke="{border}" stroke-width="1" '
+                f'stroke-dasharray="{LANE_DASH}" rx="4"/>'
+            )
+            freq = dinfo.get("freq_mhz")
+            hdr = (f'{dname} domain  {freq} MHz'
+                   if freq is not None else f'{dname} domain')
+            out.append(
+                f'  <text x="{LANE_SIDE_PAD + 14}" y="{y_top + 18:.0f}" '
+                f'font-size="13" font-weight="700" '
+                f'fill="{border}">{esc(hdr)}</text>'
+            )
 
     # Group containers (hierarchy depth > 1). Drawn BEFORE blocks so the dashed
     # outline tucks behind member blocks and only shows through the gutters.
@@ -699,53 +772,80 @@ def render(spec_path, out_path, theme_override=None):
         out.append(f'  <text x="{lx:.1f}" y="{ly:.1f}" text-anchor="{anchor}" '
                    f'font-size="{font}" fill="{theme["ink"]}">{esc(label)}</text>')
 
-    sy_legend = legend_y0
-    if domains:
-        out.append(f'  <text x="{g["margin"]}" y="{sy_legend:.0f}" '
-                   f'font-size="15" font-weight="600" fill="{theme["ink_soft"]}" '
-                   f'letter-spacing="0.5">CLOCK DOMAINS</text>')
-        sx = g["margin"]
-        sy = sy_legend + 14
-        for name, info in domains.items():
-            out.append(f'  <rect x="{sx}" y="{sy}" width="18" height="14" '
-                       f'fill="{info.get("color","#cccccc")}" '
-                       f'stroke="{info.get("border", theme["border"])}" '
-                       f'stroke-width="0.8" rx="3"/>')
-            freq = info.get("freq_mhz")
-            label_text = f'{name}  {freq} MHz' if freq is not None else name
-            out.append(f'  <text x="{sx + 24}" y="{sy + 11}" font-size="15" '
-                       f'fill="{theme["ink"]}">{esc(label_text)}</text>')
-            sx += 24 + len(label_text) * 10 + 22
-        sy_legend += 50
-
-    if used_kinds:
-        out.append(f'  <text x="{g["margin"]}" y="{sy_legend:.0f}" '
-                   f'font-size="15" font-weight="600" fill="{theme["ink_soft"]}" '
-                   f'letter-spacing="0.5">CONNECTION STYLES</text>')
-        descriptions = {
-            "axi-mm":     "AXI-MM data bus",
-            "axi-lite":   "AXI4-Lite control",
-            "axi-stream": "AXI-Stream",
-            "cdc":        "CDC traversal (re-clocked)",
-            "generic":    "Generic / discrete",
-        }
-        sx = g["margin"]
-        sy = sy_legend + 14
-        sample_w = 36
-        for k in used_kinds:
-            attrs = kind_attrs[k]
-            dash = (f' stroke-dasharray="{attrs["dash"]}"'
-                    if attrs.get("dash") else "")
-            out.append(f'  <path id="legend-arrow-{esc(k)}" '
-                       f'd="M {sx},{sy + 7} L {sx + sample_w},{sy + 7}" '
-                       f'stroke="{attrs["stroke"]}" '
-                       f'stroke-width="{attrs["stroke_width"]}" fill="none" '
-                       f'marker-end="url(#{attrs["marker"]})"{dash}/>')
-            text_x = sx + sample_w + 10
-            txt = descriptions.get(k, k)
-            out.append(f'  <text x="{text_x}" y="{sy + 11}" font-size="15" '
-                       f'fill="{theme["ink"]}">{esc(txt)}</text>')
-            sx = text_x + len(txt) * 10 + 22
+    if has_legend:
+        lx = canvas_w - LEGEND_W - LEGEND_PAD_OUTER
+        ly = title_h + LEGEND_PAD_OUTER
+        out.append(
+            f'  <rect id="legend_card" x="{lx}" y="{ly}" '
+            f'width="{LEGEND_W}" height="{legend_h}" '
+            f'fill="{theme["legend_bg"]}" stroke="{theme["legend_bord"]}" '
+            f'stroke-width="1" rx="6"/>'
+        )
+        cur_y = ly + LEGEND_PAD_INNER
+        if domains:
+            out.append(
+                f'  <text x="{lx + LEGEND_W / 2:.0f}" '
+                f'y="{cur_y + 14:.0f}" text-anchor="middle" font-size="13" '
+                f'font-weight="700" fill="{theme["ink"]}" '
+                f'letter-spacing="0.4">Clock domains</text>'
+            )
+            cur_y += LEGEND_HEADER_H
+            for name, info in domains.items():
+                sw_x = lx + LEGEND_PAD_INNER
+                sw_y = cur_y + (LEGEND_ROW_H - LEGEND_SWATCH_H) / 2
+                out.append(
+                    f'  <rect x="{sw_x}" y="{sw_y:.0f}" '
+                    f'width="{LEGEND_SWATCH_W}" height="{LEGEND_SWATCH_H}" '
+                    f'fill="{info.get("color", "#cccccc")}" '
+                    f'stroke="{info.get("border", theme["border"])}" '
+                    f'stroke-width="1.2" rx="2"/>'
+                )
+                freq = info.get("freq_mhz")
+                txt = f'{name}  {freq} MHz' if freq is not None else name
+                out.append(
+                    f'  <text x="{sw_x + LEGEND_SWATCH_W + 10}" '
+                    f'y="{cur_y + LEGEND_ROW_H / 2 + 5:.0f}" font-size="13" '
+                    f'fill="{theme["ink"]}">{esc(txt)}</text>'
+                )
+                cur_y += LEGEND_ROW_H
+        if used_kinds:
+            if domains:
+                cur_y += LEGEND_SECTION_GAP
+            out.append(
+                f'  <text x="{lx + LEGEND_W / 2:.0f}" '
+                f'y="{cur_y + 14:.0f}" text-anchor="middle" font-size="13" '
+                f'font-weight="700" fill="{theme["ink"]}" '
+                f'letter-spacing="0.4">Connection styles</text>'
+            )
+            cur_y += LEGEND_HEADER_H
+            descriptions = {
+                "axi-mm":     "AXI-MM data bus",
+                "axi-lite":   "AXI4-Lite control",
+                "axi-stream": "AXI-Stream",
+                "cdc":        "CDC traversal (re-clocked)",
+                "generic":    "Generic / discrete",
+            }
+            for k in used_kinds:
+                attrs = kind_attrs[k]
+                dash = (f' stroke-dasharray="{attrs["dash"]}"'
+                        if attrs.get("dash") else "")
+                arrow_x = lx + LEGEND_PAD_INNER
+                arrow_y = cur_y + LEGEND_ROW_H / 2
+                out.append(
+                    f'  <path id="legend-arrow-{esc(k)}" '
+                    f'd="M {arrow_x},{arrow_y:.1f} '
+                    f'L {arrow_x + LEGEND_ARROW_W},{arrow_y:.1f}" '
+                    f'stroke="{attrs["stroke"]}" '
+                    f'stroke-width="{attrs["stroke_width"]}" fill="none" '
+                    f'marker-end="url(#{attrs["marker"]})"{dash}/>'
+                )
+                out.append(
+                    f'  <text x="{arrow_x + LEGEND_ARROW_W + 10}" '
+                    f'y="{cur_y + LEGEND_ROW_H / 2 + 5:.0f}" font-size="13" '
+                    f'fill="{theme["ink"]}">'
+                    f'{esc(descriptions.get(k, k))}</text>'
+                )
+                cur_y += LEGEND_ROW_H
 
     out.append('</svg>')
 

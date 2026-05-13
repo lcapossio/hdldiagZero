@@ -45,6 +45,8 @@ before calling the renderer.
 - `group` (if set on a block) must reference a key in the top-level `groups`
   map. Each declared group must be an object whose only allowed field is
   `label` (string).
+- `lanes` (if present) is an object keyed on declared domain ids. Each entry
+  must be `{rows: [int, ...]}` with a non-empty list of non-negative ints.
 
 **Edges**
 - `from` and `to` must reference existing block ids.
