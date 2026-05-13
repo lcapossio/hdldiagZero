@@ -24,13 +24,17 @@ VALID_THEMES = {"light", "dark"}
 VALID_ROUTE_MODES = {"auto", "direct", "orthogonal"}
 GRID_FIELDS = {"cell_w", "cell_h", "gutter_x", "gutter_y", "margin"}
 DOMAIN_FIELDS = {"freq_mhz", "color", "border"}
+GROUP_FIELDS = {"label"}
 BLOCK_FIELDS = {
     "id", "label", "sublabel", "domain", "domain_b", "external", "row", "col",
+    "group",
 }
 EDGE_FIELDS = {"from", "to", "kind", "width", "route", "label"}
 ROUTE_FIELDS = {"mode", "points"}
 LABEL_FIELDS = {"dx", "dy", "segment", "t"}
-TOP_FIELDS = {"title", "top", "theme", "grid", "domains", "blocks", "edges"}
+TOP_FIELDS = {
+    "title", "top", "theme", "grid", "domains", "groups", "blocks", "edges",
+}
 
 _HEX_COLOR = re.compile(r"^#[0-9a-fA-F]{6}$")
 
@@ -119,6 +123,26 @@ def validate(spec):
                     f"(got {info['border']!r})"
                 )
 
+    # groups (optional). Hierarchical containers drawn as dashed rectangles
+    # around member blocks at depth > 1.
+    groups = spec.get("groups")
+    if groups is not None and not isinstance(groups, dict):
+        errors.append("groups: must be an object (key -> {label})")
+        groups = {}
+    elif isinstance(groups, dict):
+        for name, info in groups.items():
+            if not isinstance(name, str) or not name:
+                errors.append(f"groups: key '{name!r}' must be a non-empty string")
+                continue
+            if not isinstance(info, dict):
+                errors.append(f"group '{name}': must be an object")
+                continue
+            _check_unknown_keys(info, GROUP_FIELDS, f"group '{name}'", errors)
+            if "label" in info and not isinstance(info["label"], str):
+                errors.append(f"group '{name}': label must be a string")
+    else:
+        groups = {}
+
     # blocks
     blocks = spec.get("blocks")
     if not isinstance(blocks, list) or not blocks:
@@ -168,6 +192,15 @@ def validate(spec):
                 )
             else:
                 cells[cell] = bid
+
+        group_ref = b.get("group")
+        if group_ref is not None:
+            if not isinstance(group_ref, str):
+                errors.append(f"{prefix}: 'group' must be a string")
+            elif not groups or group_ref not in groups:
+                errors.append(
+                    f"{prefix}: group '{group_ref}' is not declared in 'groups'"
+                )
 
         ext_raw = b.get("external")
         external = False

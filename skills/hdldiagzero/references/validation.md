@@ -42,6 +42,9 @@ before calling the renderer.
   in `domains`.
 - `domain_b` (if set on a non-external block) must reference a declared
   domain that is **different** from `domain`.
+- `group` (if set on a block) must reference a key in the top-level `groups`
+  map. Each declared group must be an object whose only allowed field is
+  `label` (string).
 
 **Edges**
 - `from` and `to` must reference existing block ids.

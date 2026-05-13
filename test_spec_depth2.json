@@ -7,17 +7,21 @@
     "sys":  {"freq_mhz": 200, "color": "#66BB6A", "border": "#1B5E20"},
     "gmii": {"freq_mhz": 125, "color": "#FFA726", "border": "#E65100"}
   },
+  "groups": {
+    "tx_path": {"label": "tx_path"},
+    "rx_path": {"label": "rx_path"}
+  },
   "blocks": [
     {"id": "host",         "label": "Host (PCIe)",   "external": true,                    "row": 0, "col": 0, "sublabel": "PCIe Gen3 x4"},
     {"id": "csr_regs",     "label": "CSR Regs",      "domain": "sys",                     "row": 0, "col": 1},
     {"id": "mdio_master",  "label": "MDIO Master",   "domain": "sys",                     "row": 0, "col": 2},
     {"id": "gmii_phy",     "label": "GbE PHY",       "external": true,                    "row": 0, "col": 4, "sublabel": "RGMII + MDIO"},
-    {"id": "tx_desc",      "label": "TX Descriptor", "domain": "sys",                     "row": 1, "col": 1, "sublabel": "shared DMA AXI bus"},
-    {"id": "tx_fifo",      "label": "TX FIFO",       "domain": "sys", "domain_b": "gmii", "row": 1, "col": 2, "sublabel": "sys / gmii CDC"},
-    {"id": "tx_mac",       "label": "TX MAC",        "domain": "gmii",                    "row": 1, "col": 3, "sublabel": "framer + CRC"},
-    {"id": "rx_desc",      "label": "RX Descriptor", "domain": "sys",                     "row": 2, "col": 1, "sublabel": "ring + DMA"},
-    {"id": "rx_fifo",      "label": "RX FIFO",       "domain": "gmii", "domain_b": "sys", "row": 2, "col": 2, "sublabel": "gmii / sys CDC"},
-    {"id": "rx_mac",       "label": "RX MAC",        "domain": "gmii",                    "row": 2, "col": 3, "sublabel": "parser + CRC chk"}
+    {"id": "tx_desc",      "label": "TX Descriptor", "domain": "sys",                     "row": 1, "col": 1, "sublabel": "shared DMA AXI bus", "group": "tx_path"},
+    {"id": "tx_fifo",      "label": "TX FIFO",       "domain": "sys", "domain_b": "gmii", "row": 1, "col": 2, "sublabel": "sys / gmii CDC",     "group": "tx_path"},
+    {"id": "tx_mac",       "label": "TX MAC",        "domain": "gmii",                    "row": 1, "col": 3, "sublabel": "framer + CRC",      "group": "tx_path"},
+    {"id": "rx_desc",      "label": "RX Descriptor", "domain": "sys",                     "row": 2, "col": 1, "sublabel": "ring + DMA",        "group": "rx_path"},
+    {"id": "rx_fifo",      "label": "RX FIFO",       "domain": "gmii", "domain_b": "sys", "row": 2, "col": 2, "sublabel": "gmii / sys CDC",    "group": "rx_path"},
+    {"id": "rx_mac",       "label": "RX MAC",        "domain": "gmii",                    "row": 2, "col": 3, "sublabel": "parser + CRC chk",  "group": "rx_path"}
   ],
   "edges": [
     {"from": "host",        "to": "csr_regs",    "kind": "axi-lite",   "width": 32},

@@ -180,6 +180,55 @@ def test_renderer_light() -> None:
             run([PY, VALIDATE, str(out)], label="validate-light-output")
 
 
+def test_groups_render_and_skip_geometry() -> None:
+    """A spec with `groups` and `group` block fields must validate, render a
+    dashed `group_*` rect with a header label, and the SVG geometry validator
+    must NOT treat the dashed container as a crossing-eligible block."""
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        spec = {
+            "title": "groups test",
+            "groups": {"core": {"label": "core pipeline"}},
+            "domains": {"d": {"color": "#42A5F5"}},
+            "blocks": [
+                {"id": "a", "domain": "d", "row": 0, "col": 0, "group": "core"},
+                {"id": "b", "domain": "d", "row": 0, "col": 1, "group": "core"},
+                {"id": "c", "domain": "d", "row": 0, "col": 2, "group": "core"},
+            ],
+            "edges": [
+                {"from": "a", "to": "b", "kind": "axi-mm", "width": 64},
+                {"from": "b", "to": "c", "kind": "axi-mm", "width": 64},
+            ],
+        }
+        spec_path = tmp / "groups.json"
+        out = tmp / "groups.svg"
+        spec_path.write_text(json.dumps(spec), encoding="utf-8")
+        run([PY, VALIDATE_SPEC, str(spec_path)], label="groups-spec")
+        run([PY, RENDER, str(spec_path), str(out)], label="groups-render")
+        if out.is_file():
+            svg = out.read_text(encoding="utf-8")
+            if 'id="group_core"' not in svg:
+                FAILURES.append("[groups-render] missing group_core rect in SVG")
+            if "CORE PIPELINE" not in svg:
+                FAILURES.append("[groups-render] missing CORE PIPELINE label in SVG")
+            if 'stroke-dasharray="6,4"' not in svg:
+                FAILURES.append("[groups-render] group rect not dashed")
+            run([PY, VALIDATE, str(out)], label="groups-validate")
+
+
+def test_spec_validator_rejects_unknown_group_ref() -> None:
+    """A block referencing a group that isn't declared must fail spec validation."""
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        spec = {
+            "groups": {"a": {}},
+            "domains": {"d": {"color": "#42A5F5"}},
+            "blocks": [{"id": "x", "domain": "d", "row": 0, "col": 0, "group": "ghost"}],
+            "edges": [],
+        }
+        _write_and_check(tmp, "bad_group.json", spec, 1, "spec-unknown-group-ref")
+
+
 def test_renderer_depth2_sample() -> None:
     """The depth-2 sample spec must validate, render, and pass geometry checks
     in both themes. It's wider/taller than the depth-1 sample and exercises
@@ -468,6 +517,8 @@ def main() -> int:
     test_spec_validator_strict_types()
     test_renderer_light()
     test_renderer_dark()
+    test_groups_render_and_skip_geometry()
+    test_spec_validator_rejects_unknown_group_ref()
     test_renderer_depth2_sample()
     test_renderer_omits_unknown_clock_frequency()
     test_renderer_routes_same_row_reverse_edges_in_gutter()

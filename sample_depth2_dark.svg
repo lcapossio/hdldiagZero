@@ -12,6 +12,10 @@
   </defs>
   <rect width="1732" height="602" fill="#000000" id="_canvas_bg"/>
   <text x="866.0" y="24" text-anchor="middle" font-size="21" font-weight="600" fill="#e2e8f0" letter-spacing="0.2">GbE MAC pipeline (hierarchy depth 2)</text>
+  <rect id="group_tx_path" x="380" y="198" width="972" height="132" fill="none" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="6,4" rx="10"/>
+  <text x="394" y="216" font-size="14" font-weight="700" letter-spacing="1.2" fill="#9ca3af">TX_PATH</text>
+  <rect id="group_rx_path" x="380" y="358" width="972" height="132" fill="none" stroke="#9ca3af" stroke-width="1.2" stroke-dasharray="6,4" rx="10"/>
+  <text x="394" y="376" font-size="14" font-weight="700" letter-spacing="1.2" fill="#9ca3af">RX_PATH</text>
   <rect id="host" x="36" y="66" width="220" height="90" fill="#374151" stroke="#9ca3af" stroke-width="1.4" rx="8"/>
   <text x="146" y="109" text-anchor="middle" font-size="18" font-weight="600" fill="#e2e8f0">Host (PCIe)</text>
   <text x="146" y="125" text-anchor="middle" font-size="15" font-style="italic" fill="#e2e8f0" opacity="0.85">PCIe Gen3 x4</text>

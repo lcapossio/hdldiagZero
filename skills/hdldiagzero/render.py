@@ -52,6 +52,10 @@ FONT_STACK = ("ui-sans-serif, system-ui, -apple-system, 'Segoe UI', "
 
 BLOCK_RX    = 8
 CDC_DASH    = "6,3"
+GROUP_DASH  = "6,4"
+GROUP_PAD_X    = 16
+GROUP_PAD_TOP  = 28
+GROUP_PAD_BOT  = 14
 
 # Two themes. Switch via spec["theme"] = "dark" or --theme dark on the CLI.
 # Dark theme uses a deep-navy canvas with brightened accent colors for arrows
@@ -559,6 +563,44 @@ def render(spec_path, out_path, theme_override=None):
         out.append(f'  <text x="{canvas_w/2:.1f}" y="24" text-anchor="middle" '
                    f'font-size="21" font-weight="600" fill="{theme["ink"]}" '
                    f'letter-spacing="0.2">{esc(spec["title"])}</text>')
+
+    # Group containers (hierarchy depth > 1). Drawn BEFORE blocks so the dashed
+    # outline tucks behind member blocks and only shows through the gutters.
+    # IDs prefixed `group_` so the geometry validator can skip them — they're
+    # not real blocks and arrows are allowed to cross their borders.
+    groups = spec.get("groups", {})
+    if isinstance(groups, dict) and groups:
+        members_by_group = {gid: [] for gid in groups}
+        for b in blocks:
+            gid = b.get("group")
+            if gid in members_by_group:
+                members_by_group[gid].append(b)
+        for gid, members in members_by_group.items():
+            if not members:
+                continue
+            xs1, ys1, xs2, ys2 = [], [], [], []
+            for b in members:
+                bx, by, bw, bh = block_rect(g, b)
+                xs1.append(bx)
+                ys1.append(by + content_y0)
+                xs2.append(bx + bw)
+                ys2.append(by + content_y0 + bh)
+            gx1 = min(xs1) - GROUP_PAD_X
+            gy1 = min(ys1) - GROUP_PAD_TOP
+            gx2 = max(xs2) + GROUP_PAD_X
+            gy2 = max(ys2) + GROUP_PAD_BOT
+            out.append(
+                f'  <rect id="group_{esc(gid)}" x="{gx1:.0f}" y="{gy1:.0f}" '
+                f'width="{gx2 - gx1:.0f}" height="{gy2 - gy1:.0f}" fill="none" '
+                f'stroke="{theme["ink_soft"]}" stroke-width="1.2" '
+                f'stroke-dasharray="{GROUP_DASH}" rx="10"/>'
+            )
+            glabel = groups[gid].get("label") or gid
+            out.append(
+                f'  <text x="{gx1 + 14:.0f}" y="{gy1 + 18:.0f}" font-size="14" '
+                f'font-weight="700" letter-spacing="1.2" '
+                f'fill="{theme["ink_soft"]}">{esc(glabel.upper())}</text>'
+            )
 
     for b in blocks:
         x, y, w, h = block_rect(g, b)

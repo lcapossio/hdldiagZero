@@ -295,6 +295,10 @@ def parse_svg(path):
         if svg_w and svg_h and w >= svg_w * 0.95 and h >= svg_h * 0.95:
             continue
         bid = r.get("id", f"rect{len(blocks)}")
+        # Skip hierarchical group containers — they're decorative outlines,
+        # not real blocks, and edges are expected to cross their borders.
+        if bid.startswith("group_"):
+            continue
         b = Block(bid, bid, x, y, w, h)
         b.label = find_label_for_rect(root, r, b)
         blocks.append(b)

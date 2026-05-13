@@ -47,6 +47,8 @@ The only legitimate clarifying question is "which file is top?" when there are m
 
 2. **Walk hierarchy to depth N** (default 1). Skip vendor IP, soft processors, BRAM/FIFO leaves, JTAG, debug-only IP, and clock primitives at every depth. Patterns and exclusion lists: `references/extraction.md` §2 and §4.
 
+   When `N > 1`, every expanded parent module **must** appear in the top-level `groups` map and every child block must reference it via `group: "<parent_id>"`. The renderer draws a dashed container around each group so the hierarchy is visually obvious; without `groups`, a depth-2 spec just looks like a flat depth-1 diagram with more blocks.
+
 3. **Map each block to a clock domain.** Look at clk_* ports, MMCM/PLL outputs, transceiver-derived clocks, and CDC primitives. Use `domain_b` (a CDC block, rendered with a split fill) **only when CDC is the block's architectural purpose** — async FIFO at a pipeline boundary, a packer that bridges video/TX clocks, an explicit clock-crossing bridge. A block primarily in one domain that happens to contain a single status synchronizer keeps its primary `domain` and routes the crossing as an explicit `cdc` edge. Detail: `references/extraction.md` §3.
 
    If a clock frequency is not found in source files or build constraints, omit `freq_mhz` for that domain. Do not invent a value and do not write placeholder text like `? MHz`.

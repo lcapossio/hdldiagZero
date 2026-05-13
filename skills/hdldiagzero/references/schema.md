@@ -44,6 +44,7 @@ otherwise produce a broken SVG.
 | `theme`   | string | optional  | `"light"` (default) or `"dark"`. |
 | `grid`    | object | optional  | Grid sizing overrides; see below. |
 | `domains` | object | required* | Map of domain key → `{freq_mhz, color, border}`. *Required unless every block is external. |
+| `groups`  | object | optional  | Map of group id → `{label}`. Used to draw dashed hierarchy containers around member blocks (depth > 1). |
 | `blocks`  | array  | required  | One or more blocks. |
 | `edges`   | array  | required  | May be empty. |
 
@@ -67,6 +68,27 @@ otherwise produce a broken SVG.
 | `external` | boolean | optional  | True = off-chip / off-die. Neutral grey fill, ignores `domain`. |
 | `row`      | int     | required  | 0-indexed grid row. |
 | `col`      | int     | required  | 0-indexed grid column. One block per `(row, col)`. |
+| `group`    | string  | optional  | Group id from `groups`. Member blocks are wrapped in a dashed rectangle at render time. Use this when expanding a parent block at depth > 1 — the group represents the parent. |
+
+## groups (optional)
+
+Hierarchical containers. When extracting an HDL design at depth > 1, the
+expanded children of a parent block should reference a group whose id is the
+parent module name. The renderer computes the bounding box of all member
+blocks and draws a dashed rectangle around them with the group label as an
+uppercase header. Arrows freely cross group borders; the validator excludes
+`group_*` rects from its block list.
+
+| Field   | Type   | Required | Description |
+|---------|--------|----------|-------------|
+| `label` | string | optional | Header text rendered at the top-left of the dashed rect. Defaults to the group id when omitted. |
+
+```json
+"groups": {
+  "tx_path": {"label": "tx_path"},
+  "rx_path": {"label": "rx_path"}
+}
+```
 
 ## edges[]
 
