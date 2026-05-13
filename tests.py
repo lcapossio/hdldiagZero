@@ -219,6 +219,66 @@ def test_lanes_render_and_skip_geometry() -> None:
             run([PY, VALIDATE, str(out)], label="lanes-validate")
 
 
+def test_lanes_column_orientation() -> None:
+    """Lanes can be vertical (`cols`) instead of horizontal (`rows`). The
+    rendered SVG must still include the lane rect + header, and geometry
+    must validate."""
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        spec = {
+            "title": "vertical lanes test",
+            "domains": {
+                "host": {"freq_mhz": 100, "color": "#42A5F5", "border": "#0D47A1"},
+                "phy":  {"freq_mhz": 125, "color": "#FFA726", "border": "#E65100"},
+            },
+            "lanes": {
+                "host": {"cols": [0]},
+                "phy":  {"cols": [1]},
+            },
+            "blocks": [
+                {"id": "h0", "domain": "host", "row": 0, "col": 0},
+                {"id": "h1", "domain": "host", "row": 1, "col": 0},
+                {"id": "p0", "domain": "phy",  "row": 0, "col": 1},
+                {"id": "p1", "domain": "phy",  "row": 1, "col": 1},
+            ],
+            "edges": [
+                {"from": "h0", "to": "p0", "kind": "axi-mm", "width": 32},
+                {"from": "h1", "to": "p1", "kind": "axi-mm", "width": 32},
+            ],
+        }
+        spec_path = tmp / "vlanes.json"
+        out = tmp / "vlanes.svg"
+        spec_path.write_text(json.dumps(spec), encoding="utf-8")
+        run([PY, VALIDATE_SPEC, str(spec_path)], label="vlanes-spec")
+        run([PY, RENDER, str(spec_path), str(out)], label="vlanes-render")
+        if out.is_file():
+            svg = out.read_text(encoding="utf-8")
+            for needle in ('id="lane_host"', 'id="lane_phy"', "host domain", "phy domain"):
+                if needle not in svg:
+                    FAILURES.append(f"[vlanes-render] missing '{needle}' in SVG")
+            run([PY, VALIDATE, str(out)], label="vlanes-validate")
+
+
+def test_spec_validator_rejects_lane_with_both_rows_and_cols() -> None:
+    """A lane entry with both rows and cols (or neither) must fail validation."""
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        spec_both = {
+            "domains": {"a": {"color": "#42A5F5"}},
+            "lanes": {"a": {"rows": [0], "cols": [0]}},
+            "blocks": [{"id": "x", "domain": "a", "row": 0, "col": 0}],
+            "edges": [],
+        }
+        _write_and_check(tmp, "lane_both.json", spec_both, 1, "spec-lane-both-axes")
+        spec_neither = {
+            "domains": {"a": {"color": "#42A5F5"}},
+            "lanes": {"a": {}},
+            "blocks": [{"id": "x", "domain": "a", "row": 0, "col": 0}],
+            "edges": [],
+        }
+        _write_and_check(tmp, "lane_neither.json", spec_neither, 1, "spec-lane-neither-axis")
+
+
 def test_spec_validator_rejects_unknown_lane_domain() -> None:
     """A lane keyed on a domain not declared in `domains` must fail."""
     with _tmpdir() as tmp:
@@ -606,6 +666,8 @@ def main() -> int:
     test_groups_render_and_skip_geometry()
     test_spec_validator_rejects_unknown_group_ref()
     test_lanes_render_and_skip_geometry()
+    test_lanes_column_orientation()
+    test_spec_validator_rejects_lane_with_both_rows_and_cols()
     test_spec_validator_rejects_unknown_lane_domain()
     test_legend_card_renders_top_right()
     test_renderer_lanes_sample()

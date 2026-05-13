@@ -601,29 +601,43 @@ def render(spec_path, out_path, theme_override=None):
                    f'font-size="21" font-weight="600" fill="{theme["ink"]}" '
                    f'letter-spacing="0.2">{esc(spec["title"])}</text>')
 
-    # Clock-domain lanes (full-width tinted bands). Opt-in via top-level
-    # `lanes: {<domain>: {rows: [...]}}`. Drawn UNDER everything else; blocks
-    # and groups render on top.
+    # Clock-domain lanes (tinted bands). Opt-in via top-level
+    # `lanes: {<domain>: {rows: [...]}}` for horizontal bands or `{cols: [...]}`
+    # for vertical bands. Drawn UNDER everything else; blocks and groups
+    # render on top.
     spec_lanes = spec.get("lanes") or {}
     if isinstance(spec_lanes, dict) and spec_lanes:
         for dname, info in spec_lanes.items():
             rows = info.get("rows") or []
-            if not rows:
+            cols = info.get("cols") or []
+            if rows:
+                rmin, rmax = min(rows), max(rows)
+                x1 = LANE_SIDE_PAD
+                x2 = canvas_w - LANE_SIDE_PAD
+                y1 = (g["margin"] + rmin * (g["cell_h"] + g["gutter_y"])
+                      + content_y0 - LANE_PAD_TOP)
+                y2 = (g["margin"] + rmax * (g["cell_h"] + g["gutter_y"])
+                      + g["cell_h"] + content_y0 + LANE_PAD_BOT)
+            elif cols:
+                cmin, cmax = min(cols), max(cols)
+                # Vertical band: header goes at the top of the column where
+                # the lane begins, reading horizontally. Side padding mirrors
+                # the row case (LANE_PAD_TOP becomes left padding).
+                x1 = (g["margin"] + cmin * (g["cell_w"] + g["gutter_x"])
+                      - LANE_PAD_TOP)
+                x2 = (g["margin"] + cmax * (g["cell_w"] + g["gutter_x"])
+                      + g["cell_w"] + LANE_PAD_BOT)
+                y1 = content_y0 + LANE_SIDE_PAD
+                y2 = canvas_h - LANE_SIDE_PAD
+            else:
                 continue
-            rmin = min(rows)
-            rmax = max(rows)
-            y_top = (g["margin"] + rmin * (g["cell_h"] + g["gutter_y"])
-                     + content_y0 - LANE_PAD_TOP)
-            y_bot = (g["margin"] + rmax * (g["cell_h"] + g["gutter_y"])
-                     + g["cell_h"] + content_y0 + LANE_PAD_BOT)
             dinfo = domains.get(dname, {})
             fill = dinfo.get("color", "#cccccc")
             border = dinfo.get("border", theme["border"])
             out.append(
                 f'  <rect id="lane_{esc(dname)}" '
-                f'x="{LANE_SIDE_PAD}" y="{y_top:.0f}" '
-                f'width="{canvas_w - 2 * LANE_SIDE_PAD}" '
-                f'height="{y_bot - y_top:.0f}" '
+                f'x="{x1:.0f}" y="{y1:.0f}" '
+                f'width="{x2 - x1:.0f}" height="{y2 - y1:.0f}" '
                 f'fill="{fill}" fill-opacity="{LANE_FILL_OPACITY}" '
                 f'stroke="{border}" stroke-width="1" '
                 f'stroke-dasharray="{LANE_DASH}" rx="4"/>'
@@ -632,7 +646,7 @@ def render(spec_path, out_path, theme_override=None):
             hdr = (f'{dname} domain  {freq} MHz'
                    if freq is not None else f'{dname} domain')
             out.append(
-                f'  <text x="{LANE_SIDE_PAD + 14}" y="{y_top + 18:.0f}" '
+                f'  <text x="{x1 + 14:.0f}" y="{y1 + 18:.0f}" '
                 f'font-size="13" font-weight="700" '
                 f'fill="{border}">{esc(hdr)}</text>'
             )

@@ -73,16 +73,26 @@ otherwise produce a broken SVG.
 
 ## lanes (optional)
 
-Clock-domain "swim lanes" — full-canvas-width tinted bands that visually
-group all blocks of one domain. Each entry maps a domain id (must exist in
-`domains`) to the list of grid rows that domain occupies. The renderer
-draws each lane as a low-opacity tint of the domain's color with a dashed
-border in the domain's accent color, and prints the domain header
+Clock-domain "swim lanes" — tinted bands that visually group all blocks of
+one domain. Each entry maps a domain id (must exist in `domains`) to the
+grid rows or columns that domain occupies. The renderer draws each lane as
+a low-opacity tint of the domain's color with a dashed border in the
+domain's accent color, and prints the domain header
 (`<name> domain  <freq> MHz`) at the top-left of the lane.
 
-| Field  | Type    | Required | Description |
-|--------|---------|----------|-------------|
-| `rows` | int[]   | required | Non-empty list of grid row indices the domain occupies. Rows do not need to be contiguous; the lane spans from `min(rows)` to `max(rows)`. |
+A lane is either **horizontal** (`rows`, spanning full canvas width — pick
+this when data flows top-to-bottom through CDCs) or **vertical** (`cols`,
+spanning full canvas height — pick this when data flows left-to-right and
+each domain owns a column).
+
+| Field  | Type   | Required | Description |
+|--------|--------|----------|-------------|
+| `rows` | int[]  | one of   | Non-empty list of grid row indices the domain occupies. Spans `min(rows)`..`max(rows)`. |
+| `cols` | int[]  | one of   | Non-empty list of grid col indices the domain occupies. Spans `min(cols)`..`max(cols)`. |
+
+Each lane entry **must specify exactly one** of `rows` or `cols`. Different
+lanes in the same spec can choose different orientations, but they should
+not overlap — the renderer doesn't prevent visual collisions.
 
 ```json
 "lanes": {
@@ -92,10 +102,16 @@ border in the domain's accent color, and prints the domain header
 }
 ```
 
-Use lanes when your layout puts each clock domain on its own row(s) — a
-common pattern for designs where data flows top-to-bottom through CDC
-boundaries. Skip lanes if rows mix domains; the visual collision will look
-worse than the default per-block color.
+```json
+"lanes": {
+  "host": {"cols": [0]},
+  "sys":  {"cols": [1, 2]},
+  "phy":  {"cols": [3]}
+}
+```
+
+Skip lanes if your rows / columns mix domains; the visual collision will
+look worse than the default per-block color.
 
 ## groups (optional)
 

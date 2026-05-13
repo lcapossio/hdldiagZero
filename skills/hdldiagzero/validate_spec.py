@@ -25,7 +25,7 @@ VALID_ROUTE_MODES = {"auto", "direct", "orthogonal"}
 GRID_FIELDS = {"cell_w", "cell_h", "gutter_x", "gutter_y", "margin"}
 DOMAIN_FIELDS = {"freq_mhz", "color", "border"}
 GROUP_FIELDS = {"label"}
-LANE_FIELDS = {"rows"}
+LANE_FIELDS = {"rows", "cols"}
 BLOCK_FIELDS = {
     "id", "label", "sublabel", "domain", "domain_b", "external", "row", "col",
     "group",
@@ -166,15 +166,26 @@ def validate(spec):
                     f"{prefix_l}: domain '{dname}' is not declared in 'domains'"
                 )
             rows = info.get("rows")
-            if not isinstance(rows, list) or not rows:
-                errors.append(f"{prefix_l}: 'rows' must be a non-empty list of ints")
-            else:
-                for r in rows:
-                    if not _is_int(r) or r < 0:
-                        errors.append(
-                            f"{prefix_l}: 'rows' entries must be non-negative ints "
-                            f"(got {r!r}; booleans not accepted)"
-                        )
+            cols = info.get("cols")
+            if (rows is None) == (cols is None):
+                errors.append(
+                    f"{prefix_l}: must specify exactly one of 'rows' or 'cols' "
+                    f"(rows -> horizontal band, cols -> vertical band)"
+                )
+            for axis, vals in (("rows", rows), ("cols", cols)):
+                if vals is None:
+                    continue
+                if not isinstance(vals, list) or not vals:
+                    errors.append(
+                        f"{prefix_l}: '{axis}' must be a non-empty list of ints"
+                    )
+                else:
+                    for v in vals:
+                        if not _is_int(v) or v < 0:
+                            errors.append(
+                                f"{prefix_l}: '{axis}' entries must be "
+                                f"non-negative ints (got {v!r}; booleans not accepted)"
+                            )
 
     # blocks
     blocks = spec.get("blocks")

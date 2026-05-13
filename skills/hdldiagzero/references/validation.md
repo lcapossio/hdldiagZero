@@ -46,7 +46,8 @@ before calling the renderer.
   map. Each declared group must be an object whose only allowed field is
   `label` (string).
 - `lanes` (if present) is an object keyed on declared domain ids. Each entry
-  must be `{rows: [int, ...]}` with a non-empty list of non-negative ints.
+  must specify **exactly one** of `rows` or `cols`, with a non-empty list of
+  non-negative ints. `rows` → horizontal band, `cols` → vertical band.
 
 **Edges**
 - `from` and `to` must reference existing block ids.
