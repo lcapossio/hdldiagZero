@@ -180,6 +180,23 @@ def test_renderer_light() -> None:
             run([PY, VALIDATE, str(out)], label="validate-light-output")
 
 
+def test_renderer_depth2_sample() -> None:
+    """The depth-2 sample spec must validate, render, and pass geometry checks
+    in both themes. It's wider/taller than the depth-1 sample and exercises
+    cross-row routing under tight lane assignment."""
+    with _tmpdir() as tmp:
+        out_light = Path(tmp) / "depth2.svg"
+        out_dark = Path(tmp) / "depth2_dark.svg"
+        run([PY, VALIDATE_SPEC, "test_spec_depth2.json"], label="depth2-spec")
+        run([PY, RENDER, "test_spec_depth2.json", str(out_light)], label="depth2-light")
+        if out_light.is_file():
+            run([PY, VALIDATE, str(out_light)], label="depth2-light-validate")
+        run([PY, RENDER, "--theme", "dark", "test_spec_depth2.json", str(out_dark)],
+            label="depth2-dark")
+        if out_dark.is_file():
+            run([PY, VALIDATE, str(out_dark)], label="depth2-dark-validate")
+
+
 def test_renderer_dark() -> None:
     with _tmpdir() as tmp:
         out = Path(tmp) / "out_dark.svg"
@@ -451,6 +468,7 @@ def main() -> int:
     test_spec_validator_strict_types()
     test_renderer_light()
     test_renderer_dark()
+    test_renderer_depth2_sample()
     test_renderer_omits_unknown_clock_frequency()
     test_renderer_routes_same_row_reverse_edges_in_gutter()
     test_spec_validator_accepts_route_and_label()

@@ -1,0 +1,34 @@
+{
+  "title": "GbE MAC pipeline (hierarchy depth 2)",
+  "top": "eth_mac_top",
+  "grid": {"gutter_x": 140},
+  "domains": {
+    "pcie": {"freq_mhz": 250, "color": "#42A5F5", "border": "#0D47A1"},
+    "sys":  {"freq_mhz": 200, "color": "#66BB6A", "border": "#1B5E20"},
+    "gmii": {"freq_mhz": 125, "color": "#FFA726", "border": "#E65100"}
+  },
+  "blocks": [
+    {"id": "host",         "label": "Host (PCIe)",   "external": true,                    "row": 0, "col": 0, "sublabel": "PCIe Gen3 x4"},
+    {"id": "csr_regs",     "label": "CSR Regs",      "domain": "sys",                     "row": 0, "col": 1},
+    {"id": "mdio_master",  "label": "MDIO Master",   "domain": "sys",                     "row": 0, "col": 2},
+    {"id": "gmii_phy",     "label": "GbE PHY",       "external": true,                    "row": 0, "col": 4, "sublabel": "RGMII + MDIO"},
+    {"id": "tx_desc",      "label": "TX Descriptor", "domain": "sys",                     "row": 1, "col": 1, "sublabel": "shared DMA AXI bus"},
+    {"id": "tx_fifo",      "label": "TX FIFO",       "domain": "sys", "domain_b": "gmii", "row": 1, "col": 2, "sublabel": "sys / gmii CDC"},
+    {"id": "tx_mac",       "label": "TX MAC",        "domain": "gmii",                    "row": 1, "col": 3, "sublabel": "framer + CRC"},
+    {"id": "rx_desc",      "label": "RX Descriptor", "domain": "sys",                     "row": 2, "col": 1, "sublabel": "ring + DMA"},
+    {"id": "rx_fifo",      "label": "RX FIFO",       "domain": "gmii", "domain_b": "sys", "row": 2, "col": 2, "sublabel": "gmii / sys CDC"},
+    {"id": "rx_mac",       "label": "RX MAC",        "domain": "gmii",                    "row": 2, "col": 3, "sublabel": "parser + CRC chk"}
+  ],
+  "edges": [
+    {"from": "host",        "to": "csr_regs",    "kind": "axi-lite",   "width": 32},
+    {"from": "host",        "to": "tx_desc",     "kind": "axi-mm",     "width": 64},
+    {"from": "csr_regs",    "to": "mdio_master", "kind": "generic",    "width": "MDIO cmd"},
+    {"from": "mdio_master", "to": "gmii_phy",    "kind": "generic",    "width": "MDIO"},
+    {"from": "tx_desc",     "to": "tx_fifo",     "kind": "axi-stream", "width": 64},
+    {"from": "tx_fifo",     "to": "tx_mac",      "kind": "axi-stream", "width": 64},
+    {"from": "tx_mac",      "to": "gmii_phy",    "kind": "generic",    "width": "TXD 8b"},
+    {"from": "gmii_phy",    "to": "rx_mac",      "kind": "generic",    "width": "RXD 8b"},
+    {"from": "rx_mac",      "to": "rx_fifo",     "kind": "axi-stream", "width": 64},
+    {"from": "rx_fifo",     "to": "rx_desc",     "kind": "axi-stream", "width": 64}
+  ]
+}

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1732" height="602" viewBox="0 0 1732 602" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" style="background:#f8fafc">
+  <defs>
+    <marker id="ah-solid" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#1f2937"/></marker>
+    <marker id="ah-thin" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#374151"/></marker>
+    <marker id="ah-stream" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#5C5C00"/></marker>
+    <marker id="ah-axil" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#0D47A1"/></marker>
+    <marker id="ah-cdc" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#6A1B9A"/></marker>
+    <marker id="ah-open" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0.5,0.5 L0.5,5.5 L8,3 z" fill="#f8fafc" stroke="#1f2937" stroke-width="1"/></marker>
+    <linearGradient id="grad-tx_fifo" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="50%" stop-color="#66BB6A"/><stop offset="50%" stop-color="#FFA726"/></linearGradient>
+    <linearGradient id="grad-rx_fifo" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="50%" stop-color="#FFA726"/><stop offset="50%" stop-color="#66BB6A"/></linearGradient>
+  </defs>
+  <rect width="1732" height="602" fill="#f8fafc" id="_canvas_bg"/>
+  <text x="866.0" y="24" text-anchor="middle" font-size="21" font-weight="600" fill="#1f2937" letter-spacing="0.2">GbE MAC pipeline (hierarchy depth 2)</text>
+  <rect id="host" x="36" y="66" width="220" height="90" fill="#E0E0E0" stroke="#424242" stroke-width="1.4" rx="8"/>
+  <text x="146" y="109" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">Host (PCIe)</text>
+  <text x="146" y="125" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">PCIe Gen3 x4</text>
+  <rect id="csr_regs" x="396" y="66" width="220" height="90" fill="#66BB6A" stroke="#1B5E20" stroke-width="1.4" rx="8"/>
+  <text x="506" y="116" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">CSR Regs</text>
+  <rect id="mdio_master" x="756" y="66" width="220" height="90" fill="#66BB6A" stroke="#1B5E20" stroke-width="1.4" rx="8"/>
+  <text x="866" y="116" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">MDIO Master</text>
+  <rect id="gmii_phy" x="1476" y="66" width="220" height="90" fill="#E0E0E0" stroke="#424242" stroke-width="1.4" rx="8"/>
+  <text x="1586" y="109" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">GbE PHY</text>
+  <text x="1586" y="125" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">RGMII + MDIO</text>
+  <rect id="tx_desc" x="396" y="226" width="220" height="90" fill="#66BB6A" stroke="#1B5E20" stroke-width="1.4" rx="8"/>
+  <text x="506" y="269" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">TX Descriptor</text>
+  <text x="506" y="285" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">shared DMA AXI bus</text>
+  <rect id="tx_fifo" x="756" y="226" width="220" height="90" fill="url(#grad-tx_fifo)" stroke="#1f2937" stroke-width="1.4" rx="8"/>
+  <text x="866" y="269" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">TX FIFO</text>
+  <text x="866" y="285" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">sys / gmii CDC</text>
+  <rect id="tx_mac" x="1116" y="226" width="220" height="90" fill="#FFA726" stroke="#E65100" stroke-width="1.4" rx="8"/>
+  <text x="1226" y="269" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">TX MAC</text>
+  <text x="1226" y="285" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">framer + CRC</text>
+  <rect id="rx_desc" x="396" y="386" width="220" height="90" fill="#66BB6A" stroke="#1B5E20" stroke-width="1.4" rx="8"/>
+  <text x="506" y="429" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">RX Descriptor</text>
+  <text x="506" y="445" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">ring + DMA</text>
+  <rect id="rx_fifo" x="756" y="386" width="220" height="90" fill="url(#grad-rx_fifo)" stroke="#1f2937" stroke-width="1.4" rx="8"/>
+  <text x="866" y="429" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">RX FIFO</text>
+  <text x="866" y="445" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">gmii / sys CDC</text>
+  <rect id="rx_mac" x="1116" y="386" width="220" height="90" fill="#FFA726" stroke="#E65100" stroke-width="1.4" rx="8"/>
+  <text x="1226" y="429" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">RX MAC</text>
+  <text x="1226" y="445" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">parser + CRC chk</text>
+  <path id="edge_host_to_csr_regs" d="M 256.0,96.0 L 296.0,96.0 L 296.0,111.0 L 396.0,111.0" stroke="#0D47A1" stroke-width="2.5" fill="none" marker-end="url(#ah-axil)"/>
+  <rect x="305.9" y="92.2" width="80.2" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
+  <text x="346.0" y="107.0" text-anchor="middle" font-size="15" fill="#1f2937">AXI-L 32b</text>
+  <path id="edge_host_to_tx_desc" d="M 256.0,126.0 L 356.0,126.0 L 356.0,271.0 L 396.0,271.0" stroke="#1f2937" stroke-width="2.5" fill="none" marker-end="url(#ah-solid)"/>
+  <rect x="304.5" y="186.8" width="88.5" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
+  <text x="348.8" y="201.5" text-anchor="middle" font-size="15" fill="#1f2937">AXI-MM 64b</text>
+  <path id="edge_csr_regs_to_mdio_master" d="M 616.0,111.0 L 686.0,111.0 L 756.0,111.0" stroke="#374151" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
+  <rect x="619.0" y="92.2" width="72.0" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
+  <text x="655.0" y="107.0" text-anchor="middle" font-size="15" fill="#1f2937">MDIO cmd</text>
+  <path id="edge_mdio_master_to_gmii_phy" d="M 976.0,111.0 L 1226.0,111.0 L 1226.0,88.5 L 1476.0,88.5" stroke="#374151" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
+  <rect x="1081.5" y="92.2" width="39.0" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
+  <text x="1101.0" y="107.0" text-anchor="middle" font-size="15" fill="#1f2937">MDIO</text>
+  <path id="edge_tx_desc_to_tx_fifo" d="M 616.0,271.0 L 686.0,271.0 L 756.0,271.0" stroke="#5C5C00" stroke-width="2.2" fill="none" marker-end="url(#ah-stream)"/>
+  <rect x="619.0" y="252.2" width="80.2" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
+  <text x="659.1" y="267.0" text-anchor="middle" font-size="15" fill="#1f2937">AXI-S 64b</text>
+  <path id="edge_tx_fifo_to_tx_mac" d="M 976.0,271.0 L 1046.0,271.0 L 1116.0,271.0" stroke="#5C5C00" stroke-width="2.2" fill="none" marker-end="url(#ah-stream)"/>
+  <rect x="979.0" y="252.2" width="80.2" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
+  <text x="1019.1" y="267.0" text-anchor="middle" font-size="15" fill="#1f2937">AXI-S 64b</text>
+  <path id="edge_tx_mac_to_gmii_phy" d="M 1336.0,271.0 L 1376.0,271.0 L 1376.0,111.0 L 1476.0,111.0" stroke="#374151" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
+  <rect x="1348.2" y="179.2" width="55.5" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
+  <text x="1376.0" y="194.0" text-anchor="middle" font-size="15" fill="#1f2937">TXD 8b</text>
+  <path id="edge_gmii_phy_to_rx_mac" d="M 1476.0,133.5 L 1436.0,133.5 L 1436.0,431.0 L 1336.0,431.0" stroke="#374151" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
+  <rect x="1408.2" y="270.5" width="55.5" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
+  <text x="1436.0" y="285.2" text-anchor="middle" font-size="15" fill="#1f2937">RXD 8b</text>
+  <path id="edge_rx_mac_to_rx_fifo" d="M 1116.0,431.0 L 1046.0,431.0 L 976.0,431.0" stroke="#5C5C00" stroke-width="2.2" fill="none" marker-end="url(#ah-stream)"/>
+  <rect x="1032.8" y="412.2" width="80.2" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
+  <text x="1072.9" y="427.0" text-anchor="middle" font-size="15" fill="#1f2937">AXI-S 64b</text>
+  <path id="edge_rx_fifo_to_rx_desc" d="M 756.0,431.0 L 686.0,431.0 L 616.0,431.0" stroke="#5C5C00" stroke-width="2.2" fill="none" marker-end="url(#ah-stream)"/>
+  <rect x="672.8" y="412.2" width="80.2" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
+  <text x="712.9" y="427.0" text-anchor="middle" font-size="15" fill="#1f2937">AXI-S 64b</text>
+  <text x="36" y="522" font-size="15" font-weight="600" fill="#374151" letter-spacing="0.5">CLOCK DOMAINS</text>
+  <rect x="36" y="536" width="18" height="14" fill="#42A5F5" stroke="#0D47A1" stroke-width="0.8" rx="3"/>
+  <text x="60" y="547" font-size="15" fill="#1f2937">pcie  250 MHz</text>
+  <rect x="212" y="536" width="18" height="14" fill="#66BB6A" stroke="#1B5E20" stroke-width="0.8" rx="3"/>
+  <text x="236" y="547" font-size="15" fill="#1f2937">sys  200 MHz</text>
+  <rect x="378" y="536" width="18" height="14" fill="#FFA726" stroke="#E65100" stroke-width="0.8" rx="3"/>
+  <text x="402" y="547" font-size="15" fill="#1f2937">gmii  125 MHz</text>
+  <text x="36" y="572" font-size="15" font-weight="600" fill="#374151" letter-spacing="0.5">CONNECTION STYLES</text>
+  <path id="legend-arrow-axi-lite" d="M 36,593 L 72,593" stroke="#0D47A1" stroke-width="2.5" fill="none" marker-end="url(#ah-axil)"/>
+  <text x="82" y="597" font-size="15" fill="#1f2937">AXI4-Lite control</text>
+  <path id="legend-arrow-axi-mm" d="M 274,593 L 310,593" stroke="#1f2937" stroke-width="2.5" fill="none" marker-end="url(#ah-solid)"/>
+  <text x="320" y="597" font-size="15" fill="#1f2937">AXI-MM data bus</text>
+  <path id="legend-arrow-generic" d="M 492,593 L 528,593" stroke="#374151" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
+  <text x="538" y="597" font-size="15" fill="#1f2937">Generic / discrete</text>
+  <path id="legend-arrow-axi-stream" d="M 740,593 L 776,593" stroke="#5C5C00" stroke-width="2.2" fill="none" marker-end="url(#ah-stream)"/>
+  <text x="786" y="597" font-size="15" fill="#1f2937">AXI-Stream</text>
+</svg>

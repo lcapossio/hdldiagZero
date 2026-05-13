@@ -6,6 +6,8 @@ The skill is packaged as a Claude Code plugin: the runtime files live under [ski
 
 ## Sample Output
 
+### Hierarchy depth 1 — top + direct children
+
 Generated from [test_spec.json](test_spec.json):
 
 Light mode:
@@ -18,6 +20,22 @@ Dark mode:
 
 <a href="sample_output_dark.svg">
   <img src="sample_output_dark.svg" alt="Sample hdldiagZero dark-mode SVG output">
+</a>
+
+### Hierarchy depth 2 — children + grandchildren
+
+Generated from [test_spec_depth2.json](test_spec_depth2.json) — a GbE MAC where the TX/RX paths are expanded into their internal descriptor → FIFO/CDC → MAC pipelines:
+
+Light mode:
+
+<a href="sample_depth2.svg">
+  <img src="sample_depth2.svg" alt="Sample hdldiagZero depth-2 SVG output">
+</a>
+
+Dark mode:
+
+<a href="sample_depth2_dark.svg">
+  <img src="sample_depth2_dark.svg" alt="Sample hdldiagZero depth-2 dark-mode SVG output">
 </a>
 
 ## Index
@@ -76,8 +94,10 @@ All runtime files live under [`skills/hdldiagzero/`](skills/hdldiagzero/) — th
 | --- | --- |
 | [install.py](install.py) | Direct (non-marketplace) install path: copies `skills/hdldiagzero/` into a destination dir. Claude defaults; override with `--dst` for Codex / custom runtimes. |
 | [tests.py](tests.py) | Self-tests: validators, renderer light + dark, install dry-run. |
-| [test_spec.json](test_spec.json) | Clean renderer smoke-test spec. Render it manually to inspect normal output. |
-| [sample_output.svg](sample_output.svg) | Tracked example of normal renderer output generated from `test_spec.json`. |
+| [test_spec.json](test_spec.json) | Clean renderer smoke-test spec (hierarchy depth 1 — top + direct children). |
+| [test_spec_depth2.json](test_spec_depth2.json) | Depth-2 sample spec (GbE MAC with TX/RX pipelines expanded). |
+| [sample_output.svg](sample_output.svg) / [sample_output_dark.svg](sample_output_dark.svg) | Tracked light/dark renderer output from `test_spec.json`. |
+| [sample_depth2.svg](sample_depth2.svg) / [sample_depth2_dark.svg](sample_depth2_dark.svg) | Tracked light/dark renderer output from `test_spec_depth2.json`. |
 | [not_sample_broken_validator_fixture.svg](not_sample_broken_validator_fixture.svg) | Intentionally broken validator regression fixture. It is supposed to fail with exactly 8 violations; it is not sample output. |
 | [pyproject.toml](pyproject.toml) | Ruff lint config. |
 | [.github/workflows/ci.yml](.github/workflows/ci.yml) | GitHub Actions: ruff + `python tests.py` on Linux / macOS / Windows × Python 3.10, 3.12. |
