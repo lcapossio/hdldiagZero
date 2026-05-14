@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1984" height="726" viewBox="0 0 1984 726" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" style="background:#000000">
+  <defs>
+    <marker id="ah-solid" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#e2e8f0"/></marker>
+    <marker id="ah-thin" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#9ca3af"/></marker>
+    <marker id="ah-stream" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#d9f99d"/></marker>
+    <marker id="ah-axil" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#93c5fd"/></marker>
+    <marker id="ah-cdc" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#d8b4fe"/></marker>
+    <marker id="ah-open" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0.5,0.5 L0.5,5.5 L8,3 z" fill="#000000" stroke="#e2e8f0" stroke-width="1"/></marker>
+    <linearGradient id="grad-otp_ctrl" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="50%" stop-color="#EF5350"/><stop offset="50%" stop-color="#AB47BC"/></linearGradient>
+    <linearGradient id="grad-lc_ctrl" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="50%" stop-color="#EF5350"/><stop offset="50%" stop-color="#AB47BC"/></linearGradient>
+    <linearGradient id="grad-alert_handler" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="50%" stop-color="#EF5350"/><stop offset="50%" stop-color="#AB47BC"/></linearGradient>
+    <linearGradient id="grad-xbar_peri" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="50%" stop-color="#FFA726"/><stop offset="50%" stop-color="#66BB6A"/></linearGradient>
+  </defs>
+  <rect width="1984" height="726" fill="#000000" id="_canvas_bg"/>
+  <text x="856.0" y="24" text-anchor="middle" font-size="21" font-weight="600" fill="#e2e8f0" letter-spacing="0.2">OpenTitan Earl Grey SoC sample</text>
+  <rect id="host" x="36" y="66" width="220" height="90" fill="#374151" stroke="#9ca3af" stroke-width="1.4" rx="8"/>
+  <text x="146" y="109" text-anchor="middle" font-size="18" font-weight="600" fill="#e2e8f0">Host / Debug</text>
+  <text x="146" y="125" text-anchor="middle" font-size="15" font-style="italic" fill="#e2e8f0" opacity="0.85">JTAG / UART</text>
+  <rect id="rv_dm" x="391" y="66" width="220" height="90" fill="#42A5F5" stroke="#0D47A1" stroke-width="1.4" rx="8"/>
+  <text x="501" y="109" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">RV Debug</text>
+  <text x="501" y="125" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">debug module</text>
+  <rect id="ibex" x="746" y="66" width="220" height="90" fill="#42A5F5" stroke="#0D47A1" stroke-width="1.4" rx="8"/>
+  <text x="856" y="109" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">Ibex Core</text>
+  <text x="856" y="125" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">secure MCU</text>
+  <rect id="xbar_main" x="1101" y="66" width="220" height="90" fill="#66BB6A" stroke="#1B5E20" stroke-width="1.4" rx="8"/>
+  <text x="1211" y="109" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">Main TL-UL Xbar</text>
+  <text x="1211" y="125" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">system fabric</text>
+  <rect id="mem_ctrls" x="1456" y="66" width="220" height="90" fill="#66BB6A" stroke="#1B5E20" stroke-width="1.4" rx="8"/>
+  <text x="1566" y="109" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">Memory Ctrls</text>
+  <text x="1566" y="125" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">ROM / SRAM / Flash</text>
+  <rect id="entropy" x="36" y="244" width="220" height="90" fill="#EF5350" stroke="#B71C1C" stroke-width="1.4" rx="8"/>
+  <text x="146" y="287" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">Entropy Src</text>
+  <text x="146" y="303" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">noise + health</text>
+  <rect id="csrng_edn" x="391" y="244" width="220" height="90" fill="#EF5350" stroke="#B71C1C" stroke-width="1.4" rx="8"/>
+  <text x="501" y="287" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">CSRNG / EDN</text>
+  <text x="501" y="303" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">randomness</text>
+  <rect id="keymgr" x="746" y="244" width="220" height="90" fill="#EF5350" stroke="#B71C1C" stroke-width="1.4" rx="8"/>
+  <text x="856" y="287" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">Key Manager</text>
+  <text x="856" y="303" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">root keys</text>
+  <rect id="crypto" x="1101" y="244" width="220" height="90" fill="#EF5350" stroke="#B71C1C" stroke-width="1.4" rx="8"/>
+  <text x="1211" y="287" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">Crypto IP</text>
+  <text x="1211" y="303" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">AES / KMAC / OTBN</text>
+  <rect id="otp_ctrl" x="1456" y="244" width="220" height="90" fill="url(#grad-otp_ctrl)" stroke="#4b5563" stroke-width="1.4" rx="8"/>
+  <text x="1566" y="287" text-anchor="middle" font-size="18" font-weight="600" fill="#ffffff">OTP Ctrl</text>
+  <text x="1566" y="303" text-anchor="middle" font-size="15" font-style="italic" fill="#ffffff" opacity="0.85">fuses / secrets</text>
+  <rect id="lc_ctrl" x="36" y="422" width="220" height="90" fill="url(#grad-lc_ctrl)" stroke="#4b5563" stroke-width="1.4" rx="8"/>
+  <text x="146" y="465" text-anchor="middle" font-size="18" font-weight="600" fill="#ffffff">Life Cycle</text>
+  <text x="146" y="481" text-anchor="middle" font-size="15" font-style="italic" fill="#ffffff" opacity="0.85">device state</text>
+  <rect id="alert_handler" x="391" y="422" width="220" height="90" fill="url(#grad-alert_handler)" stroke="#4b5563" stroke-width="1.4" rx="8"/>
+  <text x="501" y="465" text-anchor="middle" font-size="18" font-weight="600" fill="#ffffff">Alert Handler</text>
+  <text x="501" y="481" text-anchor="middle" font-size="15" font-style="italic" fill="#ffffff" opacity="0.85">fault response</text>
+  <rect id="xbar_peri" x="1101" y="422" width="220" height="90" fill="url(#grad-xbar_peri)" stroke="#4b5563" stroke-width="1.4" rx="8"/>
+  <text x="1211" y="465" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">Peripheral Xbar</text>
+  <text x="1211" y="481" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">TL-UL fanout</text>
+  <rect id="peripherals" x="1456" y="422" width="220" height="90" fill="#FFA726" stroke="#E65100" stroke-width="1.4" rx="8"/>
+  <text x="1566" y="465" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">I/O Peripherals</text>
+  <text x="1566" y="481" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">UART / SPI / I2C / GPIO</text>
+  <rect id="aon_timer" x="746" y="600" width="220" height="90" fill="#AB47BC" stroke="#4A148C" stroke-width="1.4" rx="8"/>
+  <text x="856" y="643" text-anchor="middle" font-size="18" font-weight="600" fill="#ffffff">AON Timers</text>
+  <text x="856" y="659" text-anchor="middle" font-size="15" font-style="italic" fill="#ffffff" opacity="0.85">watchdog / wake</text>
+  <rect id="rv_plic" x="1101" y="600" width="220" height="90" fill="#FFA726" stroke="#E65100" stroke-width="1.4" rx="8"/>
+  <text x="1211" y="643" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">RV PLIC</text>
+  <text x="1211" y="659" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">interrupts</text>
+  <path id="edge_host_to_rv_dm" d="M 256.0,111.0 L 323.5,111.0 L 391.0,111.0" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
+  <rect x="266.1" y="92.2" width="47.2" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
+  <text x="289.8" y="107.0" text-anchor="middle" font-size="15" fill="#e2e8f0">debug</text>
+  <path id="edge_rv_dm_to_ibex" d="M 611.0,111.0 L 678.5,111.0 L 746.0,111.0" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
+  <rect x="621.1" y="92.2" width="47.2" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
+  <text x="644.8" y="107.0" text-anchor="middle" font-size="15" fill="#e2e8f0">debug</text>
+  <path id="edge_ibex_to_xbar_main" d="M 966.0,96.0 L 1006.0,96.0 L 1006.0,111.0 L 1101.0,111.0" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
+  <rect x="1029.9" y="92.2" width="47.2" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
+  <text x="1053.5" y="107.0" text-anchor="middle" font-size="15" fill="#e2e8f0">TL-UL</text>
+  <path id="edge_xbar_main_to_mem_ctrls" d="M 1321.0,111.0 L 1361.0,111.0 L 1456.0,111.0" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
+  <rect x="1384.9" y="92.2" width="47.2" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
+  <text x="1408.5" y="107.0" text-anchor="middle" font-size="15" fill="#e2e8f0">TL-UL</text>
+  <path id="edge_xbar_main_to_xbar_peri" d="M 1211.0,156.0 L 1211.0,200.0 L 1033.5,200.0 L 1033.5,378.0 L 1211.0,378.0 L 1211.0,422.0" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
+  <rect x="1009.9" y="277.2" width="47.2" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
+  <text x="1033.5" y="292.0" text-anchor="middle" font-size="15" fill="#e2e8f0">TL-UL</text>
+  <path id="edge_entropy_to_csrng_edn" d="M 256.0,289.0 L 323.5,289.0 L 391.0,289.0" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
+  <rect x="259.0" y="270.2" width="63.8" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
+  <text x="290.9" y="285.0" text-anchor="middle" font-size="15" fill="#e2e8f0">entropy</text>
+  <path id="edge_csrng_edn_to_keymgr" d="M 611.0,289.0 L 678.5,289.0 L 746.0,289.0" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
+  <rect x="625.2" y="270.2" width="39.0" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
+  <text x="644.8" y="285.0" text-anchor="middle" font-size="15" fill="#e2e8f0">rand</text>
+  <path id="edge_lc_ctrl_to_alert_handler" d="M 256.0,467.0 L 323.5,467.0 L 391.0,467.0" stroke="#d8b4fe" stroke-width="1.8" fill="none" marker-end="url(#ah-cdc)" stroke-dasharray="6,3"/>
+  <rect x="259.0" y="448.2" width="80.2" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
+  <text x="299.1" y="463.0" text-anchor="middle" font-size="15" fill="#e2e8f0">CDC state</text>
+  <path id="edge_alert_handler_to_otp_ctrl" d="M 611.0,467.0 L 650.0,467.0 L 650.0,535.0 L 1700.0,535.0 L 1700.0,289.0 L 1676.0,289.0" stroke="#d8b4fe" stroke-width="1.8" fill="none" marker-end="url(#ah-cdc)" stroke-dasharray="6,3"/>
+  <rect x="1130.8" y="516.2" width="88.5" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
+  <text x="1175.0" y="531.0" text-anchor="middle" font-size="15" fill="#e2e8f0">CDC alerts</text>
+  <path id="edge_xbar_peri_to_peripherals" d="M 1321.0,467.0 L 1361.0,467.0 L 1361.0,452.0 L 1456.0,452.0" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
+  <rect x="1384.9" y="433.2" width="47.2" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
+  <text x="1408.5" y="448.0" text-anchor="middle" font-size="15" fill="#e2e8f0">TL-UL</text>
+  <path id="edge_peripherals_to_rv_plic" d="M 1456.0,482.0 L 1388.5,482.0 L 1388.5,645.0 L 1321.0,645.0" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
+  <rect x="1373.1" y="551.8" width="30.8" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
+  <text x="1388.5" y="566.5" text-anchor="middle" font-size="15" fill="#e2e8f0">IRQ</text>
+  <path id="edge_aon_timer_to_rv_plic" d="M 966.0,645.0 L 1006.0,645.0 L 1006.0,630.0 L 1101.0,630.0" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
+  <rect x="1038.1" y="611.2" width="30.8" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
+  <text x="1053.5" y="626.0" text-anchor="middle" font-size="15" fill="#e2e8f0">IRQ</text>
+  <path id="edge_rv_plic_to_ibex" d="M 1101.0,645.0 L 1050.0,645.0 L 1050.0,720.0 L 700.0,720.0 L 700.0,126.0 L 746.0,126.0" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
+  <rect x="684.6" y="625.1" width="30.8" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
+  <text x="700.0" y="639.8" text-anchor="middle" font-size="15" fill="#e2e8f0">IRQ</text>
+  <rect id="legend_card" x="1728" y="46" width="240" height="234" fill="#0f172a" stroke="#475569" stroke-width="1" rx="6"/>
+  <text x="1848" y="74" text-anchor="middle" font-size="13" font-weight="700" fill="#e2e8f0" letter-spacing="0.4">Clock domains</text>
+  <rect x="1742" y="86" width="22" height="14" fill="#42A5F5" stroke="#0D47A1" stroke-width="1.2" rx="2"/>
+  <text x="1774" y="98" font-size="13" fill="#e2e8f0">core</text>
+  <rect x="1742" y="108" width="22" height="14" fill="#66BB6A" stroke="#1B5E20" stroke-width="1.2" rx="2"/>
+  <text x="1774" y="120" font-size="13" fill="#e2e8f0">bus</text>
+  <rect x="1742" y="130" width="22" height="14" fill="#EF5350" stroke="#B71C1C" stroke-width="1.2" rx="2"/>
+  <text x="1774" y="142" font-size="13" fill="#e2e8f0">secure</text>
+  <rect x="1742" y="152" width="22" height="14" fill="#FFA726" stroke="#E65100" stroke-width="1.2" rx="2"/>
+  <text x="1774" y="164" font-size="13" fill="#e2e8f0">peri</text>
+  <rect x="1742" y="174" width="22" height="14" fill="#AB47BC" stroke="#4A148C" stroke-width="1.2" rx="2"/>
+  <text x="1774" y="186" font-size="13" fill="#e2e8f0">aon</text>
+  <text x="1848" y="214" text-anchor="middle" font-size="13" font-weight="700" fill="#e2e8f0" letter-spacing="0.4">Connection styles</text>
+  <path id="legend-arrow-generic" d="M 1742,233.0 L 1784,233.0" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
+  <text x="1794" y="238" font-size="13" fill="#e2e8f0">Generic / discrete</text>
+  <path id="legend-arrow-cdc" d="M 1742,255.0 L 1784,255.0" stroke="#d8b4fe" stroke-width="1.8" fill="none" marker-end="url(#ah-cdc)" stroke-dasharray="6,3"/>
+  <text x="1794" y="260" font-size="13" fill="#e2e8f0">CDC traversal (re-clocked)</text>
+</svg>

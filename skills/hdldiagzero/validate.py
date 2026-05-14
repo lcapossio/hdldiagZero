@@ -17,6 +17,8 @@ Checks:
   8. DIAGONAL    - an arrow segment that is neither horizontal nor vertical.
                    The layout language is strictly orthogonal; diagonals are
                    always a routing bug.
+  9. PERPENDICULAR - an arrow endpoint touching a block must leave/enter
+                   perpendicular to that block side, not run tangentially.
 
 Exit code = number of violations (0 = pass). Writes a structured report to stdout
 that the calling agent can feed back into the next generation pass.
@@ -392,6 +394,31 @@ def endpoint_on_rect(point, rect, tol=EDGE_TOLERANCE):
     return ((near_left or near_right) and in_y) or ((near_top or near_bot) and in_x)
 
 
+def endpoint_side(point, rect, tol=EDGE_TOLERANCE):
+    """Return the nearest side name when `point` lies on a rect edge."""
+    if not endpoint_on_rect(point, rect, tol):
+        return None
+    px, py = point
+    x1, y1, x2, y2 = rect
+    candidates = [
+        ("left", abs(px - x1)),
+        ("right", abs(px - x2)),
+        ("top", abs(py - y1)),
+        ("bottom", abs(py - y2)),
+    ]
+    side, dist = min(candidates, key=lambda item: item[1])
+    return side if dist <= tol else None
+
+
+def side_normal(side):
+    return {
+        "left": (-1.0, 0.0),
+        "right": (1.0, 0.0),
+        "top": (0.0, -1.0),
+        "bottom": (0.0, 1.0),
+    }[side]
+
+
 def check_crossings(blocks, arrows):
     violations = []
     for a in arrows:
@@ -414,6 +441,44 @@ def check_crossings(blocks, arrows):
                         f"x={b.x:.0f}..{b.x+b.w:.0f}, y={b.y:.0f}..{b.y+b.h:.0f})."
                     )
                     break
+    return violations
+
+
+def check_perpendicular_ports(blocks, arrows):
+    """Block endpoints must use normal entry/exit stubs.
+
+    Auto-routed edges do this naturally. Explicit `route.points` can bypass the
+    router, so validate the final SVG shape: a wire on a left/right side must
+    start or end horizontally; a wire on a top/bottom side must start or end
+    vertically. The segment must also point away from the block interior.
+    """
+    violations = []
+    for a in arrows:
+        if len(a.points) < 2:
+            continue
+        checks = (
+            ("start", a.points[0], a.points[1], "leave"),
+            ("end", a.points[-1], a.points[-2], "enter"),
+        )
+        for which, endpoint, neighbor, verb in checks:
+            for b in blocks:
+                side = endpoint_side(endpoint, b.rect)
+                if side is None:
+                    continue
+                nx, ny = side_normal(side)
+                vx = neighbor[0] - endpoint[0]
+                vy = neighbor[1] - endpoint[1]
+                normal_dist = vx * nx + vy * ny
+                tangent_dist = abs(vy) if nx else abs(vx)
+                if tangent_dist > EDGE_TOLERANCE or normal_dist <= EDGE_TOLERANCE:
+                    violations.append(
+                        f"PERPENDICULAR: arrow '{a.id}' {which} endpoint on "
+                        f"block '{b.label}' {side} side must {verb} "
+                        f"perpendicular to the block. First/last segment is "
+                        f"from ({endpoint[0]:.0f},{endpoint[1]:.0f}) to "
+                        f"({neighbor[0]:.0f},{neighbor[1]:.0f})."
+                    )
+                break
     return violations
 
 
@@ -697,6 +762,7 @@ def main():
     violations += check_port_separation(blocks, arrows)
     violations += check_bitwidth_labels(arrows, texts)
     violations += check_diagonal_arrows(arrows)
+    violations += check_perpendicular_ports(blocks, arrows)
 
     summary = (
         f"{len(blocks)} blocks, {len(arrows)} arrows, "

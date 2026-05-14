@@ -38,6 +38,38 @@ Dark mode:
   <img src="sample_soc_dark.svg" alt="Full SoC top-level dark-mode diagram">
 </a>
 
+### OpenTitan Earl Grey sample
+
+Generated from [test_spec_opentitan.json](test_spec_opentitan.json) - an overview-style sample of the OpenTitan Earl Grey SoC with Ibex, TL-UL fabric, memory controllers, secure services, peripheral fabric, interrupts, and always-on control paths:
+
+Light mode:
+
+<a href="sample_opentitan.svg">
+  <img src="sample_opentitan.svg" alt="OpenTitan Earl Grey sample diagram">
+</a>
+
+Dark mode:
+
+<a href="sample_opentitan_dark.svg">
+  <img src="sample_opentitan_dark.svg" alt="OpenTitan Earl Grey sample dark-mode diagram">
+</a>
+
+### OpenTitan Earl Grey depth 2
+
+Generated from [test_spec_opentitan_depth2.json](test_spec_opentitan_depth2.json) - the same SoC expanded into grouped secure-services and peripheral-subsystem blocks:
+
+Light mode:
+
+<a href="sample_opentitan_depth2.svg">
+  <img src="sample_opentitan_depth2.svg" alt="OpenTitan Earl Grey depth-2 sample diagram">
+</a>
+
+Dark mode:
+
+<a href="sample_opentitan_depth2_dark.svg">
+  <img src="sample_opentitan_depth2_dark.svg" alt="OpenTitan Earl Grey depth-2 dark-mode diagram">
+</a>
+
 ### Clock-domain lanes
 
 Generated from [test_spec_lanes.json](test_spec_lanes.json) - an RHS-style acquisition pipeline where each clock domain gets its own tinted lane spanning the canvas:
@@ -92,7 +124,7 @@ Dark mode:
 - **WCAG-style text contrast**: block text auto-flips between light and dark by relative-luminance contrast so labels read on every fill, including CDC gradients.
 - **Light + dark themes** (`theme: dark` in the JSON or `--theme dark` on the CLI). Dark mode uses pure black canvas with brightened accent colors for arrows, labels, and external blocks.
 - **Edge bitwidth labels** at the bend midpoint, with a subtle pill mask so the line doesn't pierce the text.
-- **Geometry validator** (`validate.py`) catches line-through-block crossings, parallel-arrow collisions, stub arrows (shaft shorter than arrowhead), labels overlapping foreign blocks, arrows piercing other arrows' labels, multiple endpoints meeting at the same block port, and missing edge labels.
+- **Geometry validator** (`validate.py`) catches line-through-block crossings, parallel-arrow collisions, stub arrows (shaft shorter than arrowhead), tangential block entry/exit, labels overlapping foreign blocks, arrows piercing other arrows' labels, multiple endpoints meeting at the same block port, and missing edge labels.
 
 ## Files
 
@@ -130,10 +162,14 @@ All runtime files live under [`skills/hdldiagzero/`](skills/hdldiagzero/) - the 
 | [test_spec_depth2.json](test_spec_depth2.json) | Depth-2 sample spec (GbE MAC with TX/RX pipelines expanded). |
 | [test_spec_lanes.json](test_spec_lanes.json) | Clock-domain lanes sample (RHS-style acquisition pipeline). |
 | [test_spec_soc.json](test_spec_soc.json) | Full SoC top-level sample (CPU + IC + DMA + DDR + APB peripherals). |
+| [test_spec_opentitan.json](test_spec_opentitan.json) | OpenTitan Earl Grey overview sample. |
+| [test_spec_opentitan_depth2.json](test_spec_opentitan_depth2.json) | OpenTitan Earl Grey depth-2 grouped sample. |
 | [sample_output.svg](sample_output.svg) / [sample_output_dark.svg](sample_output_dark.svg) | Tracked light/dark renderer output from `test_spec.json`. |
 | [sample_depth2.svg](sample_depth2.svg) / [sample_depth2_dark.svg](sample_depth2_dark.svg) | Tracked light/dark renderer output from `test_spec_depth2.json`. |
 | [sample_lanes.svg](sample_lanes.svg) / [sample_lanes_dark.svg](sample_lanes_dark.svg) | Tracked light/dark renderer output from `test_spec_lanes.json`. |
 | [sample_soc.svg](sample_soc.svg) / [sample_soc_dark.svg](sample_soc_dark.svg) | Tracked light/dark renderer output from `test_spec_soc.json`. |
+| [sample_opentitan.svg](sample_opentitan.svg) / [sample_opentitan_dark.svg](sample_opentitan_dark.svg) | Tracked light/dark renderer output from `test_spec_opentitan.json`. |
+| [sample_opentitan_depth2.svg](sample_opentitan_depth2.svg) / [sample_opentitan_depth2_dark.svg](sample_opentitan_depth2_dark.svg) | Tracked light/dark renderer output from `test_spec_opentitan_depth2.json`. |
 | [not_sample_broken_validator_fixture.svg](not_sample_broken_validator_fixture.svg) | Intentionally broken validator regression fixture. It is supposed to fail with exactly 8 violations; it is not sample output. |
 | [pyproject.toml](pyproject.toml) | Ruff lint config. |
 | [.github/workflows/ci.yml](.github/workflows/ci.yml) | GitHub Actions: ruff + `python tests.py` on Linux / macOS / Windows x Python 3.10, 3.12. |

@@ -1,0 +1,50 @@
+{
+  "title": "OpenTitan Earl Grey SoC sample",
+  "top": "top_earlgrey",
+  "grid": {"gutter_x": 135, "gutter_y": 88},
+  "domains": {
+    "core":   {"color": "#42A5F5", "border": "#0D47A1"},
+    "bus":    {"color": "#66BB6A", "border": "#1B5E20"},
+    "secure": {"color": "#EF5350", "border": "#B71C1C"},
+    "peri":   {"color": "#FFA726", "border": "#E65100"},
+    "aon":    {"color": "#AB47BC", "border": "#4A148C"}
+  },
+  "blocks": [
+    {"id": "host",          "label": "Host / Debug",   "external": true,                      "row": 0, "col": 0, "sublabel": "JTAG / UART"},
+    {"id": "rv_dm",         "label": "RV Debug",       "domain": "core",                      "row": 0, "col": 1, "sublabel": "debug module"},
+    {"id": "ibex",          "label": "Ibex Core",      "domain": "core",                      "row": 0, "col": 2, "sublabel": "secure MCU"},
+    {"id": "xbar_main",     "label": "Main TL-UL Xbar","domain": "bus",                       "row": 0, "col": 3, "sublabel": "system fabric"},
+    {"id": "mem_ctrls",     "label": "Memory Ctrls",   "domain": "bus",                       "row": 0, "col": 4, "sublabel": "ROM / SRAM / Flash"},
+
+    {"id": "entropy",       "label": "Entropy Src",    "domain": "secure",                    "row": 1, "col": 0, "sublabel": "noise + health"},
+    {"id": "csrng_edn",     "label": "CSRNG / EDN",    "domain": "secure",                    "row": 1, "col": 1, "sublabel": "randomness"},
+    {"id": "keymgr",        "label": "Key Manager",    "domain": "secure",                    "row": 1, "col": 2, "sublabel": "root keys"},
+    {"id": "crypto",        "label": "Crypto IP",      "domain": "secure",                    "row": 1, "col": 3, "sublabel": "AES / KMAC / OTBN"},
+    {"id": "otp_ctrl",      "label": "OTP Ctrl",       "domain": "secure", "domain_b": "aon", "row": 1, "col": 4, "sublabel": "fuses / secrets"},
+
+    {"id": "lc_ctrl",       "label": "Life Cycle",     "domain": "secure", "domain_b": "aon", "row": 2, "col": 0, "sublabel": "device state"},
+    {"id": "alert_handler", "label": "Alert Handler",  "domain": "secure", "domain_b": "aon", "row": 2, "col": 1, "sublabel": "fault response"},
+    {"id": "xbar_peri",     "label": "Peripheral Xbar","domain": "peri", "domain_b": "bus",   "row": 2, "col": 3, "sublabel": "TL-UL fanout"},
+    {"id": "peripherals",   "label": "I/O Peripherals","domain": "peri",                      "row": 2, "col": 4, "sublabel": "UART / SPI / I2C / GPIO"},
+
+    {"id": "aon_timer",     "label": "AON Timers",     "domain": "aon",                       "row": 3, "col": 2, "sublabel": "watchdog / wake"},
+    {"id": "rv_plic",       "label": "RV PLIC",        "domain": "peri",                      "row": 3, "col": 3, "sublabel": "interrupts"}
+  ],
+  "edges": [
+    {"from": "host",          "to": "rv_dm",         "kind": "generic", "width": "debug"},
+    {"from": "rv_dm",         "to": "ibex",          "kind": "generic", "width": "debug"},
+    {"from": "ibex",          "to": "xbar_main",     "kind": "generic", "width": "TL-UL"},
+    {"from": "xbar_main",     "to": "mem_ctrls",     "kind": "generic", "width": "TL-UL"},
+    {"from": "xbar_main",     "to": "xbar_peri",     "kind": "generic", "width": "TL-UL", "label": {"segment": 2}},
+
+    {"from": "entropy",       "to": "csrng_edn",     "kind": "generic", "width": "entropy"},
+    {"from": "csrng_edn",     "to": "keymgr",        "kind": "generic", "width": "rand"},
+    {"from": "lc_ctrl",       "to": "alert_handler", "kind": "cdc",     "width": "state"},
+    {"from": "alert_handler", "to": "otp_ctrl",      "kind": "cdc",     "width": "alerts", "route": {"points": [[611, 467], [650, 467], [650, 535], [1700, 535], [1700, 289], [1676, 289]]}},
+
+    {"from": "xbar_peri",     "to": "peripherals",   "kind": "generic", "width": "TL-UL"},
+    {"from": "peripherals",   "to": "rv_plic",       "kind": "generic", "width": "IRQ", "route": {"mode": "direct"}},
+    {"from": "aon_timer",     "to": "rv_plic",       "kind": "generic", "width": "IRQ"},
+    {"from": "rv_plic",       "to": "ibex",          "kind": "generic", "width": "IRQ", "route": {"points": [[1101, 645], [1050, 645], [1050, 720], [700, 720], [700, 126], [746, 126]]}, "label": {"segment": 3, "t": 0.14}}
+  ]
+}

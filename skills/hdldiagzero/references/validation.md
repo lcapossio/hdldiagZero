@@ -78,6 +78,7 @@ before calling the renderer.
 | `PORT`       | Two arrow endpoints on the same block within 12px.          |
 | `BITWIDTH`   | A long arrow has no nearby text label.                      |
 | `DIAGONAL`   | An arrow segment is neither horizontal nor vertical.        |
+| `PERPENDICULAR` | An arrow endpoint leaves/enters along the block edge.    |
 
 ## Fix recipes
 
@@ -118,6 +119,17 @@ Either a hand-edited SVG or explicit `route.points` whose consecutive entries
 don't share an x or y coordinate. The renderer itself never emits diagonals.
 Re-render from the JSON, or insert an intermediate orthogonal waypoint
 (`[x1, y1] -> [x2, y1] -> [x2, y2]` instead of `[x1, y1] -> [x2, y2]`).
+
+### PERPENDICULAR
+Usually explicit `route.points`. A route point on a block's left/right side
+must connect to a horizontal segment; a point on a top/bottom side must connect
+to a vertical segment. The segment must point outward from the block before it
+turns. Add a short stub:
+
+- right side: `[block_right, y] -> [block_right + 40, y] -> ...`
+- left side: `[block_left, y] -> [block_left - 40, y] -> ...`
+- top side: `[x, block_top] -> [x, block_top - 40] -> ...`
+- bottom side: `[x, block_bottom] -> [x, block_bottom + 40] -> ...`
 
 ## When iteration doesn't converge
 

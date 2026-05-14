@@ -1,0 +1,62 @@
+{
+  "title": "OpenTitan Earl Grey SoC sample (depth 2)",
+  "top": "top_earlgrey",
+  "grid": {"gutter_x": 135, "gutter_y": 88},
+  "domains": {
+    "core":   {"color": "#42A5F5", "border": "#0D47A1"},
+    "bus":    {"color": "#66BB6A", "border": "#1B5E20"},
+    "secure": {"color": "#EF5350", "border": "#B71C1C"},
+    "peri":   {"color": "#FFA726", "border": "#E65100"},
+    "aon":    {"color": "#AB47BC", "border": "#4A148C"}
+  },
+  "groups": {
+    "secure_services": {"label": "secure services"},
+    "peripheral_subsystem": {"label": "peripheral subsystem"}
+  },
+  "blocks": [
+    {"id": "host",          "label": "Host / Debug",   "external": true,                      "row": 0, "col": 0, "sublabel": "JTAG / UART"},
+    {"id": "rv_dm",         "label": "RV Debug",       "domain": "core",                      "row": 0, "col": 1, "sublabel": "debug module"},
+    {"id": "ibex",          "label": "Ibex Core",      "domain": "core",                      "row": 0, "col": 2, "sublabel": "secure MCU"},
+    {"id": "xbar_main",     "label": "Main TL-UL Xbar","domain": "bus",                       "row": 0, "col": 3, "sublabel": "system fabric"},
+    {"id": "mem_ctrls",     "label": "Memory Ctrls",   "domain": "bus",                       "row": 0, "col": 4, "sublabel": "ROM / SRAM / Flash"},
+
+    {"id": "entropy",       "label": "Entropy Src",    "domain": "secure",                    "row": 1, "col": 0, "sublabel": "noise + health",     "group": "secure_services"},
+    {"id": "csrng",         "label": "CSRNG",          "domain": "secure",                    "row": 1, "col": 1, "sublabel": "conditioner",        "group": "secure_services"},
+    {"id": "edn",           "label": "EDN",            "domain": "secure",                    "row": 1, "col": 2, "sublabel": "random nets",        "group": "secure_services"},
+    {"id": "aes",           "label": "AES",            "domain": "secure",                    "row": 1, "col": 3, "sublabel": "block cipher",       "group": "secure_services"},
+    {"id": "otp_ctrl",      "label": "OTP Ctrl",       "domain": "secure", "domain_b": "aon", "row": 1, "col": 4, "sublabel": "fuses / secrets",    "group": "secure_services"},
+
+    {"id": "lc_ctrl",       "label": "Life Cycle",     "domain": "secure", "domain_b": "aon", "row": 2, "col": 0, "sublabel": "device state",      "group": "secure_services"},
+    {"id": "alert_handler", "label": "Alert Handler",  "domain": "secure", "domain_b": "aon", "row": 2, "col": 1, "sublabel": "fault response",    "group": "secure_services"},
+    {"id": "keymgr",        "label": "Key Manager",    "domain": "secure",                    "row": 2, "col": 2, "sublabel": "root keys",         "group": "secure_services"},
+    {"id": "kmac",          "label": "KMAC / HMAC",    "domain": "secure",                    "row": 2, "col": 3, "sublabel": "hash / MAC",        "group": "secure_services"},
+    {"id": "otbn",          "label": "OTBN",           "domain": "secure",                    "row": 2, "col": 4, "sublabel": "big-number accel", "group": "secure_services"},
+
+    {"id": "xbar_peri",     "label": "Peripheral Xbar","domain": "peri", "domain_b": "bus",   "row": 3, "col": 0, "sublabel": "TL-UL fanout",      "group": "peripheral_subsystem"},
+    {"id": "uart_spi",      "label": "UART / SPI",     "domain": "peri",                      "row": 3, "col": 1, "sublabel": "serial I/O",        "group": "peripheral_subsystem"},
+    {"id": "i2c_gpio",      "label": "I2C / GPIO",     "domain": "peri",                      "row": 3, "col": 2, "sublabel": "pads / pins",       "group": "peripheral_subsystem"},
+    {"id": "aon_timer",     "label": "AON Timers",     "domain": "aon",                       "row": 3, "col": 3, "sublabel": "watchdog / wake",   "group": "peripheral_subsystem"},
+    {"id": "rv_plic",       "label": "RV PLIC",        "domain": "peri",                      "row": 3, "col": 4, "sublabel": "interrupts",        "group": "peripheral_subsystem"}
+  ],
+  "edges": [
+    {"from": "host",          "to": "rv_dm",       "kind": "generic", "width": "debug"},
+    {"from": "rv_dm",         "to": "ibex",        "kind": "generic", "width": "debug"},
+    {"from": "ibex",          "to": "xbar_main",   "kind": "generic", "width": "TL-UL"},
+    {"from": "xbar_main",     "to": "mem_ctrls",   "kind": "generic", "width": "TL-UL"},
+    {"from": "xbar_main",     "to": "xbar_peri",   "kind": "generic", "width": "TL-UL", "route": {"points": [[1211, 156], [1211, 190], [15, 190], [15, 645], [36, 645]]}, "label": {"segment": 2, "t": 0.42}},
+
+    {"from": "entropy",       "to": "csrng",       "kind": "generic", "width": "entropy"},
+    {"from": "csrng",         "to": "edn",         "kind": "generic", "width": "rand"},
+    {"from": "edn",           "to": "keymgr",      "kind": "generic", "width": "rand", "route": {"mode": "direct"}},
+    {"from": "keymgr",        "to": "kmac",        "kind": "generic", "width": "keys"},
+    {"from": "otp_ctrl",      "to": "keymgr",      "kind": "cdc",     "width": "secrets", "route": {"points": [[1456, 289], [1405, 289], [1405, 535], [856, 535], [856, 512]]}, "label": {"segment": 2}},
+    {"from": "lc_ctrl",       "to": "alert_handler","kind": "cdc",     "width": "state"},
+    {"from": "alert_handler", "to": "otp_ctrl",    "kind": "cdc",     "width": "alerts", "route": {"points": [[611, 467], [650, 467], [650, 555], [1700, 555], [1700, 289], [1676, 289]]}},
+
+    {"from": "xbar_peri",     "to": "uart_spi",    "kind": "generic", "width": "TL-UL"},
+    {"from": "uart_spi",      "to": "i2c_gpio",    "kind": "generic", "width": "pads"},
+    {"from": "i2c_gpio",      "to": "rv_plic",     "kind": "generic", "width": "IRQ", "route": {"points": [[966, 645], [1010, 645], [1010, 720], [1566, 720], [1566, 690]]}, "label": {"segment": 2}},
+    {"from": "aon_timer",     "to": "rv_plic",     "kind": "generic", "width": "IRQ"},
+    {"from": "rv_plic",       "to": "ibex",        "kind": "generic", "width": "IRQ", "route": {"points": [[1676, 645], [1720, 645], [1720, 720], [700, 720], [700, 126], [746, 126]]}, "label": {"segment": 3, "t": 0.14}}
+  ]
+}

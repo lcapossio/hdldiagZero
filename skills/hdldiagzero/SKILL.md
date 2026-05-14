@@ -67,6 +67,11 @@ The only legitimate clarifying question is "which file is top?" when there are m
 
 5. **Emit JSON spec** to `docs/architecture.json` (or the user-named path). Schema: `references/schema.md`.
 
+   If you use explicit `route.points`, every segment must be orthogonal, and
+   endpoints attached to blocks must leave/enter perpendicular to the touched
+   block side. Add a short outward stub before the first turn; never run the
+   first or last segment tangentially along the block edge.
+
 6. **Validate the spec** before rendering: `python <skill>/validate_spec.py docs/architecture.json`. Fix any reported issues; do NOT call the renderer with a broken spec.
 
 7. **Render**: `python <skill>/render.py docs/architecture.json docs/architecture.svg`. Add `--theme dark` if requested.

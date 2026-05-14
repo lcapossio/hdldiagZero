@@ -365,6 +365,41 @@ def test_renderer_soc_sample() -> None:
             run([PY, VALIDATE, str(out_dark)], label="soc-sample-dark-validate")
 
 
+def test_renderer_opentitan_sample() -> None:
+    """The bundled OpenTitan sample renders and validates clean in both themes."""
+    with _tmpdir() as tmp:
+        out_light = Path(tmp) / "opentitan.svg"
+        out_dark = Path(tmp) / "opentitan_dark.svg"
+        run([PY, VALIDATE_SPEC, "test_spec_opentitan.json"], label="opentitan-sample-spec")
+        run([PY, RENDER, "test_spec_opentitan.json", str(out_light)],
+            label="opentitan-sample-light")
+        if out_light.is_file():
+            run([PY, VALIDATE, str(out_light)], label="opentitan-sample-light-validate")
+        run([PY, RENDER, "--theme", "dark", "test_spec_opentitan.json", str(out_dark)],
+            label="opentitan-sample-dark")
+        if out_dark.is_file():
+            run([PY, VALIDATE, str(out_dark)], label="opentitan-sample-dark-validate")
+
+
+def test_renderer_opentitan_depth2_sample() -> None:
+    """The bundled OpenTitan depth-2 sample validates clean in both themes."""
+    with _tmpdir() as tmp:
+        out_light = Path(tmp) / "opentitan_depth2.svg"
+        out_dark = Path(tmp) / "opentitan_depth2_dark.svg"
+        run([PY, VALIDATE_SPEC, "test_spec_opentitan_depth2.json"],
+            label="opentitan-depth2-sample-spec")
+        run([PY, RENDER, "test_spec_opentitan_depth2.json", str(out_light)],
+            label="opentitan-depth2-sample-light")
+        if out_light.is_file():
+            run([PY, VALIDATE, str(out_light)],
+                label="opentitan-depth2-sample-light-validate")
+        run([PY, RENDER, "--theme", "dark", "test_spec_opentitan_depth2.json", str(out_dark)],
+            label="opentitan-depth2-sample-dark")
+        if out_dark.is_file():
+            run([PY, VALIDATE, str(out_dark)],
+                label="opentitan-depth2-sample-dark-validate")
+
+
 def test_renderer_lanes_sample() -> None:
     """The bundled lanes sample renders and validates clean in both themes."""
     with _tmpdir() as tmp:
@@ -672,11 +707,39 @@ def test_validator_flags_diagonal_segment_in_svg() -> None:
         )
         out = tmp / "diag.svg"
         out.write_text(svg, encoding="utf-8")
-        # The arrow has no nearby text label so BITWIDTH also fires; total = 2.
-        proc = run([PY, VALIDATE, str(out)], expect_rc=2, label="validate-diagonal")
+        # BITWIDTH also fires, and the diagonal enters/exits both blocks without
+        # perpendicular stubs; total = 4.
+        proc = run([PY, VALIDATE, str(out)], expect_rc=4, label="validate-diagonal")
         if "DIAGONAL" not in proc.stdout:
             FAILURES.append(
                 f"[validate-diagonal] expected DIAGONAL in report, "
+                f"got: {proc.stdout.strip()!r}"
+            )
+
+
+def test_validator_flags_tangential_block_exit() -> None:
+    """A block-attached arrow must leave perpendicular to the touched side."""
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        svg = (
+            '<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<svg xmlns="http://www.w3.org/2000/svg" width="420" height="160" '
+            'viewBox="0 0 420 160">\n'
+            '  <rect id="a" x="10"  y="10" width="80" height="40" fill="#42A5F5" '
+            'stroke="#0D47A1"/>\n'
+            '  <rect id="b" x="300" y="70" width="80" height="40" fill="#42A5F5" '
+            'stroke="#0D47A1"/>\n'
+            '  <path id="bad_port" d="M 90,30 L 90,90 L 300,90" stroke="#000" '
+            'stroke-width="2" fill="none"/>\n'
+            '  <text x="195" y="86" text-anchor="middle" font-size="12">label</text>\n'
+            '</svg>\n'
+        )
+        out = tmp / "bad_port.svg"
+        out.write_text(svg, encoding="utf-8")
+        proc = run([PY, VALIDATE, str(out)], expect_rc=1, label="validate-perpendicular")
+        if "PERPENDICULAR" not in proc.stdout:
+            FAILURES.append(
+                f"[validate-perpendicular] expected PERPENDICULAR in report, "
                 f"got: {proc.stdout.strip()!r}"
             )
 
@@ -727,6 +790,8 @@ def main() -> int:
     test_legend_card_renders_top_right()
     test_renderer_lanes_sample()
     test_renderer_soc_sample()
+    test_renderer_opentitan_sample()
+    test_renderer_opentitan_depth2_sample()
     test_renderer_depth2_sample()
     test_renderer_omits_unknown_clock_frequency()
     test_renderer_routes_same_row_reverse_edges_in_gutter()
@@ -736,6 +801,7 @@ def main() -> int:
     test_renderer_direct_mode_is_orthogonal()
     test_spec_validator_rejects_diagonal_route_points()
     test_validator_flags_diagonal_segment_in_svg()
+    test_validator_flags_tangential_block_exit()
     test_install()
 
     if FAILURES:
