@@ -1,0 +1,35 @@
+{
+  "title": "Application SoC top-level (depth 1)",
+  "top": "soc_top",
+  "grid": {"gutter_x": 140, "gutter_y": 80},
+  "domains": {
+    "cpu": {"freq_mhz": 1500, "color": "#42A5F5", "border": "#0D47A1"},
+    "axi": {"freq_mhz": 500,  "color": "#66BB6A", "border": "#1B5E20"},
+    "ddr": {"freq_mhz": 800,  "color": "#EF5350", "border": "#B71C1C"},
+    "apb": {"freq_mhz": 100,  "color": "#FFA726", "border": "#E65100"}
+  },
+  "blocks": [
+    {"id": "cpu",      "label": "Cortex-A53 ×2", "domain": "cpu",                    "row": 0, "col": 0, "sublabel": "dual-core"},
+    {"id": "l2",       "label": "L2 cache",      "domain": "cpu", "domain_b": "axi", "row": 0, "col": 1, "sublabel": "1 MB shared"},
+    {"id": "ic",       "label": "AXI Interconnect","domain": "axi",                  "row": 0, "col": 2},
+    {"id": "sram",     "label": "OCM",           "domain": "axi",                    "row": 0, "col": 3, "sublabel": "256 KB on-chip"},
+    {"id": "dma",      "label": "DMA",           "domain": "axi",                    "row": 1, "col": 1, "sublabel": "8 channels"},
+    {"id": "ddr_ctrl", "label": "DDR4 Ctrl",     "domain": "axi", "domain_b": "ddr", "row": 1, "col": 2, "sublabel": "PHY + ctrl"},
+    {"id": "ddr3",     "label": "DDR4 SDRAM",    "external": true,                   "row": 1, "col": 3, "sublabel": "off-chip"},
+    {"id": "apb_br",   "label": "APB bridge",    "domain": "axi", "domain_b": "apb", "row": 2, "col": 1, "sublabel": "axi → apb"},
+    {"id": "periph",   "label": "Peripherals",   "domain": "apb",                    "row": 2, "col": 2, "sublabel": "UART ×4 / SPI ×2 / I²C / GPIO"}
+  ],
+  "edges": [
+    {"from": "cpu",      "to": "l2",       "kind": "axi-mm",   "width": 128},
+    {"from": "l2",       "to": "ic",       "kind": "axi-mm",   "width": 128},
+    {"from": "ic",       "to": "sram",     "kind": "axi-mm",   "width": 64},
+    {"from": "ic",       "to": "dma",      "kind": "axi-lite", "width": 32,
+                                                                "label": {"segment": 2, "t": 0.3}},
+    {"from": "ic",       "to": "ddr_ctrl", "kind": "axi-mm",   "width": 256},
+    {"from": "ddr_ctrl", "to": "ddr3",     "kind": "generic",  "width": "DQ/CK/cmd"},
+    {"from": "ic",       "to": "apb_br",   "kind": "axi-lite", "width": 32,
+                                                                "label": {"segment": 2}},
+    {"from": "apb_br",   "to": "periph",   "kind": "axi-lite", "width": 32,
+                                                                "label": {"segment": 2, "t": 0.3, "dy": 8}}
+  ]
+}

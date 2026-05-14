@@ -22,6 +22,22 @@ Dark mode:
   <img src="sample_output_dark.svg" alt="Sample hdldiagZero dark-mode SVG output">
 </a>
 
+### Full SoC top-level
+
+Generated from [test_spec_soc.json](test_spec_soc.json) — application SoC with a CPU complex, L2 cache (CDC), AXI interconnect, on-chip SRAM, DMA, DDR controller, off-chip DDR4, APB bridge, and an APB peripherals subsystem across four clock domains (cpu / axi / ddr / apb):
+
+Light mode:
+
+<a href="sample_soc.svg">
+  <img src="sample_soc.svg" alt="Full SoC top-level diagram">
+</a>
+
+Dark mode:
+
+<a href="sample_soc_dark.svg">
+  <img src="sample_soc_dark.svg" alt="Full SoC top-level dark-mode diagram">
+</a>
+
 ### Clock-domain lanes
 
 Generated from [test_spec_lanes.json](test_spec_lanes.json) — an RHS-style acquisition pipeline where each clock domain gets its own tinted lane spanning the canvas:
@@ -113,9 +129,11 @@ All runtime files live under [`skills/hdldiagzero/`](skills/hdldiagzero/) — th
 | [test_spec.json](test_spec.json) | Clean renderer smoke-test spec (hierarchy depth 1 — top + direct children). |
 | [test_spec_depth2.json](test_spec_depth2.json) | Depth-2 sample spec (GbE MAC with TX/RX pipelines expanded). |
 | [test_spec_lanes.json](test_spec_lanes.json) | Clock-domain lanes sample (RHS-style acquisition pipeline). |
+| [test_spec_soc.json](test_spec_soc.json) | Full SoC top-level sample (CPU + IC + DMA + DDR + APB peripherals). |
 | [sample_output.svg](sample_output.svg) / [sample_output_dark.svg](sample_output_dark.svg) | Tracked light/dark renderer output from `test_spec.json`. |
 | [sample_depth2.svg](sample_depth2.svg) / [sample_depth2_dark.svg](sample_depth2_dark.svg) | Tracked light/dark renderer output from `test_spec_depth2.json`. |
 | [sample_lanes.svg](sample_lanes.svg) / [sample_lanes_dark.svg](sample_lanes_dark.svg) | Tracked light/dark renderer output from `test_spec_lanes.json`. |
+| [sample_soc.svg](sample_soc.svg) / [sample_soc_dark.svg](sample_soc_dark.svg) | Tracked light/dark renderer output from `test_spec_soc.json`. |
 | [not_sample_broken_validator_fixture.svg](not_sample_broken_validator_fixture.svg) | Intentionally broken validator regression fixture. It is supposed to fail with exactly 8 violations; it is not sample output. |
 | [pyproject.toml](pyproject.toml) | Ruff lint config. |
 | [.github/workflows/ci.yml](.github/workflows/ci.yml) | GitHub Actions: ruff + `python tests.py` on Linux / macOS / Windows × Python 3.10, 3.12. |

@@ -310,6 +310,22 @@ def test_legend_card_renders_top_right() -> None:
             run([PY, VALIDATE, str(out)], label="legend-validate")
 
 
+def test_renderer_soc_sample() -> None:
+    """The bundled full-SoC sample renders and validates clean in both themes."""
+    with _tmpdir() as tmp:
+        out_light = Path(tmp) / "soc.svg"
+        out_dark = Path(tmp) / "soc_dark.svg"
+        run([PY, VALIDATE_SPEC, "test_spec_soc.json"], label="soc-sample-spec")
+        run([PY, RENDER, "test_spec_soc.json", str(out_light)],
+            label="soc-sample-light")
+        if out_light.is_file():
+            run([PY, VALIDATE, str(out_light)], label="soc-sample-light-validate")
+        run([PY, RENDER, "--theme", "dark", "test_spec_soc.json", str(out_dark)],
+            label="soc-sample-dark")
+        if out_dark.is_file():
+            run([PY, VALIDATE, str(out_dark)], label="soc-sample-dark-validate")
+
+
 def test_renderer_lanes_sample() -> None:
     """The bundled lanes sample renders and validates clean in both themes."""
     with _tmpdir() as tmp:
@@ -671,6 +687,7 @@ def main() -> int:
     test_spec_validator_rejects_unknown_lane_domain()
     test_legend_card_renders_top_right()
     test_renderer_lanes_sample()
+    test_renderer_soc_sample()
     test_renderer_depth2_sample()
     test_renderer_omits_unknown_clock_frequency()
     test_renderer_routes_same_row_reverse_edges_in_gutter()
