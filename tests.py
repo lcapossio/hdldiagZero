@@ -354,6 +354,128 @@ def test_legend_card_renders_top_right() -> None:
             run([PY, VALIDATE, str(out)], label="legend-validate")
 
 
+def test_renderer_can_hide_legend() -> None:
+    """Large diagrams can suppress the legend column so the canvas stays tight."""
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        spec = {
+            "legend": False,
+            "domains": {"d": {"color": "#42A5F5"}},
+            "blocks": [
+                {"id": "a", "domain": "d", "row": 0, "col": 0},
+                {"id": "b", "domain": "d", "row": 0, "col": 1},
+            ],
+            "edges": [{"from": "a", "to": "b", "kind": "generic", "width": "bus"}],
+        }
+        spec_path = tmp / "no_legend.json"
+        out = tmp / "no_legend.svg"
+        spec_path.write_text(json.dumps(spec), encoding="utf-8")
+        run([PY, VALIDATE_SPEC, str(spec_path)], label="no-legend-spec")
+        run([PY, RENDER, str(spec_path), str(out)], label="no-legend-render")
+        if out.is_file():
+            svg = out.read_text(encoding="utf-8")
+            if 'id="legend_card"' in svg:
+                FAILURES.append("[no-legend-render] legend_card should be omitted")
+            if 'width="632"' not in svg:
+                FAILURES.append("[no-legend-render] canvas still reserved legend width")
+            run([PY, VALIDATE, str(out)], label="no-legend-validate")
+
+
+def test_bands_render_and_skip_geometry() -> None:
+    """Functional bands are decorative backgrounds and must not count as blocks."""
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        spec = {
+            "legend": False,
+            "domains": {"d": {"color": "#42A5F5"}},
+            "bands": {
+                "system": {
+                    "label": "system band",
+                    "rows": [0, 1],
+                    "color": "#CBD5E1",
+                    "border": "#475569",
+                }
+            },
+            "blocks": [
+                {"id": "a", "domain": "d", "row": 0, "col": 0},
+                {"id": "b", "domain": "d", "row": 1, "col": 1},
+            ],
+            "edges": [{"from": "a", "to": "b", "kind": "generic", "width": "bus"}],
+        }
+        spec_path = tmp / "bands.json"
+        out = tmp / "bands.svg"
+        spec_path.write_text(json.dumps(spec), encoding="utf-8")
+        run([PY, VALIDATE_SPEC, str(spec_path)], label="bands-spec")
+        run([PY, RENDER, str(spec_path), str(out)], label="bands-render")
+        if out.is_file():
+            svg = out.read_text(encoding="utf-8")
+            if 'id="band_system"' not in svg:
+                FAILURES.append("[bands-render] missing band_system rect")
+            if "system band" not in svg:
+                FAILURES.append("[bands-render] missing band label")
+            run([PY, VALIDATE, str(out)], label="bands-validate")
+
+
+def test_external_side_hint_controls_endpoint() -> None:
+    """`side` lets an edge-placed external block expose its inward-facing port."""
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        spec = {
+            "legend": False,
+            "domains": {"d": {"color": "#42A5F5"}},
+            "blocks": [
+                {"id": "core", "domain": "d", "row": 0, "col": 1},
+                {"id": "pads", "external": True, "side": "right", "row": 0, "col": 0},
+            ],
+            "edges": [{"from": "core", "to": "pads", "kind": "generic", "width": "pins"}],
+        }
+        spec_path = tmp / "side.json"
+        out = tmp / "side.svg"
+        spec_path.write_text(json.dumps(spec), encoding="utf-8")
+        run([PY, VALIDATE_SPEC, str(spec_path)], label="side-spec")
+        run([PY, RENDER, str(spec_path), str(out)], label="side-render")
+        if out.is_file():
+            svg = out.read_text(encoding="utf-8")
+            d = _path_d_for(svg, "edge_core_to_pads")
+            if d is None or not d.rstrip().endswith("L 36.0,81.0"):
+                FAILURES.append(
+                    "[side-render] expected edge to terminate on pads left side, "
+                    f"got {d!r}"
+                )
+            run([PY, VALIDATE, str(out)], label="side-validate")
+
+
+def test_multiline_block_labels_render() -> None:
+    """Blocks can supply compact explicit label lines instead of label+sublabel."""
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        spec = {
+            "legend": False,
+            "domains": {"d": {"color": "#42A5F5"}},
+            "blocks": [
+                {
+                    "id": "x",
+                    "domain": "d",
+                    "row": 0,
+                    "col": 0,
+                    "lines": ["Main TL-UL", "Xbar", "system fabric"],
+                }
+            ],
+            "edges": [],
+        }
+        spec_path = tmp / "lines.json"
+        out = tmp / "lines.svg"
+        spec_path.write_text(json.dumps(spec), encoding="utf-8")
+        run([PY, VALIDATE_SPEC, str(spec_path)], label="lines-spec")
+        run([PY, RENDER, str(spec_path), str(out)], label="lines-render")
+        if out.is_file():
+            svg = out.read_text(encoding="utf-8")
+            for needle in ("Main TL-UL", "Xbar", "system fabric"):
+                if needle not in svg:
+                    FAILURES.append(f"[lines-render] missing {needle!r}")
+            run([PY, VALIDATE, str(out)], label="lines-validate")
+
+
 def test_renderer_soc_sample() -> None:
     """The bundled full-SoC sample renders and validates clean in both themes."""
     with _tmpdir() as tmp:
@@ -889,6 +1011,10 @@ def main() -> int:
     test_spec_validator_rejects_lane_with_both_rows_and_cols()
     test_spec_validator_rejects_unknown_lane_domain()
     test_legend_card_renders_top_right()
+    test_renderer_can_hide_legend()
+    test_bands_render_and_skip_geometry()
+    test_external_side_hint_controls_endpoint()
+    test_multiline_block_labels_render()
     test_renderer_lanes_sample()
     test_renderer_soc_sample()
     test_renderer_opentitan_sample()

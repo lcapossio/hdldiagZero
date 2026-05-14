@@ -75,6 +75,12 @@ The only legitimate clarifying question is "which file is top?" when there are m
    blocks should sit closer together, use quarter steps (`0.25`, `0.5`,
    `0.75`) instead of shrinking the whole grid.
 
+   For large SoCs, prefer a compact reference-diagram style: use `legend:
+   false` or `legend: "compact"`, add broad functional `bands` such as
+   "core + bus" or "peripherals", put external I/O blocks on the canvas edge
+   with `external: true` plus `side`, and use `lines: [...]` when a block needs
+   more than two short label lines.
+
    If you use explicit `route.points`, every segment must be orthogonal, and
    endpoints attached to blocks must leave/enter perpendicular to the touched
    block side. Add a short outward stub before the first turn; never run the

@@ -303,7 +303,7 @@ def parse_svg(path):
         # Skip hierarchical group containers, clock-domain lane backgrounds,
         # and the legend card - they're decorative, not real blocks, and edges
         # are expected to cross their borders / draw over their fills.
-        if bid.startswith(("group_", "lane_", "legend_")):
+        if bid.startswith(("group_", "lane_", "band_", "legend_")):
             continue
         b = Block(bid, bid, x, y, w, h)
         b.label = find_label_for_rect(root, r, b)

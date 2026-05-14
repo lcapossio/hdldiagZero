@@ -63,6 +63,7 @@ LANE_PAD_TOP    = 30
 LANE_PAD_BOT    = 14
 LANE_SIDE_PAD   = 10
 LANE_FILL_OPACITY = 0.13
+BAND_FILL_OPACITY = 0.10
 
 # Top-right legend card.
 LEGEND_W           = 240
@@ -166,6 +167,15 @@ def grid_of(spec):
     return g
 
 
+def legend_mode_of(spec):
+    mode = spec.get("legend", "right")
+    if mode is False or mode == "none":
+        return "none"
+    if mode == "compact":
+        return "compact"
+    return "right"
+
+
 def block_rect(g, b):
     x = g["margin"] + b["col"] * (g["cell_w"] + g["gutter_x"])
     y = g["margin"] + b["row"] * (g["cell_h"] + g["gutter_y"])
@@ -174,8 +184,40 @@ def block_rect(g, b):
     return x, y, w, h
 
 
+def side_facing_canvas(block):
+    """Return the side of an edge-placed external block that faces inward."""
+    side = block.get("side")
+    if side == "left":
+        return "right"
+    if side == "right":
+        return "left"
+    if side == "top":
+        return "bottom"
+    if side == "bottom":
+        return "top"
+    return None
+
+
 def determine_sides(a, b):
     """Pick which side the edge exits A and enters B based on grid position."""
+    a_side = side_facing_canvas(a) if a.get("external") else None
+    b_side = side_facing_canvas(b) if b.get("external") else None
+    if a_side and b_side:
+        return a_side, b_side
+    if a_side:
+        return a_side, {
+            "right": "left",
+            "left": "right",
+            "top": "bottom",
+            "bottom": "top",
+        }[a_side]
+    if b_side:
+        return {
+            "right": "left",
+            "left": "right",
+            "top": "bottom",
+            "bottom": "top",
+        }[b_side], b_side
     if b["col"] > a["col"]:
         return "right", "left"
     if b["col"] < a["col"]:
@@ -350,6 +392,14 @@ def edge_label(e):
     return prefix or str(width) or ""
 
 
+def block_label_lines(b):
+    if b.get("lines"):
+        return [str(line) for line in b["lines"]]
+    label = b.get("label", b["id"])
+    sublabel = b.get("sublabel")
+    return [label, sublabel] if sublabel else [label]
+
+
 def route_all(spec, blocks_by_id, g):
     """Decide endpoints + lane offsets for every edge.
 
@@ -502,6 +552,7 @@ def render(spec_path, out_path, theme_override=None):
     g = grid_of(spec)
     blocks = spec["blocks"]
     blocks_by_id = {b["id"]: b for b in blocks}
+    legend_mode = legend_mode_of(spec)
 
     # Fill in domain fill / border from the palette when missing.
     domains = spec.setdefault("domains", {})
@@ -531,12 +582,12 @@ def render(spec_path, out_path, theme_override=None):
 
     # Legend card lives at the top-right of the canvas, so we reserve a column
     # of width LEGEND_W + 2 * LEGEND_PAD_OUTER on the right side of the grid.
-    has_legend = bool(domains) or bool(used_kinds)
+    has_legend = legend_mode != "none" and (bool(domains) or bool(used_kinds))
     legend_h = 0
     if has_legend:
         if domains:
             legend_h += LEGEND_HEADER_H + len(domains) * LEGEND_ROW_H
-        if used_kinds:
+        if used_kinds and legend_mode != "compact":
             if domains:
                 legend_h += LEGEND_SECTION_GAP
             legend_h += LEGEND_HEADER_H + len(used_kinds) * LEGEND_ROW_H
@@ -602,6 +653,48 @@ def render(spec_path, out_path, theme_override=None):
         out.append(f'  <text x="{grid_w/2:.1f}" y="24" text-anchor="middle" '
                    f'font-size="21" font-weight="600" fill="{theme["ink"]}" '
                    f'letter-spacing="0.2">{esc(spec["title"])}</text>')
+
+    # Functional background bands. Unlike `lanes`, bands are not tied to a
+    # clock domain; use them for architectural regions like "secure services".
+    spec_bands = spec.get("bands") or {}
+    if isinstance(spec_bands, dict) and spec_bands:
+        for bid, info in spec_bands.items():
+            rows = info.get("rows") or []
+            cols = info.get("cols") or []
+            if rows:
+                rmin, rmax = min(rows), max(rows)
+                x1 = LANE_SIDE_PAD
+                x2 = grid_w - LANE_SIDE_PAD
+                y1 = (g["margin"] + rmin * (g["cell_h"] + g["gutter_y"])
+                      + content_y0 - LANE_PAD_TOP)
+                y2 = (g["margin"] + rmax * (g["cell_h"] + g["gutter_y"])
+                      + g["cell_h"] + content_y0 + LANE_PAD_BOT)
+            elif cols:
+                cmin, cmax = min(cols), max(cols)
+                x1 = (g["margin"] + cmin * (g["cell_w"] + g["gutter_x"])
+                      - LANE_PAD_TOP)
+                x2 = (g["margin"] + cmax * (g["cell_w"] + g["gutter_x"])
+                      + g["cell_w"] + LANE_PAD_BOT)
+                y1 = content_y0 + LANE_SIDE_PAD
+                y2 = canvas_h - LANE_SIDE_PAD
+            else:
+                continue
+            fill = info.get("color", "#64748b")
+            border = info.get("border", theme["ink_soft"])
+            label = info.get("label") or bid
+            out.append(
+                f'  <rect id="band_{esc(bid)}" '
+                f'x="{x1:.0f}" y="{y1:.0f}" '
+                f'width="{x2 - x1:.0f}" height="{y2 - y1:.0f}" '
+                f'fill="{fill}" fill-opacity="{BAND_FILL_OPACITY}" '
+                f'stroke="{border}" stroke-width="1" '
+                f'stroke-dasharray="{LANE_DASH}" rx="4"/>'
+            )
+            out.append(
+                f'  <text x="{x1 + 14:.0f}" y="{y1 + 18:.0f}" '
+                f'font-size="13" font-weight="700" '
+                f'fill="{border}">{esc(label)}</text>'
+            )
 
     # Clock-domain lanes (tinted bands). Opt-in via top-level
     # `lanes: {<domain>: {rows: [...]}}` for horizontal bands or `{cols: [...]}`
@@ -714,23 +807,38 @@ def render(spec_path, out_path, theme_override=None):
                    f'stroke="{border_color}" stroke-width="1.4" '
                    f'rx="{BLOCK_RX}"/>')
         cx = x + w / 2
-        label = b.get("label", b["id"])
-        sublabel = b.get("sublabel")
-        if sublabel:
-            cy_main = y + h / 2 - 2
-            cy_sub = y + h / 2 + 14
-            out.append(f'  <text x="{cx:.0f}" y="{cy_main:.0f}" '
-                       f'text-anchor="middle" font-size="18" font-weight="600" '
-                       f'fill="{text_fill}">{esc(label)}</text>')
-            out.append(f'  <text x="{cx:.0f}" y="{cy_sub:.0f}" '
-                       f'text-anchor="middle" font-size="15" '
-                       f'font-style="italic" fill="{text_fill}" '
-                       f'opacity="0.85">{esc(sublabel)}</text>')
+        explicit_lines = b.get("lines")
+        if explicit_lines:
+            lines = block_label_lines(b)
+            font = 17 if len(lines) == 2 else 14
+            step = 17 if len(lines) == 2 else 15
+            total_h = step * (len(lines) - 1)
+            start_y = y + h / 2 - total_h / 2 + 5
+            for i, line in enumerate(lines):
+                weight = "600" if i == 0 else "500"
+                out.append(f'  <text x="{cx:.0f}" y="{start_y + i * step:.0f}" '
+                           f'text-anchor="middle" font-size="{font}" '
+                           f'font-weight="{weight}" fill="{text_fill}">'
+                           f'{esc(line)}</text>')
         else:
-            cy = y + h / 2 + 5
-            out.append(f'  <text x="{cx:.0f}" y="{cy:.0f}" '
-                       f'text-anchor="middle" font-size="18" font-weight="600" '
-                       f'fill="{text_fill}">{esc(label)}</text>')
+            label = b.get("label", b["id"])
+            sublabel = b.get("sublabel")
+            if sublabel:
+                cy_main = y + h / 2 - 2
+                cy_sub = y + h / 2 + 14
+                out.append(f'  <text x="{cx:.0f}" y="{cy_main:.0f}" '
+                           f'text-anchor="middle" font-size="18" font-weight="600" '
+                           f'fill="{text_fill}">{esc(label)}</text>')
+                out.append(f'  <text x="{cx:.0f}" y="{cy_sub:.0f}" '
+                           f'text-anchor="middle" font-size="15" '
+                           f'font-style="italic" fill="{text_fill}" '
+                           f'opacity="0.85">{esc(sublabel)}</text>')
+            else:
+                lines = [label]
+                cy = y + h / 2 + 5
+                out.append(f'  <text x="{cx:.0f}" y="{cy:.0f}" '
+                           f'text-anchor="middle" font-size="18" font-weight="600" '
+                           f'fill="{text_fill}">{esc(lines[0])}</text>')
 
     for e, from_pt, to_pt, fs, ts, lane_offset in routed:
         kind = e.get("kind", "generic")
@@ -824,7 +932,7 @@ def render(spec_path, out_path, theme_override=None):
                     f'fill="{theme["ink"]}">{esc(txt)}</text>'
                 )
                 cur_y += LEGEND_ROW_H
-        if used_kinds:
+        if used_kinds and legend_mode != "compact":
             if domains:
                 cur_y += LEGEND_SECTION_GAP
             out.append(

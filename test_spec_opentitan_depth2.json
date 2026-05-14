@@ -1,6 +1,7 @@
 {
   "title": "OpenTitan Earl Grey SoC sample (depth 2)",
   "top": "top_earlgrey",
+  "legend": false,
   "grid": {"gutter_x": 135, "gutter_y": 88},
   "domains": {
     "core":   {"color": "#42A5F5", "border": "#0D47A1"},
@@ -13,30 +14,35 @@
     "secure_services": {"label": "secure services"},
     "peripheral_subsystem": {"label": "peripheral subsystem"}
   },
+  "bands": {
+    "core_bus": {"label": "core + bus fabric", "rows": [0], "color": "#DBEAFE", "border": "#2563EB"},
+    "secure_services": {"label": "secure services", "rows": [1, 2], "color": "#FEE2E2", "border": "#B91C1C"},
+    "peripheral_aon": {"label": "peripheral subsystem + AON", "rows": [3], "color": "#FEF3C7", "border": "#B45309"}
+  },
   "blocks": [
-    {"id": "host",          "label": "Host / Debug",   "external": true,                      "row": 0, "col": 0, "sublabel": "JTAG / UART"},
-    {"id": "rv_dm",         "label": "RV Debug",       "domain": "core",                      "row": 0, "col": 1, "sublabel": "debug module", "w": 180, "h": 72},
-    {"id": "ibex",          "label": "Ibex Core",      "domain": "core",                      "row": 0, "col": 2, "sublabel": "secure MCU"},
-    {"id": "xbar_main",     "label": "Main TL-UL Xbar","domain": "bus",                       "row": 0, "col": 3, "sublabel": "system fabric"},
-    {"id": "mem_ctrls",     "label": "Memory Ctrls",   "domain": "bus",                       "row": 0, "col": 4, "sublabel": "ROM / SRAM / Flash", "w": 190, "h": 72},
+    {"id": "host",          "external": true, "side": "left",              "row": 0, "col": 0, "lines": ["Host / Debug", "JTAG / UART"]},
+    {"id": "rv_dm",         "domain": "core",                              "row": 0, "col": 1, "lines": ["RV Debug", "debug module"], "w": 180, "h": 72},
+    {"id": "ibex",          "domain": "core",                              "row": 0, "col": 2, "lines": ["Ibex Core", "secure MCU"]},
+    {"id": "xbar_main",     "domain": "bus",                               "row": 0, "col": 3, "lines": ["Main TL-UL", "Xbar", "system fabric"]},
+    {"id": "mem_ctrls",     "domain": "bus",                               "row": 0, "col": 4, "lines": ["Memory Ctrls", "ROM / SRAM", "Flash"], "w": 190, "h": 72},
 
-    {"id": "entropy",       "label": "Entropy Src",    "domain": "secure",                    "row": 1, "col": 0, "sublabel": "noise + health",     "group": "secure_services", "w": 180, "h": 72},
-    {"id": "csrng",         "label": "CSRNG",          "domain": "secure",                    "row": 1, "col": 0.75, "sublabel": "conditioner",        "group": "secure_services", "w": 160, "h": 66},
-    {"id": "edn",           "label": "EDN",            "domain": "secure",                    "row": 1, "col": 1.5, "sublabel": "random nets",        "group": "secure_services", "w": 150, "h": 62},
-    {"id": "aes",           "label": "AES",            "domain": "secure",                    "row": 1, "col": 2.25, "sublabel": "block cipher",       "group": "secure_services", "w": 150, "h": 62},
-    {"id": "otp_ctrl",      "label": "OTP Ctrl",       "domain": "secure", "domain_b": "aon", "row": 1, "col": 4, "sublabel": "fuses / secrets",    "group": "secure_services", "w": 180, "h": 72},
+    {"id": "entropy",       "domain": "secure",                            "row": 1, "col": 0, "lines": ["Entropy Src", "noise + health"], "group": "secure_services", "w": 180, "h": 72},
+    {"id": "csrng",         "domain": "secure",                            "row": 1, "col": 0.75, "lines": ["CSRNG", "conditioner"], "group": "secure_services", "w": 160, "h": 66},
+    {"id": "edn",           "domain": "secure",                            "row": 1, "col": 1.5, "lines": ["EDN", "random nets"], "group": "secure_services", "w": 150, "h": 62},
+    {"id": "aes",           "domain": "secure",                            "row": 1, "col": 2.25, "lines": ["AES", "block cipher"], "group": "secure_services", "w": 150, "h": 62},
+    {"id": "otp_ctrl",      "domain": "secure", "domain_b": "aon",         "row": 1, "col": 4, "lines": ["OTP Ctrl", "fuses", "secrets"], "group": "secure_services", "w": 180, "h": 72},
 
-    {"id": "lc_ctrl",       "label": "Life Cycle",     "domain": "secure", "domain_b": "aon", "row": 2, "col": 0, "sublabel": "device state",      "group": "secure_services", "w": 180, "h": 72},
-    {"id": "alert_handler", "label": "Alert Handler",  "domain": "secure", "domain_b": "aon", "row": 2, "col": 1, "sublabel": "fault response",    "group": "secure_services", "w": 190, "h": 72},
-    {"id": "keymgr",        "label": "Key Manager",    "domain": "secure",                    "row": 2, "col": 2, "sublabel": "root keys",         "group": "secure_services"},
-    {"id": "kmac",          "label": "KMAC / HMAC",    "domain": "secure",                    "row": 2, "col": 2.75, "sublabel": "hash / MAC",        "group": "secure_services", "w": 180, "h": 72},
-    {"id": "otbn",          "label": "OTBN",           "domain": "secure",                    "row": 2, "col": 4, "sublabel": "big-number accel", "group": "secure_services", "w": 180, "h": 72},
+    {"id": "lc_ctrl",       "domain": "secure", "domain_b": "aon",         "row": 2, "col": 0, "lines": ["Life Cycle", "device state"], "group": "secure_services", "w": 180, "h": 72},
+    {"id": "alert_handler", "domain": "secure", "domain_b": "aon",         "row": 2, "col": 1, "lines": ["Alert Handler", "fault response"], "group": "secure_services", "w": 190, "h": 72},
+    {"id": "keymgr",        "domain": "secure",                            "row": 2, "col": 2, "lines": ["Key Manager", "root keys"], "group": "secure_services"},
+    {"id": "kmac",          "domain": "secure",                            "row": 2, "col": 2.75, "lines": ["KMAC / HMAC", "hash / MAC"], "group": "secure_services", "w": 180, "h": 72},
+    {"id": "otbn",          "domain": "secure",                            "row": 2, "col": 4, "lines": ["OTBN", "big-number", "accel"], "group": "secure_services", "w": 180, "h": 72},
 
-    {"id": "xbar_peri",     "label": "Peripheral Xbar","domain": "peri", "domain_b": "bus",   "row": 3, "col": 0, "sublabel": "TL-UL fanout",      "group": "peripheral_subsystem"},
-    {"id": "uart_spi",      "label": "UART / SPI",     "domain": "peri",                      "row": 3, "col": 1, "sublabel": "serial I/O",        "group": "peripheral_subsystem", "w": 170, "h": 68},
-    {"id": "i2c_gpio",      "label": "I2C / GPIO",     "domain": "peri",                      "row": 3, "col": 1.75, "sublabel": "pads / pins",       "group": "peripheral_subsystem", "w": 170, "h": 68},
-    {"id": "aon_timer",     "label": "AON Timers",     "domain": "aon",                       "row": 3, "col": 3, "sublabel": "watchdog / wake",   "group": "peripheral_subsystem", "w": 180, "h": 72},
-    {"id": "rv_plic",       "label": "RV PLIC",        "domain": "peri",                      "row": 3, "col": 4, "sublabel": "interrupts",        "group": "peripheral_subsystem", "w": 170, "h": 68}
+    {"id": "xbar_peri",     "domain": "peri", "domain_b": "bus",           "row": 3, "col": 0, "lines": ["Peripheral", "Xbar", "TL-UL fanout"], "group": "peripheral_subsystem"},
+    {"id": "uart_spi",      "domain": "peri",                              "row": 3, "col": 1, "lines": ["UART / SPI", "serial I/O"], "group": "peripheral_subsystem", "w": 170, "h": 68},
+    {"id": "i2c_gpio",      "domain": "peri",                              "row": 3, "col": 1.75, "lines": ["I2C / GPIO", "pads / pins"], "group": "peripheral_subsystem", "w": 170, "h": 68},
+    {"id": "aon_timer",     "domain": "aon",                               "row": 3, "col": 3, "lines": ["AON Timers", "watchdog", "wake"], "group": "peripheral_subsystem", "w": 180, "h": 72},
+    {"id": "rv_plic",       "domain": "peri",                              "row": 3, "col": 4, "lines": ["RV PLIC", "interrupts"], "group": "peripheral_subsystem", "w": 170, "h": 68}
   ],
   "edges": [
     {"from": "host",          "to": "rv_dm",       "kind": "generic", "width": "debug"},

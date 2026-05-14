@@ -4,6 +4,31 @@ An agent skill that turns an HDL / RTL / SoC architecture description into a cle
 
 The skill is packaged as a Claude Code plugin: the runtime files live under [skills/hdldiagzero/](skills/hdldiagzero/) and are described by [.claude-plugin/plugin.json](.claude-plugin/plugin.json) and [.claude-plugin/marketplace.json](.claude-plugin/marketplace.json). Claude Code users install via the marketplace flow; other agent runtimes (Codex, custom) can use [install.py](install.py) for a direct copy.
 
+## Index
+
+- [Usage](#usage)
+- [Sample Output](#sample-output)
+- [Features](#features)
+- [Files](#files)
+- [Install](#install)
+- [Testing](#testing)
+- [Author](#author)
+- [License](#license)
+
+## Usage
+
+Once installed, ask the agent something like *"draw the top-level RTL"* in any HDL project and the skill activates. By default it uses the light theme and depth 1 (top + direct children); add "dark mode" or "two levels deep" to override. The agent extracts the architecture, writes a JSON spec next to the SVG, validates the spec, runs the renderer, and validates the SVG geometry.
+
+You can also drive the toolchain manually:
+
+```
+python validate_spec.py spec.json
+python render.py --theme dark spec.json out.svg
+python validate.py out.svg
+```
+
+Each validator exits 0 on PASS and a non-zero count of violations otherwise; each violation prints with coordinates so the agent (or a human) can adjust the JSON.
+
 ## Sample Output
 
 ### Hierarchy depth 1 - top + direct children
@@ -102,24 +127,16 @@ Dark mode:
   <img src="sample_depth2_dark.svg" alt="Sample hdldiagZero depth-2 dark-mode SVG output">
 </a>
 
-## Index
-
-- [Sample Output](#sample-output)
-- [Features](#features)
-- [Files](#files)
-- [Install](#install)
-- [Usage](#usage)
-- [Testing](#testing)
-- [Author](#author)
-- [License](#license)
-
 ## Features
 
 - **JSON-spec-driven render**: the agent extracts a small architecture spec; the renderer (`render.py`) produces the SVG. The renderer owns geometry - the agent doesn't pick coordinates.
 - **Clock-domain coloring** with a tuned Material-tone palette. Each domain has a separate fill and dark border. CDC blocks (`domain_b: ...`) render with a horizontal-split linear gradient bridging two domains.
 - **External / off-chip blocks** (`external: true`) get a neutral grey fill regardless of domain.
+- **Edge-side external blocks** with optional `side` hints (`left`, `right`, `top`, `bottom`) so I/O blocks can sit on canvas edges and expose inward-facing ports.
 - **Per-block sizing** with optional `w` / `h` overrides for compact leaves or larger hub blocks, while `grid.cell_w` / `grid.cell_h` remain the diagram-wide defaults.
 - **Quarter-step placement** with `row` / `col` values like `1.25` or `2.5` for pulling related blocks closer together without compressing the whole diagram.
+- **Compact multi-line block labels** with `lines: [...]` for dense SoC diagrams where `label` + `sublabel` is too rigid.
+- **Functional background bands** (`bands`) and clock-domain lanes (`lanes`) for broad visual grouping, plus `legend: false` / `legend: compact` when large diagrams should spend the canvas on architecture instead of keys.
 - **Edge styles per kind**: `axi-mm`, `axi-lite`, `axi-stream`, `cdc` (purple dashed), `generic`. Distinct strokes and arrowheads, plus a connection-styles legend below the clock-domain legend.
 - **Manhattan single-bend routing** with **interval-coloring lane assignment**: parallel edges sharing a gutter that *actually* overlap in y/x get distinct lanes; non-overlapping edges share a lane so labels stay in the gutter midpoint.
 - **Row/column gutter detours** for same-row or same-column edges that need to pass around intermediate blocks.
@@ -199,20 +216,6 @@ python install.py --dst /opt/agent-skills/hdldiagzero
 ```
 
 Copies the contents of [skills/hdldiagzero/](skills/hdldiagzero/) into the destination directory. Restart your runtime.
-
-## Usage
-
-Once installed, ask the agent something like *"draw the top-level RTL"* in any HDL project and the skill activates. By default it uses the light theme and depth 1 (top + direct children); add "dark mode" or "two levels deep" to override. The agent extracts the architecture, writes a JSON spec next to the SVG, validates the spec, runs the renderer, and validates the SVG geometry.
-
-You can also drive the toolchain manually:
-
-```
-python validate_spec.py spec.json
-python render.py --theme dark spec.json out.svg
-python validate.py out.svg
-```
-
-Each validator exits 0 on PASS and a non-zero count of violations otherwise; each violation prints with coordinates so the agent (or a human) can adjust the JSON.
 
 ## Testing
 

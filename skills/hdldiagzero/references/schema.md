@@ -42,10 +42,12 @@ otherwise produce a broken SVG.
 | `title`   | string | optional  | Title rendered at top-center. |
 | `top`     | string | optional  | Informational; identifies the top module. |
 | `theme`   | string | optional  | `"light"` (default) or `"dark"`. |
+| `legend`  | bool \| string | optional | `true` / `"right"` (default), `false` / `"none"` to hide, or `"compact"` to show only clock-domain colors. |
 | `grid`    | object | optional  | Grid sizing overrides; see below. |
 | `domains` | object | required* | Map of domain key -> `{freq_mhz, color, border}`. *Required unless every block is external. |
 | `groups`  | object | optional  | Map of group id -> `{label}`. Used to draw dashed hierarchy containers around member blocks (depth > 1). |
 | `lanes`   | object | optional  | Map of domain id -> `{rows: [...]}`. Draws full-width tinted bands per clock domain across the canvas. See *lanes* below. |
+| `bands`   | object | optional  | Map of functional band id -> `{label, rows/cols, color, border}`. Use for architecture regions that are not pure clock domains. |
 | `blocks`  | array  | required  | One or more blocks. |
 | `edges`   | array  | required  | May be empty. |
 
@@ -64,9 +66,11 @@ otherwise produce a broken SVG.
 | `id`       | string  | required  | Unique non-empty string. |
 | `label`    | string  | optional  | Defaults to `id`. |
 | `sublabel` | string  | optional  | Italic line under the label. Keep it terse. |
+| `lines`    | string[] | optional | Explicit compact label lines. Overrides `label` / `sublabel` rendering when present. |
 | `domain`   | string  | required* | Domain key from `domains`. *Optional if `external=true`. |
 | `domain_b` | string  | optional  | CDC blocks only. Half fill of each domain's color. Must differ from `domain` and reference a declared domain. |
 | `external` | boolean | optional  | True = off-chip / off-die. Neutral grey fill, ignores `domain`. |
+| `side`     | string  | optional  | For `external` blocks, the canvas edge where the block belongs: `left`, `right`, `top`, or `bottom`. The renderer uses the inward-facing side as the preferred edge port. |
 | `row`      | number  | required  | 0-indexed grid row, in 0.25 steps. |
 | `col`      | number  | required  | 0-indexed grid column, in 0.25 steps. One block per `(row, col)`. |
 | `w`        | int     | optional  | Per-block width override in px. Defaults to `grid.cell_w`. Positive ints only. |
@@ -114,6 +118,28 @@ not overlap - the renderer doesn't prevent visual collisions.
 
 Skip lanes if your rows / columns mix domains; the visual collision will
 look worse than the default per-block color.
+
+## bands (optional)
+
+Functional background bands are like lanes, but they are not tied to clock
+domains. Use them for broad architectural regions such as "core + bus",
+"secure services", or "peripherals + AON" when rows/columns mix domains but
+still need the reference-diagram feel of horizontal or vertical bands.
+
+| Field    | Type   | Required | Description |
+|----------|--------|----------|-------------|
+| `label`  | string | optional | Header text shown at the top-left of the band. Defaults to the band id. |
+| `rows`   | number[] | one of | Non-empty list of grid rows in 0.25 steps. Spans `min(rows)`..`max(rows)`. |
+| `cols`   | number[] | one of | Non-empty list of grid columns in 0.25 steps. Spans `min(cols)`..`max(cols)`. |
+| `color`  | string | optional | Fill color (`#RRGGBB`). Defaults to slate. |
+| `border` | string | optional | Border/header color (`#RRGGBB`). Defaults to soft ink. |
+
+```json
+"bands": {
+  "core_bus": {"label": "core + bus fabric", "rows": [0], "color": "#DBEAFE", "border": "#2563EB"},
+  "secure": {"label": "secure services", "rows": [1, 2], "color": "#FEE2E2", "border": "#B91C1C"}
+}
+```
 
 ## groups (optional)
 

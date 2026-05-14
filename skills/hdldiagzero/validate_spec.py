@@ -22,20 +22,23 @@ from pathlib import Path
 VALID_KINDS = {"axi-mm", "axi-lite", "axi-stream", "cdc", "generic"}
 VALID_THEMES = {"light", "dark"}
 VALID_ROUTE_MODES = {"auto", "direct", "orthogonal"}
+VALID_LEGENDS = {"right", "compact", "none"}
+VALID_SIDES = {"left", "right", "top", "bottom"}
 GRID_FIELDS = {"cell_w", "cell_h", "gutter_x", "gutter_y", "margin"}
 DOMAIN_FIELDS = {"freq_mhz", "color", "border"}
 GROUP_FIELDS = {"label"}
 LANE_FIELDS = {"rows", "cols"}
+BAND_FIELDS = {"label", "rows", "cols", "color", "border"}
 BLOCK_FIELDS = {
     "id", "label", "sublabel", "domain", "domain_b", "external", "row", "col",
-    "group", "w", "h",
+    "group", "w", "h", "side", "lines",
 }
 EDGE_FIELDS = {"from", "to", "kind", "width", "route", "label"}
 ROUTE_FIELDS = {"mode", "points"}
 LABEL_FIELDS = {"dx", "dy", "segment", "t"}
 TOP_FIELDS = {
-    "title", "top", "theme", "grid", "domains", "groups", "lanes", "blocks",
-    "edges",
+    "title", "top", "theme", "legend", "grid", "domains", "groups", "lanes",
+    "bands", "blocks", "edges",
 }
 
 _HEX_COLOR = re.compile(r"^#[0-9a-fA-F]{6}$")
@@ -84,6 +87,17 @@ def validate(spec):
     theme = spec.get("theme")
     if theme is not None and theme not in VALID_THEMES:
         errors.append(f"theme: '{theme}' is not one of {sorted(VALID_THEMES)}")
+
+    # legend
+    legend = spec.get("legend")
+    if legend is not None:
+        if isinstance(legend, bool):
+            pass
+        elif not isinstance(legend, str) or legend not in VALID_LEGENDS:
+            errors.append(
+                f"legend: must be a boolean or one of {sorted(VALID_LEGENDS)} "
+                f"(got {legend!r})"
+            )
 
     # grid
     grid = spec.get("grid")
@@ -151,6 +165,51 @@ def validate(spec):
                 errors.append(f"group '{name}': label must be a string")
     else:
         groups = {}
+
+    # bands (optional). Functional background bands independent of domains.
+    bands = spec.get("bands")
+    if bands is not None and not isinstance(bands, dict):
+        errors.append("bands: must be an object (band key -> {label, rows/cols})")
+    elif isinstance(bands, dict):
+        for name, info in bands.items():
+            prefix_b = f"band '{name}'"
+            if not isinstance(name, str) or not name:
+                errors.append(f"bands: key '{name!r}' must be a non-empty string")
+                continue
+            if not isinstance(info, dict):
+                errors.append(f"{prefix_b}: must be an object")
+                continue
+            _check_unknown_keys(info, BAND_FIELDS, prefix_b, errors)
+            if "label" in info and not isinstance(info["label"], str):
+                errors.append(f"{prefix_b}: label must be a string")
+            for f in ("color", "border"):
+                if f in info and not _is_color(info[f]):
+                    errors.append(
+                        f"{prefix_b}: {f} must be a hex color string "
+                        f"(got {info[f]!r})"
+                    )
+            rows = info.get("rows")
+            cols = info.get("cols")
+            if (rows is None) == (cols is None):
+                errors.append(
+                    f"{prefix_b}: must specify exactly one of 'rows' or 'cols'"
+                )
+            for axis, vals in (("rows", rows), ("cols", cols)):
+                if vals is None:
+                    continue
+                if not isinstance(vals, list) or not vals:
+                    errors.append(
+                        f"{prefix_b}: '{axis}' must be a non-empty list of "
+                        f"non-negative numbers in 0.25 steps"
+                    )
+                else:
+                    for v in vals:
+                        if not _is_grid_coord(v) or v < 0:
+                            errors.append(
+                                f"{prefix_b}: '{axis}' entries must be "
+                                f"non-negative numbers in 0.25 steps "
+                                f"(got {v!r}; booleans not accepted)"
+                            )
 
     # lanes (optional). Full-width tinted backgrounds per clock domain. Each
     # entry maps a declared domain key to the rows that domain's blocks occupy.
@@ -221,6 +280,22 @@ def validate(spec):
         for f in ("label", "sublabel"):
             if f in b and not isinstance(b[f], str):
                 errors.append(f"{prefix}: '{f}' must be a string")
+
+        lines = b.get("lines")
+        if lines is not None:
+            if not isinstance(lines, list) or not lines:
+                errors.append(f"{prefix}: 'lines' must be a non-empty list of strings")
+            else:
+                for j, line in enumerate(lines):
+                    if not isinstance(line, str):
+                        errors.append(
+                            f"{prefix}: lines[{j}] must be a string "
+                            f"(got {type(line).__name__})"
+                        )
+
+        side = b.get("side")
+        if side is not None and side not in VALID_SIDES:
+            errors.append(f"{prefix}: side '{side}' is not one of {sorted(VALID_SIDES)}")
 
         for f in ("w", "h"):
             if f in b:

@@ -36,9 +36,12 @@ before calling the renderer.
 - Optional per-block `w` and `h` are positive ints in pixels. Use them for
   local block-size overrides; omit them for the diagram-wide `grid.cell_w` /
   `grid.cell_h` defaults.
-- `label` and `sublabel` are strings if present.
+- `label` and `sublabel` are strings if present. `lines`, when present, is a
+  non-empty list of strings and renders compact explicit block label lines.
 - `external` must be a real JSON boolean if present (string `"false"` and
   int `0` both fail).
+- `side`, when present, is one of `left`, `right`, `top`, `bottom`. Use it on
+  edge-placed external blocks so arrows connect to the inward-facing side.
 - An `external: true` block cannot also set `domain` or `domain_b` - the
   block isn't in any internal clock domain by definition.
 - A non-external block must set `domain`, and that domain must be declared
@@ -51,6 +54,11 @@ before calling the renderer.
 - `lanes` (if present) is an object keyed on declared domain ids. Each entry
   must specify **exactly one** of `rows` or `cols`, with a non-empty list of
   non-negative ints. `rows` -> horizontal band, `cols` -> vertical band.
+- `bands` (if present) is an object keyed on functional region ids. Each entry
+  must specify **exactly one** of `rows` or `cols`, using non-negative numbers
+  in 0.25 steps; optional `color` / `border` values are `#RRGGBB`.
+- `legend`, if present, is a boolean or one of `"right"`, `"compact"`,
+  `"none"`.
 
 **Edges**
 - `from` and `to` must reference existing block ids.
