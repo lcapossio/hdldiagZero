@@ -681,7 +681,7 @@ def render(spec_path, out_path, theme_override=None):
                 continue
             fill = info.get("color", "#64748b")
             border = info.get("border", theme["ink_soft"])
-            label = info.get("label") or bid
+            label = info["label"] if "label" in info else bid
             out.append(
                 f'  <rect id="band_{esc(bid)}" '
                 f'x="{x1:.0f}" y="{y1:.0f}" '
@@ -690,11 +690,12 @@ def render(spec_path, out_path, theme_override=None):
                 f'stroke="{border}" stroke-width="1" '
                 f'stroke-dasharray="{LANE_DASH}" rx="4"/>'
             )
-            out.append(
-                f'  <text x="{x1 + 14:.0f}" y="{y1 + 18:.0f}" '
-                f'font-size="13" font-weight="700" '
-                f'fill="{border}">{esc(label)}</text>'
-            )
+            if label:
+                out.append(
+                    f'  <text x="{x1 + 14:.0f}" y="{y1 + 18:.0f}" '
+                    f'font-size="13" font-weight="700" '
+                    f'fill="{border}">{esc(label)}</text>'
+                )
 
     # Clock-domain lanes (tinted bands). Opt-in via top-level
     # `lanes: {<domain>: {rows: [...]}}` for horizontal bands or `{cols: [...]}`

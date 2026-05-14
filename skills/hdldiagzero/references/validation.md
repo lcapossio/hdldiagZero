@@ -56,7 +56,8 @@ before calling the renderer.
   non-negative ints. `rows` -> horizontal band, `cols` -> vertical band.
 - `bands` (if present) is an object keyed on functional region ids. Each entry
   must specify **exactly one** of `rows` or `cols`, using non-negative numbers
-  in 0.25 steps; optional `color` / `border` values are `#RRGGBB`.
+  in 0.25 steps; optional `color` / `border` values are `#RRGGBB`. `label`
+  may be an empty string to suppress the band header.
 - `legend`, if present, is a boolean or one of `"right"`, `"compact"`,
   `"none"`.
 
@@ -86,6 +87,7 @@ before calling the renderer.
 | `STUB`       | Arrow shaft shorter than ~1.5x the arrowhead.               |
 | `TEXT_BLOCK` | A block overlaps text that isn't its own label.             |
 | `TEXT_ARROW` | An arrow passes through text that isn't its own edge label. |
+| `TEXT_TEXT`  | Two separate text labels significantly overlap.             |
 | `PORT`       | Two arrow endpoints on the same block within 12px.          |
 | `BITWIDTH`   | A long arrow has no nearby text label.                      |
 | `DIAGONAL`   | An arrow segment is neither horizontal nor vertical.        |

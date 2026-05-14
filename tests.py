@@ -416,6 +416,38 @@ def test_bands_render_and_skip_geometry() -> None:
             run([PY, VALIDATE, str(out)], label="bands-validate")
 
 
+def test_band_label_can_be_suppressed() -> None:
+    """An empty band label suppresses the text so bands can sit under groups."""
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        spec = {
+            "legend": False,
+            "domains": {"d": {"color": "#42A5F5"}},
+            "bands": {
+                "system": {
+                    "label": "",
+                    "rows": [0],
+                    "color": "#CBD5E1",
+                    "border": "#475569",
+                }
+            },
+            "blocks": [{"id": "a", "domain": "d", "row": 0, "col": 0}],
+            "edges": [],
+        }
+        spec_path = tmp / "band_no_label.json"
+        out = tmp / "band_no_label.svg"
+        spec_path.write_text(json.dumps(spec), encoding="utf-8")
+        run([PY, VALIDATE_SPEC, str(spec_path)], label="band-no-label-spec")
+        run([PY, RENDER, str(spec_path), str(out)], label="band-no-label-render")
+        if out.is_file():
+            svg = out.read_text(encoding="utf-8")
+            if 'id="band_system"' not in svg:
+                FAILURES.append("[band-no-label-render] missing band_system rect")
+            if ">system<" in svg:
+                FAILURES.append("[band-no-label-render] empty band label still rendered")
+            run([PY, VALIDATE, str(out)], label="band-no-label-validate")
+
+
 def test_external_side_hint_controls_endpoint() -> None:
     """`side` lets an edge-placed external block expose its inward-facing port."""
     with _tmpdir() as tmp:
@@ -938,6 +970,28 @@ def test_validator_flags_unnecessary_loop() -> None:
             )
 
 
+def test_validator_flags_overlapping_text() -> None:
+    """Two visible labels drawn on top of each other must trigger TEXT_TEXT."""
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        svg = (
+            '<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="120" '
+            'viewBox="0 0 320 120">\n'
+            '  <text x="20" y="40" font-size="16">secure services</text>\n'
+            '  <text x="22" y="42" font-size="16">SECURE SERVICES</text>\n'
+            '</svg>\n'
+        )
+        out = tmp / "text_overlap.svg"
+        out.write_text(svg, encoding="utf-8")
+        proc = run([PY, VALIDATE, str(out)], expect_rc=1, label="validate-text-text")
+        if "TEXT_TEXT" not in proc.stdout:
+            FAILURES.append(
+                f"[validate-text-text] expected TEXT_TEXT in report, "
+                f"got: {proc.stdout.strip()!r}"
+            )
+
+
 def test_validator_allows_detour_around_block() -> None:
     """A U-shaped route is allowed when a block blocks the direct segment."""
     with _tmpdir() as tmp:
@@ -1013,6 +1067,7 @@ def main() -> int:
     test_legend_card_renders_top_right()
     test_renderer_can_hide_legend()
     test_bands_render_and_skip_geometry()
+    test_band_label_can_be_suppressed()
     test_external_side_hint_controls_endpoint()
     test_multiline_block_labels_render()
     test_renderer_lanes_sample()
@@ -1032,6 +1087,7 @@ def main() -> int:
     test_validator_flags_diagonal_segment_in_svg()
     test_validator_flags_tangential_block_exit()
     test_validator_flags_unnecessary_loop()
+    test_validator_flags_overlapping_text()
     test_validator_allows_detour_around_block()
     test_install()
 

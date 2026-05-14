@@ -10,16 +10,17 @@ Checks:
   3. STUB        - arrows whose shaft is shorter than ~1.5x the arrowhead
   4. TEXT_BLOCK  - a block overlapping text that is not its own label
   5. TEXT_ARROW  - an arrow passing through text that is not its own edge label
-  6. PORT        - two arrows attaching to the same block within MIN_PORT_SEP px
+  6. TEXT_TEXT   - significant overlap between two separate text labels
+  7. PORT        - two arrows attaching to the same block within MIN_PORT_SEP px
                    (i.e. effectively meeting at the same point)
-  7. BITWIDTH    - an arrow longer than BITWIDTH_MIN_ARROW_LEN with no nearby
+  8. BITWIDTH    - an arrow longer than BITWIDTH_MIN_ARROW_LEN with no nearby
                    text containing a digit (no bitwidth indicator at midpoint)
-  8. DIAGONAL    - an arrow segment that is neither horizontal nor vertical.
+  9. DIAGONAL    - an arrow segment that is neither horizontal nor vertical.
                    The layout language is strictly orthogonal; diagonals are
                    always a routing bug.
-  9. PERPENDICULAR - an arrow endpoint touching a block must leave/enter
+ 10. PERPENDICULAR - an arrow endpoint touching a block must leave/enter
                    perpendicular to that block side, not run tangentially.
- 10. LOOP        - a route loops away even though the connected ports are
+ 11. LOOP        - a route loops away even though the connected ports are
                    collinear, facing each other, and have clear space.
 
 Exit code = number of violations (0 = pass). Writes a structured report to stdout
@@ -49,6 +50,7 @@ MIN_PORT_SEP = 12.0      # px - two arrow endpoints on the same block must be th
 DEFAULT_FONT_SIZE = 12.0
 TEXT_WIDTH_FACTOR = 0.55 # rough character-width / font-size ratio
 TEXT_LABEL_PROXIMITY = 12.0  # text within this distance of an arrow is treated as its label
+TEXT_TEXT_MIN_OVERLAP = 150.0 # px^2 - ignore tiny bbox estimation overlaps
 BITWIDTH_MIN_ARROW_LEN = 50.0  # px - arrows shorter than this are exempt from bitwidth check
 LOOP_EXCESS = 10.0       # px - allow small float/label wiggle before calling a loop
 
@@ -633,6 +635,14 @@ def rects_overlap(r1, r2):
     return not (x2a <= x1b or x2b <= x1a or y2a <= y1b or y2b <= y1a)
 
 
+def rect_overlap_area(r1, r2):
+    x1a, y1a, x2a, y2a = r1
+    x1b, y1b, x2b, y2b = r2
+    w = min(x2a, x2b) - max(x1a, x1b)
+    h = min(y2a, y2b) - max(y1a, y1b)
+    return max(0.0, w) * max(0.0, h)
+
+
 def point_in_rect(px, py, rect):
     x1, y1, x2, y2 = rect
     return x1 <= px <= x2 and y1 <= py <= y2
@@ -681,6 +691,27 @@ def check_text_overlap(blocks, arrows, texts):
                         f"clear space."
                     )
                     break
+    return violations
+
+
+def check_text_text_overlap(texts):
+    """Flag significant label collisions.
+
+    Adjacent multi-line labels can have tiny estimated bbox overlaps because
+    we do not have real font metrics. Only report overlaps with enough area to
+    be visibly confusing.
+    """
+    violations = []
+    for i, a in enumerate(texts):
+        for b in texts[i + 1:]:
+            area = rect_overlap_area(a.rect, b.rect)
+            if area < TEXT_TEXT_MIN_OVERLAP:
+                continue
+            violations.append(
+                f"TEXT_TEXT: text '{a.text}' at ({a.cx:.0f},{a.cy:.0f}) "
+                f"overlaps text '{b.text}' at ({b.cx:.0f},{b.cy:.0f}) "
+                f"(overlap area {area:.0f}px^2). Move or suppress one label."
+            )
     return violations
 
 
@@ -826,6 +857,7 @@ def main():
     violations += check_spacing(arrows)
     violations += check_stub_arrows(arrows, markers)
     violations += check_text_overlap(blocks, arrows, texts)
+    violations += check_text_text_overlap(texts)
     violations += check_port_separation(blocks, arrows)
     violations += check_bitwidth_labels(arrows, texts)
     violations += check_diagonal_arrows(arrows)

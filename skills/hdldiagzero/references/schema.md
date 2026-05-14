@@ -128,7 +128,7 @@ still need the reference-diagram feel of horizontal or vertical bands.
 
 | Field    | Type   | Required | Description |
 |----------|--------|----------|-------------|
-| `label`  | string | optional | Header text shown at the top-left of the band. Defaults to the band id. |
+| `label`  | string | optional | Header text shown at the top-left of the band. Defaults to the band id; set `""` to suppress the header when another label, such as a group header, already identifies the region. |
 | `rows`   | number[] | one of | Non-empty list of grid rows in 0.25 steps. Spans `min(rows)`..`max(rows)`. |
 | `cols`   | number[] | one of | Non-empty list of grid columns in 0.25 steps. Spans `min(cols)`..`max(cols)`. |
 | `color`  | string | optional | Fill color (`#RRGGBB`). Defaults to slate. |
