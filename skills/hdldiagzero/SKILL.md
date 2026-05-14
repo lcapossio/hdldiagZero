@@ -67,10 +67,20 @@ The only legitimate clarifying question is "which file is top?" when there are m
 
 5. **Emit JSON spec** to `docs/architecture.json` (or the user-named path). Schema: `references/schema.md`.
 
+   Use `grid.cell_w` / `grid.cell_h` for diagram-wide block sizing. Use block
+   fields `w` / `h` only for local overrides, such as compact leaf peripherals
+   or an intentionally larger interconnect.
+
+   Place blocks on integer `row` / `col` positions by default. When related
+   blocks should sit closer together, use quarter steps (`0.25`, `0.5`,
+   `0.75`) instead of shrinking the whole grid.
+
    If you use explicit `route.points`, every segment must be orthogonal, and
    endpoints attached to blocks must leave/enter perpendicular to the touched
    block side. Add a short outward stub before the first turn; never run the
-   first or last segment tangentially along the block edge.
+   first or last segment tangentially along the block edge. Do not add dogleg
+   loops when two block ports can connect directly; use `route.mode: "direct"`
+   or remove the extra waypoints.
 
 6. **Validate the spec** before rendering: `python <skill>/validate_spec.py docs/architecture.json`. Fix any reported issues; do NOT call the renderer with a broken spec.
 

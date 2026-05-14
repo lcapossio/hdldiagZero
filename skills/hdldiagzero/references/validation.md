@@ -29,10 +29,13 @@ before calling the renderer.
 
 **Blocks**
 - `id` is a non-empty string and unique within the spec.
-- `row` and `col` are non-negative ints. **Booleans are rejected** even
-  though Python's `bool` subclasses `int`.
+- `row` and `col` are non-negative numbers in 0.25 steps. **Booleans are
+  rejected** even though Python's `bool` subclasses `int`.
 - One block per `(row, col)`; duplicate cells are flagged with the other
   occupant's id.
+- Optional per-block `w` and `h` are positive ints in pixels. Use them for
+  local block-size overrides; omit them for the diagram-wide `grid.cell_w` /
+  `grid.cell_h` defaults.
 - `label` and `sublabel` are strings if present.
 - `external` must be a real JSON boolean if present (string `"false"` and
   int `0` both fail).
@@ -79,6 +82,7 @@ before calling the renderer.
 | `BITWIDTH`   | A long arrow has no nearby text label.                      |
 | `DIAGONAL`   | An arrow segment is neither horizontal nor vertical.        |
 | `PERPENDICULAR` | An arrow endpoint leaves/enters along the block edge.    |
+| `LOOP`       | A route detours even though a clear direct connection exists. |
 
 ## Fix recipes
 
@@ -130,6 +134,13 @@ turns. Add a short stub:
 - left side: `[block_left, y] -> [block_left - 40, y] -> ...`
 - top side: `[x, block_top] -> [x, block_top - 40] -> ...`
 - bottom side: `[x, block_bottom] -> [x, block_bottom + 40] -> ...`
+
+### LOOP
+The connected ports are collinear, face each other, and have no intervening
+block, but the route still leaves the direct segment and comes back. Remove
+the extra waypoints or set `route.mode: "direct"`. If the detour exists to
+avoid a text label, prefer moving the label with `label.dx` / `label.dy`;
+block-to-block geometry should stay direct.
 
 ## When iteration doesn't converge
 

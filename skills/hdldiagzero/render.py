@@ -169,7 +169,9 @@ def grid_of(spec):
 def block_rect(g, b):
     x = g["margin"] + b["col"] * (g["cell_w"] + g["gutter_x"])
     y = g["margin"] + b["row"] * (g["cell_h"] + g["gutter_y"])
-    return x, y, g["cell_w"], g["cell_h"]
+    w = b.get("w", g["cell_w"])
+    h = b.get("h", g["cell_h"])
+    return x, y, w, h
 
 
 def determine_sides(a, b):

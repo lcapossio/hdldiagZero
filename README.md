@@ -118,13 +118,15 @@ Dark mode:
 - **JSON-spec-driven render**: the agent extracts a small architecture spec; the renderer (`render.py`) produces the SVG. The renderer owns geometry - the agent doesn't pick coordinates.
 - **Clock-domain coloring** with a tuned Material-tone palette. Each domain has a separate fill and dark border. CDC blocks (`domain_b: ...`) render with a horizontal-split linear gradient bridging two domains.
 - **External / off-chip blocks** (`external: true`) get a neutral grey fill regardless of domain.
+- **Per-block sizing** with optional `w` / `h` overrides for compact leaves or larger hub blocks, while `grid.cell_w` / `grid.cell_h` remain the diagram-wide defaults.
+- **Quarter-step placement** with `row` / `col` values like `1.25` or `2.5` for pulling related blocks closer together without compressing the whole diagram.
 - **Edge styles per kind**: `axi-mm`, `axi-lite`, `axi-stream`, `cdc` (purple dashed), `generic`. Distinct strokes and arrowheads, plus a connection-styles legend below the clock-domain legend.
 - **Manhattan single-bend routing** with **interval-coloring lane assignment**: parallel edges sharing a gutter that *actually* overlap in y/x get distinct lanes; non-overlapping edges share a lane so labels stay in the gutter midpoint.
 - **Row/column gutter detours** for same-row or same-column edges that need to pass around intermediate blocks.
 - **WCAG-style text contrast**: block text auto-flips between light and dark by relative-luminance contrast so labels read on every fill, including CDC gradients.
 - **Light + dark themes** (`theme: dark` in the JSON or `--theme dark` on the CLI). Dark mode uses pure black canvas with brightened accent colors for arrows, labels, and external blocks.
 - **Edge bitwidth labels** at the bend midpoint, with a subtle pill mask so the line doesn't pierce the text.
-- **Geometry validator** (`validate.py`) catches line-through-block crossings, parallel-arrow collisions, stub arrows (shaft shorter than arrowhead), tangential block entry/exit, labels overlapping foreign blocks, arrows piercing other arrows' labels, multiple endpoints meeting at the same block port, and missing edge labels.
+- **Geometry validator** (`validate.py`) catches line-through-block crossings, parallel-arrow collisions, unnecessary route loops, stub arrows (shaft shorter than arrowhead), tangential block entry/exit, labels overlapping foreign blocks, arrows piercing other arrows' labels, multiple endpoints meeting at the same block port, and missing edge labels.
 
 ## Files
 

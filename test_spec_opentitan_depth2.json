@@ -15,28 +15,28 @@
   },
   "blocks": [
     {"id": "host",          "label": "Host / Debug",   "external": true,                      "row": 0, "col": 0, "sublabel": "JTAG / UART"},
-    {"id": "rv_dm",         "label": "RV Debug",       "domain": "core",                      "row": 0, "col": 1, "sublabel": "debug module"},
+    {"id": "rv_dm",         "label": "RV Debug",       "domain": "core",                      "row": 0, "col": 1, "sublabel": "debug module", "w": 180, "h": 72},
     {"id": "ibex",          "label": "Ibex Core",      "domain": "core",                      "row": 0, "col": 2, "sublabel": "secure MCU"},
     {"id": "xbar_main",     "label": "Main TL-UL Xbar","domain": "bus",                       "row": 0, "col": 3, "sublabel": "system fabric"},
-    {"id": "mem_ctrls",     "label": "Memory Ctrls",   "domain": "bus",                       "row": 0, "col": 4, "sublabel": "ROM / SRAM / Flash"},
+    {"id": "mem_ctrls",     "label": "Memory Ctrls",   "domain": "bus",                       "row": 0, "col": 4, "sublabel": "ROM / SRAM / Flash", "w": 190, "h": 72},
 
-    {"id": "entropy",       "label": "Entropy Src",    "domain": "secure",                    "row": 1, "col": 0, "sublabel": "noise + health",     "group": "secure_services"},
-    {"id": "csrng",         "label": "CSRNG",          "domain": "secure",                    "row": 1, "col": 1, "sublabel": "conditioner",        "group": "secure_services"},
-    {"id": "edn",           "label": "EDN",            "domain": "secure",                    "row": 1, "col": 2, "sublabel": "random nets",        "group": "secure_services"},
-    {"id": "aes",           "label": "AES",            "domain": "secure",                    "row": 1, "col": 3, "sublabel": "block cipher",       "group": "secure_services"},
-    {"id": "otp_ctrl",      "label": "OTP Ctrl",       "domain": "secure", "domain_b": "aon", "row": 1, "col": 4, "sublabel": "fuses / secrets",    "group": "secure_services"},
+    {"id": "entropy",       "label": "Entropy Src",    "domain": "secure",                    "row": 1, "col": 0, "sublabel": "noise + health",     "group": "secure_services", "w": 180, "h": 72},
+    {"id": "csrng",         "label": "CSRNG",          "domain": "secure",                    "row": 1, "col": 0.75, "sublabel": "conditioner",        "group": "secure_services", "w": 160, "h": 66},
+    {"id": "edn",           "label": "EDN",            "domain": "secure",                    "row": 1, "col": 1.5, "sublabel": "random nets",        "group": "secure_services", "w": 150, "h": 62},
+    {"id": "aes",           "label": "AES",            "domain": "secure",                    "row": 1, "col": 2.25, "sublabel": "block cipher",       "group": "secure_services", "w": 150, "h": 62},
+    {"id": "otp_ctrl",      "label": "OTP Ctrl",       "domain": "secure", "domain_b": "aon", "row": 1, "col": 4, "sublabel": "fuses / secrets",    "group": "secure_services", "w": 180, "h": 72},
 
-    {"id": "lc_ctrl",       "label": "Life Cycle",     "domain": "secure", "domain_b": "aon", "row": 2, "col": 0, "sublabel": "device state",      "group": "secure_services"},
-    {"id": "alert_handler", "label": "Alert Handler",  "domain": "secure", "domain_b": "aon", "row": 2, "col": 1, "sublabel": "fault response",    "group": "secure_services"},
+    {"id": "lc_ctrl",       "label": "Life Cycle",     "domain": "secure", "domain_b": "aon", "row": 2, "col": 0, "sublabel": "device state",      "group": "secure_services", "w": 180, "h": 72},
+    {"id": "alert_handler", "label": "Alert Handler",  "domain": "secure", "domain_b": "aon", "row": 2, "col": 1, "sublabel": "fault response",    "group": "secure_services", "w": 190, "h": 72},
     {"id": "keymgr",        "label": "Key Manager",    "domain": "secure",                    "row": 2, "col": 2, "sublabel": "root keys",         "group": "secure_services"},
-    {"id": "kmac",          "label": "KMAC / HMAC",    "domain": "secure",                    "row": 2, "col": 3, "sublabel": "hash / MAC",        "group": "secure_services"},
-    {"id": "otbn",          "label": "OTBN",           "domain": "secure",                    "row": 2, "col": 4, "sublabel": "big-number accel", "group": "secure_services"},
+    {"id": "kmac",          "label": "KMAC / HMAC",    "domain": "secure",                    "row": 2, "col": 2.75, "sublabel": "hash / MAC",        "group": "secure_services", "w": 180, "h": 72},
+    {"id": "otbn",          "label": "OTBN",           "domain": "secure",                    "row": 2, "col": 4, "sublabel": "big-number accel", "group": "secure_services", "w": 180, "h": 72},
 
     {"id": "xbar_peri",     "label": "Peripheral Xbar","domain": "peri", "domain_b": "bus",   "row": 3, "col": 0, "sublabel": "TL-UL fanout",      "group": "peripheral_subsystem"},
-    {"id": "uart_spi",      "label": "UART / SPI",     "domain": "peri",                      "row": 3, "col": 1, "sublabel": "serial I/O",        "group": "peripheral_subsystem"},
-    {"id": "i2c_gpio",      "label": "I2C / GPIO",     "domain": "peri",                      "row": 3, "col": 2, "sublabel": "pads / pins",       "group": "peripheral_subsystem"},
-    {"id": "aon_timer",     "label": "AON Timers",     "domain": "aon",                       "row": 3, "col": 3, "sublabel": "watchdog / wake",   "group": "peripheral_subsystem"},
-    {"id": "rv_plic",       "label": "RV PLIC",        "domain": "peri",                      "row": 3, "col": 4, "sublabel": "interrupts",        "group": "peripheral_subsystem"}
+    {"id": "uart_spi",      "label": "UART / SPI",     "domain": "peri",                      "row": 3, "col": 1, "sublabel": "serial I/O",        "group": "peripheral_subsystem", "w": 170, "h": 68},
+    {"id": "i2c_gpio",      "label": "I2C / GPIO",     "domain": "peri",                      "row": 3, "col": 1.75, "sublabel": "pads / pins",       "group": "peripheral_subsystem", "w": 170, "h": 68},
+    {"id": "aon_timer",     "label": "AON Timers",     "domain": "aon",                       "row": 3, "col": 3, "sublabel": "watchdog / wake",   "group": "peripheral_subsystem", "w": 180, "h": 72},
+    {"id": "rv_plic",       "label": "RV PLIC",        "domain": "peri",                      "row": 3, "col": 4, "sublabel": "interrupts",        "group": "peripheral_subsystem", "w": 170, "h": 68}
   ],
   "edges": [
     {"from": "host",          "to": "rv_dm",       "kind": "generic", "width": "debug"},
@@ -49,14 +49,14 @@
     {"from": "csrng",         "to": "edn",         "kind": "generic", "width": "rand"},
     {"from": "edn",           "to": "keymgr",      "kind": "generic", "width": "rand", "route": {"mode": "direct"}},
     {"from": "keymgr",        "to": "kmac",        "kind": "generic", "width": "keys"},
-    {"from": "otp_ctrl",      "to": "keymgr",      "kind": "cdc",     "width": "secrets", "route": {"points": [[1456, 289], [1405, 289], [1405, 535], [856, 535], [856, 512]]}, "label": {"segment": 2}},
-    {"from": "lc_ctrl",       "to": "alert_handler","kind": "cdc",     "width": "state"},
-    {"from": "alert_handler", "to": "otp_ctrl",    "kind": "cdc",     "width": "alerts", "route": {"points": [[611, 467], [650, 467], [650, 555], [1700, 555], [1700, 289], [1676, 289]]}},
+    {"from": "otp_ctrl",      "to": "keymgr",      "kind": "cdc",     "width": "secrets", "route": {"points": [[1456, 289], [1405, 289], [1405, 565], [856, 565], [856, 512]]}, "label": {"segment": 2}},
+    {"from": "lc_ctrl",       "to": "alert_handler","kind": "cdc",     "width": "state", "route": {"points": [[216, 458], [391, 458]]}},
+    {"from": "alert_handler", "to": "otp_ctrl",    "kind": "cdc",     "width": "alerts", "route": {"points": [[581, 458], [640, 458], [640, 515], [1700, 515], [1700, 289], [1636, 289]]}},
 
     {"from": "xbar_peri",     "to": "uart_spi",    "kind": "generic", "width": "TL-UL"},
-    {"from": "uart_spi",      "to": "i2c_gpio",    "kind": "generic", "width": "pads"},
-    {"from": "i2c_gpio",      "to": "rv_plic",     "kind": "generic", "width": "IRQ", "route": {"points": [[966, 645], [1010, 645], [1010, 720], [1566, 720], [1566, 690]]}, "label": {"segment": 2}},
+    {"from": "uart_spi",      "to": "i2c_gpio",    "kind": "generic", "width": "pads", "route": {"points": [[561, 634], [657, 634]]}},
+    {"from": "i2c_gpio",      "to": "rv_plic",     "kind": "generic", "width": "IRQ", "route": {"points": [[827, 645], [870, 645], [870, 720], [1566, 720], [1566, 690]]}, "label": {"segment": 2}},
     {"from": "aon_timer",     "to": "rv_plic",     "kind": "generic", "width": "IRQ"},
-    {"from": "rv_plic",       "to": "ibex",        "kind": "generic", "width": "IRQ", "route": {"points": [[1676, 645], [1720, 645], [1720, 720], [700, 720], [700, 126], [746, 126]]}, "label": {"segment": 3, "t": 0.14}}
+    {"from": "rv_plic",       "to": "ibex",        "kind": "generic", "width": "IRQ", "route": {"points": [[1626, 645], [1720, 645], [1720, 20], [856, 20], [856, 66]]}, "label": {"segment": 1, "t": 0.22}}
   ]
 }

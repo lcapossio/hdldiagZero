@@ -28,7 +28,7 @@ GROUP_FIELDS = {"label"}
 LANE_FIELDS = {"rows", "cols"}
 BLOCK_FIELDS = {
     "id", "label", "sublabel", "domain", "domain_b", "external", "row", "col",
-    "group",
+    "group", "w", "h",
 }
 EDGE_FIELDS = {"from", "to", "kind", "width", "route", "label"}
 ROUTE_FIELDS = {"mode", "points"}
@@ -48,6 +48,13 @@ def _is_int(v) -> bool:
 
 def _is_number(v) -> bool:
     return _is_int(v) or isinstance(v, float)
+
+
+def _is_grid_coord(v) -> bool:
+    """True for non-bool ints/floats on the 0.25 placement grid."""
+    if not _is_number(v) or isinstance(v, bool):
+        return False
+    return abs(float(v) * 4 - round(float(v) * 4)) < 1e-9
 
 
 def _is_color(v) -> bool:
@@ -215,19 +222,30 @@ def validate(spec):
             if f in b and not isinstance(b[f], str):
                 errors.append(f"{prefix}: '{f}' must be a string")
 
+        for f in ("w", "h"):
+            if f in b:
+                v = b[f]
+                if not _is_int(v):
+                    errors.append(
+                        f"{prefix}: '{f}' must be a positive int "
+                        f"(got {type(v).__name__} = {v!r})"
+                    )
+                elif v <= 0:
+                    errors.append(f"{prefix}: '{f}' must be positive")
+
         row = b.get("row")
         col = b.get("col")
-        if not _is_int(row) or row < 0:
+        if not _is_grid_coord(row) or row < 0:
             errors.append(
-                f"{prefix}: 'row' must be a non-negative int "
+                f"{prefix}: 'row' must be a non-negative number in 0.25 steps "
                 f"(got {row!r}; booleans not accepted)"
             )
-        if not _is_int(col) or col < 0:
+        if not _is_grid_coord(col) or col < 0:
             errors.append(
-                f"{prefix}: 'col' must be a non-negative int "
+                f"{prefix}: 'col' must be a non-negative number in 0.25 steps "
                 f"(got {col!r}; booleans not accepted)"
             )
-        if _is_int(row) and _is_int(col):
+        if _is_grid_coord(row) and _is_grid_coord(col):
             cell = (row, col)
             if cell in cells:
                 errors.append(

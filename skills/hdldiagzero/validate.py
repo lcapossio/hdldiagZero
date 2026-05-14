@@ -19,6 +19,8 @@ Checks:
                    always a routing bug.
   9. PERPENDICULAR - an arrow endpoint touching a block must leave/enter
                    perpendicular to that block side, not run tangentially.
+ 10. LOOP        - a route loops away even though the connected ports are
+                   collinear, facing each other, and have clear space.
 
 Exit code = number of violations (0 = pass). Writes a structured report to stdout
 that the calling agent can feed back into the next generation pass.
@@ -48,6 +50,7 @@ DEFAULT_FONT_SIZE = 12.0
 TEXT_WIDTH_FACTOR = 0.55 # rough character-width / font-size ratio
 TEXT_LABEL_PROXIMITY = 12.0  # text within this distance of an arrow is treated as its label
 BITWIDTH_MIN_ARROW_LEN = 50.0  # px - arrows shorter than this are exempt from bitwidth check
+LOOP_EXCESS = 10.0       # px - allow small float/label wiggle before calling a loop
 
 SVG_NS = "http://www.w3.org/2000/svg"
 NS = {"svg": SVG_NS}
@@ -419,6 +422,14 @@ def side_normal(side):
     }[side]
 
 
+def endpoint_block_side(point, blocks):
+    for b in blocks:
+        side = endpoint_side(point, b.rect)
+        if side is not None:
+            return b, side
+    return None, None
+
+
 def check_crossings(blocks, arrows):
     violations = []
     for a in arrows:
@@ -479,6 +490,62 @@ def check_perpendicular_ports(blocks, arrows):
                         f"({neighbor[0]:.0f},{neighbor[1]:.0f})."
                     )
                 break
+    return violations
+
+
+def check_unnecessary_loops(blocks, arrows):
+    """Flag routes that detour when a clear straight port-to-port path exists.
+
+    This is intentionally narrow: only collinear, face-to-face ports are checked.
+    Non-collinear routes, same-side u-turns, and paths blocked by another block
+    are left to the normal router/other validators.
+    """
+    violations = []
+    for a in arrows:
+        if len(a.points) < 3:
+            continue
+        start = a.points[0]
+        end = a.points[-1]
+        sb, ss = endpoint_block_side(start, blocks)
+        eb, es = endpoint_block_side(end, blocks)
+        if sb is None or eb is None or sb.id == eb.id:
+            continue
+
+        horiz = (
+            ((ss, es) == ("right", "left") and end[0] >= start[0])
+            or ((ss, es) == ("left", "right") and end[0] <= start[0])
+        )
+        vert = (
+            ((ss, es) == ("bottom", "top") and end[1] >= start[1])
+            or ((ss, es) == ("top", "bottom") and end[1] <= start[1])
+        )
+        if horiz and abs(start[1] - end[1]) > EDGE_TOLERANCE:
+            continue
+        if vert and abs(start[0] - end[0]) > EDGE_TOLERANCE:
+            continue
+        if not (horiz or vert):
+            continue
+
+        direct = (start, end)
+        blocked = False
+        for b in blocks:
+            if b.id in (sb.id, eb.id):
+                continue
+            if seg_rect_clip(direct, b.rect):
+                blocked = True
+                break
+        if blocked:
+            continue
+
+        direct_len = math.hypot(end[0] - start[0], end[1] - start[1])
+        actual_len = path_length(a)
+        if actual_len > direct_len + LOOP_EXCESS:
+            violations.append(
+                f"LOOP: arrow '{a.id}' detours {actual_len - direct_len:.0f}px "
+                f"even though blocks '{sb.label}' and '{eb.label}' have a clear "
+                f"direct {ss}-to-{es} connection. Use a direct route or remove "
+                f"unnecessary waypoints."
+            )
     return violations
 
 
@@ -763,6 +830,7 @@ def main():
     violations += check_bitwidth_labels(arrows, texts)
     violations += check_diagonal_arrows(arrows)
     violations += check_perpendicular_ports(blocks, arrows)
+    violations += check_unnecessary_loops(blocks, arrows)
 
     summary = (
         f"{len(blocks)} blocks, {len(arrows)} arrows, "

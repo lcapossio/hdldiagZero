@@ -153,6 +153,11 @@ def test_spec_validator_strict_types() -> None:
         # row=true must be rejected (bool subclasses int but isn't a coordinate)
         bad = _spec_with(row=True)
         _write_and_check(tmp, "row_bool.json", bad, 1, "spec-strict-row-bool")
+        # row/col support quarter-step placement, but not arbitrary fractions
+        good = _spec_with(row=0.25, col=1.5)
+        _write_and_check(tmp, "quarter_step.json", good, 0, "spec-strict-quarter-step")
+        bad = _spec_with(col=0.3)
+        _write_and_check(tmp, "bad_step.json", bad, 1, "spec-strict-bad-step")
         # bad color
         bad = {
             "domains": {"d": {"color": "not-a-color"}},
@@ -588,6 +593,18 @@ def test_spec_validator_rejects_bad_route_label() -> None:
             _write_and_check(tmp, f"{label}.json", spec, 1, label)
 
 
+def test_spec_validator_accepts_block_size_overrides() -> None:
+    """Blocks may override the diagram-wide cell size with positive w/h ints."""
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        good = _spec_with(w=160, h=64)
+        _write_and_check(tmp, "block_size_good.json", good, 0, "spec-block-size-good")
+        bad_w = _spec_with(w=0)
+        _write_and_check(tmp, "block_size_bad_w.json", bad_w, 1, "spec-block-size-bad-w")
+        bad_h = _spec_with(h=True)
+        _write_and_check(tmp, "block_size_bad_h.json", bad_h, 1, "spec-block-size-bad-h")
+
+
 def test_renderer_honors_explicit_route_points() -> None:
     """When route.points is set, the rendered <path> must use those exact coords."""
     with _tmpdir() as tmp:
@@ -618,6 +635,34 @@ def test_renderer_honors_explicit_route_points() -> None:
                     "[explicit-route-render] rendered <path> does not contain "
                     f"the explicit waypoints: missing '{expected}'"
                 )
+
+
+def test_renderer_honors_block_size_overrides() -> None:
+    """A block-level w/h override changes only that block's rendered rect."""
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        spec = {
+            "domains": {"d": {"color": "#42A5F5"}},
+            "blocks": [
+                {"id": "small", "label": "Small", "domain": "d",
+                 "row": 0, "col": 0, "w": 140, "h": 54},
+                {"id": "normal", "label": "Normal", "domain": "d",
+                 "row": 0, "col": 1},
+            ],
+            "edges": [{"from": "small", "to": "normal", "kind": "generic", "width": "bus"}],
+        }
+        spec_path = tmp / "block_size.json"
+        out = tmp / "block_size.svg"
+        spec_path.write_text(json.dumps(spec), encoding="utf-8")
+        run([PY, VALIDATE_SPEC, str(spec_path)], label="block-size-spec")
+        run([PY, RENDER, str(spec_path), str(out)], label="block-size-render")
+        if out.is_file():
+            svg = out.read_text(encoding="utf-8")
+            if 'id="small" x="36" y="36" width="140" height="54"' not in svg:
+                FAILURES.append("[block-size-render] small rect did not use w=140 h=54")
+            if 'id="normal" x="376" y="36" width="220" height="90"' not in svg:
+                FAILURES.append("[block-size-render] normal rect did not keep grid size")
+            run([PY, VALIDATE, str(out)], label="block-size-validate")
 
 
 def _path_d_for(svg: str, edge_id: str):
@@ -744,6 +789,62 @@ def test_validator_flags_tangential_block_exit() -> None:
             )
 
 
+def test_validator_flags_unnecessary_loop() -> None:
+    """A U-shaped route is a loop when a clear direct segment exists."""
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        svg = (
+            '<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<svg xmlns="http://www.w3.org/2000/svg" width="420" height="140" '
+            'viewBox="0 0 420 140">\n'
+            '  <rect id="a" x="10"  y="40" width="80" height="40" fill="#42A5F5" '
+            'stroke="#0D47A1"/>\n'
+            '  <rect id="b" x="300" y="40" width="80" height="40" fill="#42A5F5" '
+            'stroke="#0D47A1"/>\n'
+            '  <path id="loop" d="M 90,60 L 120,60 L 120,100 L 270,100 L 270,60 L 300,60" '
+            'stroke="#000" stroke-width="2" fill="none"/>\n'
+            '  <text x="195" y="96" text-anchor="middle" font-size="12">bus</text>\n'
+            '</svg>\n'
+        )
+        out = tmp / "loop.svg"
+        out.write_text(svg, encoding="utf-8")
+        proc = run([PY, VALIDATE, str(out)], expect_rc=1, label="validate-loop")
+        if "LOOP" not in proc.stdout:
+            FAILURES.append(
+                f"[validate-loop] expected LOOP in report, "
+                f"got: {proc.stdout.strip()!r}"
+            )
+
+
+def test_validator_allows_detour_around_block() -> None:
+    """A U-shaped route is allowed when a block blocks the direct segment."""
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        svg = (
+            '<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<svg xmlns="http://www.w3.org/2000/svg" width="460" height="160" '
+            'viewBox="0 0 460 160">\n'
+            '  <rect id="a" x="10"  y="40" width="80" height="40" fill="#42A5F5" '
+            'stroke="#0D47A1"/>\n'
+            '  <rect id="mid" x="180" y="35" width="80" height="50" fill="#66BB6A" '
+            'stroke="#1B5E20"/>\n'
+            '  <rect id="b" x="340" y="40" width="80" height="40" fill="#42A5F5" '
+            'stroke="#0D47A1"/>\n'
+            '  <path id="detour" d="M 90,60 L 120,60 L 120,120 L 310,120 L 310,60 L 340,60" '
+            'stroke="#000" stroke-width="2" fill="none"/>\n'
+            '  <text x="215" y="116" text-anchor="middle" font-size="12">bus</text>\n'
+            '</svg>\n'
+        )
+        out = tmp / "detour.svg"
+        out.write_text(svg, encoding="utf-8")
+        proc = run([PY, VALIDATE, str(out)], expect_rc=0, label="validate-detour")
+        if "LOOP" in proc.stdout:
+            FAILURES.append(
+                f"[validate-detour] did not expect LOOP in report, "
+                f"got: {proc.stdout.strip()!r}"
+            )
+
+
 def test_install() -> None:
     with _tmpdir() as tmp:
         dst = Path(tmp) / "skill-install"
@@ -798,10 +899,14 @@ def main() -> int:
     test_spec_validator_accepts_route_and_label()
     test_spec_validator_rejects_bad_route_label()
     test_renderer_honors_explicit_route_points()
+    test_spec_validator_accepts_block_size_overrides()
+    test_renderer_honors_block_size_overrides()
     test_renderer_direct_mode_is_orthogonal()
     test_spec_validator_rejects_diagonal_route_points()
     test_validator_flags_diagonal_segment_in_svg()
     test_validator_flags_tangential_block_exit()
+    test_validator_flags_unnecessary_loop()
+    test_validator_allows_detour_around_block()
     test_install()
 
     if FAILURES:
