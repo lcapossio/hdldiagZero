@@ -1,7 +1,7 @@
 {
   "title": "OpenTitan Earl Grey SoC sample",
   "top": "top_earlgrey",
-  "legend": "compact",
+  "legend": "right",
   "grid": {"gutter_x": 135, "gutter_y": 88},
   "domains": {
     "core":   {"color": "#42A5F5", "border": "#0D47A1"},

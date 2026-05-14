@@ -114,7 +114,7 @@
   <path id="edge_rv_plic_to_ibex" d="M 1101.0,645.0 L 1050.0,645.0 L 1050.0,720.0 L 700.0,720.0 L 700.0,126.0 L 746.0,126.0" stroke="#374151" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
   <rect x="684.6" y="625.1" width="30.8" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
   <text x="700.0" y="639.8" text-anchor="middle" font-size="15" fill="#1f2937">IRQ</text>
-  <rect id="legend_card" x="1728" y="46" width="240" height="160" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" rx="6"/>
+  <rect id="legend_card" x="1728" y="46" width="240" height="234" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" rx="6"/>
   <text x="1848" y="74" text-anchor="middle" font-size="13" font-weight="700" fill="#1f2937" letter-spacing="0.4">Clock domains</text>
   <rect x="1742" y="86" width="22" height="14" fill="#42A5F5" stroke="#0D47A1" stroke-width="1.2" rx="2"/>
   <text x="1774" y="98" font-size="13" fill="#1f2937">core</text>
@@ -126,4 +126,9 @@
   <text x="1774" y="164" font-size="13" fill="#1f2937">peri</text>
   <rect x="1742" y="174" width="22" height="14" fill="#AB47BC" stroke="#4A148C" stroke-width="1.2" rx="2"/>
   <text x="1774" y="186" font-size="13" fill="#1f2937">aon</text>
+  <text x="1848" y="214" text-anchor="middle" font-size="13" font-weight="700" fill="#1f2937" letter-spacing="0.4">Connection styles</text>
+  <path id="legend-arrow-generic" d="M 1742,233.0 L 1784,233.0" stroke="#374151" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
+  <text x="1794" y="238" font-size="13" fill="#1f2937">Generic / discrete</text>
+  <path id="legend-arrow-cdc" d="M 1742,255.0 L 1784,255.0" stroke="#6A1B9A" stroke-width="1.8" fill="none" marker-end="url(#ah-cdc)" stroke-dasharray="6,3"/>
+  <text x="1794" y="260" font-size="13" fill="#1f2937">CDC traversal (re-clocked)</text>
 </svg>

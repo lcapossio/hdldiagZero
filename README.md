@@ -81,7 +81,7 @@ Dark mode:
 
 ### OpenTitan Earl Grey depth 2
 
-Generated from [test_spec_opentitan_depth2.json](test_spec_opentitan_depth2.json) - the same SoC expanded into grouped secure-services and peripheral-subsystem blocks:
+Generated from [test_spec_opentitan_depth2.json](test_spec_opentitan_depth2.json) - the same SoC expanded into grouped Ibex core internals, secure-services, and peripheral-subsystem blocks:
 
 Light mode:
 
@@ -183,7 +183,7 @@ All runtime files live under [`skills/hdldiagzero/`](skills/hdldiagzero/) - the 
 | [test_spec_lanes.json](test_spec_lanes.json) | Clock-domain lanes sample (RHS-style acquisition pipeline). |
 | [test_spec_soc.json](test_spec_soc.json) | Full SoC top-level sample (CPU + IC + DMA + DDR + APB peripherals). |
 | [test_spec_opentitan.json](test_spec_opentitan.json) | OpenTitan Earl Grey overview sample. |
-| [test_spec_opentitan_depth2.json](test_spec_opentitan_depth2.json) | OpenTitan Earl Grey depth-2 grouped sample. |
+| [test_spec_opentitan_depth2.json](test_spec_opentitan_depth2.json) | OpenTitan Earl Grey depth-2 grouped sample with Ibex internals. |
 | [sample_output.svg](sample_output.svg) / [sample_output_dark.svg](sample_output_dark.svg) | Tracked light/dark renderer output from `test_spec.json`. |
 | [sample_depth2.svg](sample_depth2.svg) / [sample_depth2_dark.svg](sample_depth2_dark.svg) | Tracked light/dark renderer output from `test_spec_depth2.json`. |
 | [sample_lanes.svg](sample_lanes.svg) / [sample_lanes_dark.svg](sample_lanes_dark.svg) | Tracked light/dark renderer output from `test_spec_lanes.json`. |
