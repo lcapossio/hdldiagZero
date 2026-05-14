@@ -1,7 +1,7 @@
 {
   "title": "OpenTitan Earl Grey SoC sample (depth 2)",
   "top": "top_earlgrey",
-  "legend": false,
+  "legend": "compact",
   "grid": {"gutter_x": 135, "gutter_y": 88},
   "domains": {
     "core":   {"color": "#42A5F5", "border": "#0D47A1"},
@@ -16,8 +16,8 @@
   },
   "bands": {
     "core_bus": {"label": "core + bus fabric", "rows": [0], "color": "#DBEAFE", "border": "#2563EB"},
-    "secure_services": {"label": "secure services", "rows": [1, 2], "color": "#FEE2E2", "border": "#B91C1C"},
-    "peripheral_aon": {"label": "peripheral subsystem + AON", "rows": [3], "color": "#FEF3C7", "border": "#B45309"}
+    "secure_services": {"label": "", "rows": [1, 2], "color": "#FEE2E2", "border": "#B91C1C"},
+    "peripheral_aon": {"label": "", "rows": [3], "color": "#FEF3C7", "border": "#B45309"}
   },
   "blocks": [
     {"id": "host",          "external": true, "side": "left",              "row": 0, "col": 0, "lines": ["Host / Debug", "JTAG / UART"]},
