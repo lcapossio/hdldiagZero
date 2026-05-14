@@ -1,7 +1,7 @@
 # JSON spec schema
 
 Reference for the JSON the renderer expects. The agent SHOULD validate the
-spec with `validate_spec.py` before rendering — it catches structural errors
+spec with `validate_spec.py` before rendering - it catches structural errors
 (missing block ids in edges, duplicate cells, unknown domains) that would
 otherwise produce a broken SVG.
 
@@ -43,9 +43,9 @@ otherwise produce a broken SVG.
 | `top`     | string | optional  | Informational; identifies the top module. |
 | `theme`   | string | optional  | `"light"` (default) or `"dark"`. |
 | `grid`    | object | optional  | Grid sizing overrides; see below. |
-| `domains` | object | required* | Map of domain key → `{freq_mhz, color, border}`. *Required unless every block is external. |
-| `groups`  | object | optional  | Map of group id → `{label}`. Used to draw dashed hierarchy containers around member blocks (depth > 1). |
-| `lanes`   | object | optional  | Map of domain id → `{rows: [...]}`. Draws full-width tinted bands per clock domain across the canvas. See *lanes* below. |
+| `domains` | object | required* | Map of domain key -> `{freq_mhz, color, border}`. *Required unless every block is external. |
+| `groups`  | object | optional  | Map of group id -> `{label}`. Used to draw dashed hierarchy containers around member blocks (depth > 1). |
+| `lanes`   | object | optional  | Map of domain id -> `{rows: [...]}`. Draws full-width tinted bands per clock domain across the canvas. See *lanes* below. |
 | `blocks`  | array  | required  | One or more blocks. |
 | `edges`   | array  | required  | May be empty. |
 
@@ -69,20 +69,20 @@ otherwise produce a broken SVG.
 | `external` | boolean | optional  | True = off-chip / off-die. Neutral grey fill, ignores `domain`. |
 | `row`      | int     | required  | 0-indexed grid row. |
 | `col`      | int     | required  | 0-indexed grid column. One block per `(row, col)`. |
-| `group`    | string  | optional  | Group id from `groups`. Member blocks are wrapped in a dashed rectangle at render time. Use this when expanding a parent block at depth > 1 — the group represents the parent. |
+| `group`    | string  | optional  | Group id from `groups`. Member blocks are wrapped in a dashed rectangle at render time. Use this when expanding a parent block at depth > 1 - the group represents the parent. |
 
 ## lanes (optional)
 
-Clock-domain "swim lanes" — tinted bands that visually group all blocks of
+Clock-domain "swim lanes" - tinted bands that visually group all blocks of
 one domain. Each entry maps a domain id (must exist in `domains`) to the
 grid rows or columns that domain occupies. The renderer draws each lane as
 a low-opacity tint of the domain's color with a dashed border in the
 domain's accent color, and prints the domain header
 (`<name> domain  <freq> MHz`) at the top-left of the lane.
 
-A lane is either **horizontal** (`rows`, spanning full canvas width — pick
+A lane is either **horizontal** (`rows`, spanning full canvas width - pick
 this when data flows top-to-bottom through CDCs) or **vertical** (`cols`,
-spanning full canvas height — pick this when data flows left-to-right and
+spanning full canvas height - pick this when data flows left-to-right and
 each domain owns a column).
 
 | Field  | Type   | Required | Description |
@@ -92,7 +92,7 @@ each domain owns a column).
 
 Each lane entry **must specify exactly one** of `rows` or `cols`. Different
 lanes in the same spec can choose different orientations, but they should
-not overlap — the renderer doesn't prevent visual collisions.
+not overlap - the renderer doesn't prevent visual collisions.
 
 ```json
 "lanes": {
@@ -152,8 +152,8 @@ on one edge without disturbing the rest.
 
 | Field    | Type             | Default  | Description |
 |----------|------------------|----------|-------------|
-| `mode`   | string           | `"auto"` | `"auto"` keeps the standard Manhattan routing with parallel-edge lane offsets. `"direct"` is Manhattan with **no** lane offset — collinear endpoints produce a single straight segment, non-collinear ones a single orthogonal bend. `"orthogonal"` is a synonym for `"auto"`. Diagonal output is impossible in every mode. |
-| `points` | `[[x, y], ...]`  | omitted  | Explicit waypoints in **final SVG coordinates** (i.e. the same numbers you'd read off the rendered file). When provided, this *is* the path — the renderer skips both endpoint selection and Manhattan routing. The list must have at least two points. **Consecutive points must share x or y**; diagonal segments are rejected at spec-validation time. To go from `(x1, y1)` to `(x2, y2)` insert an intermediate `(x2, y1)` or `(x1, y2)`. |
+| `mode`   | string           | `"auto"` | `"auto"` keeps the standard Manhattan routing with parallel-edge lane offsets. `"direct"` is Manhattan with **no** lane offset - collinear endpoints produce a single straight segment, non-collinear ones a single orthogonal bend. `"orthogonal"` is a synonym for `"auto"`. Diagonal output is impossible in every mode. |
+| `points` | `[[x, y], ...]`  | omitted  | Explicit waypoints in **final SVG coordinates** (i.e. the same numbers you'd read off the rendered file). When provided, this *is* the path - the renderer skips both endpoint selection and Manhattan routing. The list must have at least two points. **Consecutive points must share x or y**; diagonal segments are rejected at spec-validation time. To go from `(x1, y1)` to `(x2, y2)` insert an intermediate `(x2, y1)` or `(x1, y2)`. |
 
 Prefer `mode` over `points` when possible: absolute coords get stale when
 blocks move, while `mode: "direct"` survives layout edits. Use `points` only
@@ -172,7 +172,7 @@ The renderer auto-places labels at the longest segment of the path. Use
 | `t`       | number | `0.5`   | When `segment` is set, fractional position along that segment (0..1). |
 
 Setting any of `dx`/`dy`/`segment`/`t` also disables the auto-clamp that
-normally pulls the label back onto the endpoints' span — the assumption is
+normally pulls the label back onto the endpoints' span - the assumption is
 that you know where you want the label and don't want it dragged back.
 
 ## kind catalog

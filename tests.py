@@ -12,9 +12,12 @@ Year:   2026
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
+import uuid
+from contextlib import contextmanager
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
@@ -25,16 +28,52 @@ VALIDATE_SPEC = str(SKILL_DIR / "validate_spec.py")
 PY = sys.executable
 
 
+@contextmanager
 def _tmpdir():
     """Make a temp directory we can actually write to.
 
     System temp is sometimes locked down (corporate Windows, sandboxed
-    runners). Honor HDLDIAG_TEST_TMP if set; otherwise fall back to a
-    repo-local <root>/tmp/ which is gitignored. Both paths are guaranteed
-    to be created if missing."""
-    base = Path(os.environ.get("HDLDIAG_TEST_TMP") or (ROOT / "tmp"))
-    base.mkdir(parents=True, exist_ok=True)
-    return tempfile.TemporaryDirectory(dir=str(base), ignore_cleanup_errors=True)
+    runners). Honor HDLDIAG_TEST_TMP first, then try normal system temp and
+    repo-local fallbacks. Each candidate is probed by creating a child temp
+    dir and writing inside it before tests are allowed to use it."""
+    candidates = []
+    if os.environ.get("HDLDIAG_TEST_TMP"):
+        candidates.append(Path(os.environ["HDLDIAG_TEST_TMP"]))
+    candidates.extend(
+        [
+            Path(tempfile.gettempdir()),
+            ROOT / "tmp",
+            ROOT / ".test_tmp",
+        ]
+    )
+
+    errors = []
+    seen = set()
+    for base in candidates:
+        try:
+            base = base.resolve()
+        except OSError:
+            base = base.absolute()
+        if base in seen:
+            continue
+        seen.add(base)
+        try:
+            base.mkdir(parents=True, exist_ok=True)
+            tmp = base / f"hdldiag-{uuid.uuid4().hex}"
+            tmp.mkdir()
+            probe = tmp / ".write_probe"
+            probe.write_text("ok", encoding="utf-8")
+            probe.unlink()
+        except OSError as exc:
+            errors.append(f"{base}: {exc}")
+            continue
+        try:
+            yield str(tmp)
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
+        return
+
+    raise RuntimeError("no writable temp directory found:\n  " + "\n  ".join(errors))
 
 # The bundled fixture deliberately contains exactly this many violations, one
 # of each rule plus the two PORT collisions. If the renderer or the validator

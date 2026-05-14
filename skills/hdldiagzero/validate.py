@@ -296,7 +296,7 @@ def parse_svg(path):
             continue
         bid = r.get("id", f"rect{len(blocks)}")
         # Skip hierarchical group containers, clock-domain lane backgrounds,
-        # and the legend card — they're decorative, not real blocks, and edges
+        # and the legend card - they're decorative, not real blocks, and edges
         # are expected to cross their borders / draw over their fills.
         if bid.startswith(("group_", "lane_", "legend_")):
             continue
@@ -638,7 +638,7 @@ def check_bitwidth_labels(arrows, texts):
 
 def check_diagonal_arrows(arrows):
     """Every arrow segment must be horizontal or vertical. A segment that moves
-    in both x and y is a diagonal — banned outright.
+    in both x and y is a diagonal - banned outright.
 
     Tolerance of 0.5px absorbs sub-pixel float drift from upstream coord
     computation without admitting visibly-diagonal segments."""

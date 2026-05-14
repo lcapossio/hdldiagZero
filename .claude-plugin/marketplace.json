@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "hdldiag-marketplace",
-  "description": "hdldiagZero — JSON-spec-driven SVG block diagrams of HDL/RTL designs.",
+  "description": "hdldiagZero - JSON-spec-driven SVG block diagrams of HDL/RTL designs.",
   "owner": {
     "name": "Leonardo Capossio",
     "email": "hello@bard0.com"

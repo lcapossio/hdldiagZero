@@ -261,7 +261,7 @@ def validate(spec):
 
         if external:
             # External blocks are not part of any internal clock domain. Carrying
-            # `domain` or `domain_b` is semantically wrong — the renderer
+            # `domain` or `domain_b` is semantically wrong - the renderer
             # ignores them, but accepting them silently makes specs misleading.
             if domain is not None:
                 errors.append(
@@ -375,7 +375,7 @@ def validate(spec):
                                 )
                                 well_formed = False
                         # Every consecutive pair must share x or y. Diagonal
-                        # wires are banned outright — the whole layout language
+                        # wires are banned outright - the whole layout language
                         # is orthogonal.
                         if well_formed:
                             for j in range(len(pts) - 1):

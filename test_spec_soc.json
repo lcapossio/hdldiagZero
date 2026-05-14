@@ -9,15 +9,15 @@
     "apb": {"freq_mhz": 100,  "color": "#FFA726", "border": "#E65100"}
   },
   "blocks": [
-    {"id": "cpu",      "label": "Cortex-A53 ×2", "domain": "cpu",                    "row": 0, "col": 0, "sublabel": "dual-core"},
+    {"id": "cpu",      "label": "Cortex-A53 x2", "domain": "cpu",                    "row": 0, "col": 0, "sublabel": "dual-core"},
     {"id": "l2",       "label": "L2 cache",      "domain": "cpu", "domain_b": "axi", "row": 0, "col": 1, "sublabel": "1 MB shared"},
     {"id": "ic",       "label": "AXI Interconnect","domain": "axi",                  "row": 0, "col": 2},
     {"id": "sram",     "label": "OCM",           "domain": "axi",                    "row": 0, "col": 3, "sublabel": "256 KB on-chip"},
     {"id": "dma",      "label": "DMA",           "domain": "axi",                    "row": 1, "col": 1, "sublabel": "8 channels"},
     {"id": "ddr_ctrl", "label": "DDR4 Ctrl",     "domain": "axi", "domain_b": "ddr", "row": 1, "col": 2, "sublabel": "PHY + ctrl"},
     {"id": "ddr3",     "label": "DDR4 SDRAM",    "external": true,                   "row": 1, "col": 3, "sublabel": "off-chip"},
-    {"id": "apb_br",   "label": "APB bridge",    "domain": "axi", "domain_b": "apb", "row": 2, "col": 1, "sublabel": "axi → apb"},
-    {"id": "periph",   "label": "Peripherals",   "domain": "apb",                    "row": 2, "col": 2, "sublabel": "UART ×4 / SPI ×2 / I²C / GPIO"}
+    {"id": "apb_br",   "label": "APB bridge",    "domain": "axi", "domain_b": "apb", "row": 2, "col": 1, "sublabel": "axi -> apb"},
+    {"id": "periph",   "label": "Peripherals",   "domain": "apb",                    "row": 2, "col": 2, "sublabel": "UART x4 / SPI x2 / I2C / GPIO"}
   ],
   "edges": [
     {"from": "cpu",      "to": "l2",       "kind": "axi-mm",   "width": 128},

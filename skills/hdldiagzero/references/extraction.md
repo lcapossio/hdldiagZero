@@ -8,7 +8,7 @@ your search tool of choice) on a real codebase.
 
 Try, in order:
 
-1. **Explicit naming** — pick the obvious candidate when present:
+1. **Explicit naming** - pick the obvious candidate when present:
    - Verilog: `top.v`, `*_top.v`
    - SystemVerilog: `top.sv`, `*_top.sv`
    - VHDL: `top.vhd`, `*_top.vhd`
@@ -34,7 +34,7 @@ user. If there's an obvious one, just use it without asking.
 ## 2. Walking hierarchy to depth N
 
 Default depth = 1: the top + its direct children only. Skip the exclude list
-in §4 at every depth.
+in section 4 at every depth.
 
 ### Verilog / SystemVerilog
 - Within each module, find instantiations: `<module_name> <inst_name> (...)`.
@@ -44,14 +44,14 @@ in §4 at every depth.
   ```
   Filter the first capture against the set of declared module names.
 
-  **Caveat — this regex over-matches.** It will also flag `task <name> (`,
-  `function <type> <name> (`, gate primitives (`and g1 (`, `nand`, `xor`, …),
+  **Caveat - this regex over-matches.** It will also flag `task <name> (`,
+  `function <type> <name> (`, gate primitives (`and g1 (`, `nand`, `xor`, ...),
   `for`/`if`/`generate` constructs, and macro calls (`` `<name> (... ``).
   The "filter against declared modules" step kills most false positives,
   but be alert in two cases:
   - macros that *expand* to instantiations (your filter never sees the
-    real module) — search `\`define` and the macro body separately;
-  - `bind`-statements (`bind <target> <module> <inst> (...)`) — they're
+    real module) - search `\`define` and the macro body separately;
+  - `bind`-statements (`bind <target> <module> <inst> (...)`) - they're
     real instantiations but not at the top of a line.
   If a module's declared-name list looks suspiciously short, double-check
   by reading the build-script file lists.
@@ -77,7 +77,7 @@ in §4 at every depth.
 For each block, determine its primary clock domain:
 
 1. Look at the block's port list for `clk_*`, `*_clk`, `*_aclk`, `*clock`.
-2. Trace each clock signal back to its source — MMCM, PLL, external pin, or
+2. Trace each clock signal back to its source - MMCM, PLL, external pin, or
    transceiver-derived (`tx_par_clk`, `rx_par_clk`).
 3. Group blocks by their primary clock source.
 
@@ -89,7 +89,7 @@ from that domain entry. Do not guess and do not write placeholders like
 ### When to use `domain_b` (CDC block) vs a `cdc` edge
 
 A block becomes a CDC block (`domain` + `domain_b`, rendered with a split
-gradient) **only when CDC is its architectural purpose** — it exists in
+gradient) **only when CDC is its architectural purpose** - it exists in
 the design specifically to bridge two clock domains. Examples:
 
 - Async FIFO instantiated as the boundary between two pipelines.
@@ -114,7 +114,7 @@ Common domain names you'll see:
 
 | Pattern                          | Typical meaning                          |
 |----------------------------------|------------------------------------------|
-| `axi_clk`, `s_axi_aclk`          | AXI bus clock (often 100–250 MHz)        |
+| `axi_clk`, `s_axi_aclk`          | AXI bus clock (often 100-250 MHz)        |
 | `tx_par_clk`, `rx_par_clk`       | GT transceiver parallel clocks           |
 | `video_clk`, `pixel_clk`         | Pixel domain                             |
 | `ddr_clk`, `mem_clk`             | Memory controller domain                 |
@@ -142,7 +142,7 @@ black-boxes, generated files, or intentionally hidden by the user:
 - **JTAG**: `BSCANE2`, `JTAG_*`, `MDM`, `DAP_*`. Drop entirely.
 - **Debug-only IP**: `ila_*`, `vio_*`, `system_ila`, `*_debug_*`. Drop
   unless the user explicitly asks.
-- **Clock primitives**: `MMCME*`, `PLLE*`, `BUFG*`, `clk_wiz*`. Drop —
+- **Clock primitives**: `MMCME*`, `PLLE*`, `BUFG*`, `clk_wiz*`. Drop -
   the diagram encodes domain by color, not topology.
 - **Reset primitives**: `proc_sys_reset`, `xpm_cdc_async_rst`. Drop.
 
@@ -156,7 +156,7 @@ Inspect the port declarations connecting two blocks:
 | Same as `axi-mm` but **without** `awlen / awburst / awsize / arlen / arburst / arsize / wlast / rlast` | `axi-lite`    |
 | `tdata tvalid tready` (often `tlast tkeep tstrb tuser tdest tid`)            | `axi-stream`  |
 | Anything resynchronized at destination via xpm_cdc / async FIFO / handshake  | `cdc`         |
-| RGMII, SPI, I²C, UART, custom buses, discretes                                | `generic`     |
+| RGMII, SPI, I2C, UART, custom buses, discretes                                | `generic`     |
 
 `axi-mm` is for **full AXI** only. AXI4-Lite is `axi-lite`. Don't conflate.
 
@@ -164,8 +164,8 @@ Inspect the port declarations connecting two blocks:
 
 Always read the actual port declaration; don't guess.
 
-- Verilog/SV: `[N:0] portname` → width = N + 1.
-- VHDL: `std_logic_vector(N downto 0)` → width = N + 1.
+- Verilog/SV: `[N:0] portname` -> width = N + 1.
+- VHDL: `std_logic_vector(N downto 0)` -> width = N + 1.
 - Parametric: if the width is a parameter (`DATA_W`, `AXI_DATA_WIDTH`),
   use the parameter name as a string in the JSON
   (`"width": "DATA_W"`) instead of guessing the value.

@@ -16,3 +16,4 @@ no_commit/
 # Repo-local temp dir used by tests.py when system temp isn't writable.
 # Override the location with HDLDIAG_TEST_TMP=<dir>.
 /tmp/
+/.test_tmp/

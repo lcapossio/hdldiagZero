@@ -14,7 +14,7 @@
   <rect width="1644" height="532" fill="#000000" id="_canvas_bg"/>
   <text x="686.0" y="24" text-anchor="middle" font-size="21" font-weight="600" fill="#e2e8f0" letter-spacing="0.2">Application SoC top-level (depth 1)</text>
   <rect id="cpu" x="36" y="66" width="220" height="90" fill="#42A5F5" stroke="#0D47A1" stroke-width="1.4" rx="8"/>
-  <text x="146" y="109" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">Cortex-A53 Ã—2</text>
+  <text x="146" y="109" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">Cortex-A53 x2</text>
   <text x="146" y="125" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">dual-core</text>
   <rect id="l2" x="396" y="66" width="220" height="90" fill="url(#grad-l2)" stroke="#4b5563" stroke-width="1.4" rx="8"/>
   <text x="506" y="109" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">L2 cache</text>
@@ -35,10 +35,10 @@
   <text x="1226" y="295" text-anchor="middle" font-size="15" font-style="italic" fill="#e2e8f0" opacity="0.85">off-chip</text>
   <rect id="apb_br" x="396" y="406" width="220" height="90" fill="url(#grad-apb_br)" stroke="#4b5563" stroke-width="1.4" rx="8"/>
   <text x="506" y="449" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">APB bridge</text>
-  <text x="506" y="465" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">axi â†’ apb</text>
+  <text x="506" y="465" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">axi -&gt; apb</text>
   <rect id="periph" x="756" y="406" width="220" height="90" fill="#FFA726" stroke="#E65100" stroke-width="1.4" rx="8"/>
   <text x="866" y="449" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">Peripherals</text>
-  <text x="866" y="465" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">UART Ã—4 / SPI Ã—2 / IÂ²C / GPIO</text>
+  <text x="866" y="465" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">UART x4 / SPI x2 / I2C / GPIO</text>
   <path id="edge_cpu_to_l2" d="M 256.0,111.0 L 326.0,111.0 L 396.0,111.0" stroke="#e2e8f0" stroke-width="2.5" fill="none" marker-end="url(#ah-solid)"/>
   <rect x="259.0" y="92.2" width="96.8" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
   <text x="307.4" y="107.0" text-anchor="middle" font-size="15" fill="#e2e8f0">AXI-MM 128b</text>

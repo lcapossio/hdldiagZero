@@ -6,7 +6,7 @@ The skill is packaged as a Claude Code plugin: the runtime files live under [ski
 
 ## Sample Output
 
-### Hierarchy depth 1 — top + direct children
+### Hierarchy depth 1 - top + direct children
 
 Generated from [test_spec.json](test_spec.json):
 
@@ -24,7 +24,7 @@ Dark mode:
 
 ### Full SoC top-level
 
-Generated from [test_spec_soc.json](test_spec_soc.json) — application SoC with a CPU complex, L2 cache (CDC), AXI interconnect, on-chip SRAM, DMA, DDR controller, off-chip DDR4, APB bridge, and an APB peripherals subsystem across four clock domains (cpu / axi / ddr / apb):
+Generated from [test_spec_soc.json](test_spec_soc.json) - application SoC with a CPU complex, L2 cache (CDC), AXI interconnect, on-chip SRAM, DMA, DDR controller, off-chip DDR4, APB bridge, and an APB peripherals subsystem across four clock domains (cpu / axi / ddr / apb):
 
 Light mode:
 
@@ -40,7 +40,7 @@ Dark mode:
 
 ### Clock-domain lanes
 
-Generated from [test_spec_lanes.json](test_spec_lanes.json) — an RHS-style acquisition pipeline where each clock domain gets its own tinted lane spanning the canvas:
+Generated from [test_spec_lanes.json](test_spec_lanes.json) - an RHS-style acquisition pipeline where each clock domain gets its own tinted lane spanning the canvas:
 
 Light mode:
 
@@ -54,9 +54,9 @@ Dark mode:
   <img src="sample_lanes_dark.svg" alt="Sample hdldiagZero lane-style dark-mode SVG output">
 </a>
 
-### Hierarchy depth 2 — children + grandchildren
+### Hierarchy depth 2 - children + grandchildren
 
-Generated from [test_spec_depth2.json](test_spec_depth2.json) — a GbE MAC where the TX/RX paths are expanded into their internal descriptor → FIFO/CDC → MAC pipelines:
+Generated from [test_spec_depth2.json](test_spec_depth2.json) - a GbE MAC where the TX/RX paths are expanded into their internal descriptor -> FIFO/CDC -> MAC pipelines:
 
 Light mode:
 
@@ -83,7 +83,7 @@ Dark mode:
 
 ## Features
 
-- **JSON-spec-driven render**: the agent extracts a small architecture spec; the renderer (`render.py`) produces the SVG. The renderer owns geometry — the agent doesn't pick coordinates.
+- **JSON-spec-driven render**: the agent extracts a small architecture spec; the renderer (`render.py`) produces the SVG. The renderer owns geometry - the agent doesn't pick coordinates.
 - **Clock-domain coloring** with a tuned Material-tone palette. Each domain has a separate fill and dark border. CDC blocks (`domain_b: ...`) render with a horizontal-split linear gradient bridging two domains.
 - **External / off-chip blocks** (`external: true`) get a neutral grey fill regardless of domain.
 - **Edge styles per kind**: `axi-mm`, `axi-lite`, `axi-stream`, `cdc` (purple dashed), `generic`. Distinct strokes and arrowheads, plus a connection-styles legend below the clock-domain legend.
@@ -98,7 +98,7 @@ Dark mode:
 
 ### Plugin runtime (installed into the agent's skill directory)
 
-All runtime files live under [`skills/hdldiagzero/`](skills/hdldiagzero/) — the plugin shape Claude Code expects. `install.py` mirrors this directory into the destination, so a manual install ends up with the same files in the same relative layout.
+All runtime files live under [`skills/hdldiagzero/`](skills/hdldiagzero/) - the plugin shape Claude Code expects. `install.py` mirrors this directory into the destination, so a manual install ends up with the same files in the same relative layout.
 
 | File | Purpose |
 | --- | --- |
@@ -106,9 +106,9 @@ All runtime files live under [`skills/hdldiagzero/`](skills/hdldiagzero/) — th
 | [skills/hdldiagzero/LICENSE](skills/hdldiagzero/LICENSE) | MIT license bundled with the runtime. |
 | [skills/hdldiagzero/agents/openai.yaml](skills/hdldiagzero/agents/openai.yaml) | Marketplace/UI metadata for skill lists and default prompts. |
 | [skills/hdldiagzero/assets/hdldiagzero-small.svg](skills/hdldiagzero/assets/hdldiagzero-small.svg) | Small icon used by marketplace/UI metadata. |
-| [skills/hdldiagzero/render.py](skills/hdldiagzero/render.py) | JSON → SVG renderer. |
+| [skills/hdldiagzero/render.py](skills/hdldiagzero/render.py) | JSON -> SVG renderer. |
 | [skills/hdldiagzero/validate.py](skills/hdldiagzero/validate.py) | SVG geometry validator (exit code = violation count). |
-| [skills/hdldiagzero/validate_spec.py](skills/hdldiagzero/validate_spec.py) | JSON spec validator — run before the renderer to catch structural errors. |
+| [skills/hdldiagzero/validate_spec.py](skills/hdldiagzero/validate_spec.py) | JSON spec validator - run before the renderer to catch structural errors. |
 | [skills/hdldiagzero/references/schema.md](skills/hdldiagzero/references/schema.md) | Full JSON schema, loaded on demand. |
 | [skills/hdldiagzero/references/extraction.md](skills/hdldiagzero/references/extraction.md) | HDL extraction patterns: top discovery, hierarchy walking, exclusions, AXI classification. |
 | [skills/hdldiagzero/references/validation.md](skills/hdldiagzero/references/validation.md) | Fix recipes for each validator violation. |
@@ -126,7 +126,7 @@ All runtime files live under [`skills/hdldiagzero/`](skills/hdldiagzero/) — th
 | --- | --- |
 | [install.py](install.py) | Direct (non-marketplace) install path: copies `skills/hdldiagzero/` into a destination dir. Claude defaults; override with `--dst` for Codex / custom runtimes. |
 | [tests.py](tests.py) | Self-tests: validators, renderer light + dark, install dry-run. |
-| [test_spec.json](test_spec.json) | Clean renderer smoke-test spec (hierarchy depth 1 — top + direct children). |
+| [test_spec.json](test_spec.json) | Clean renderer smoke-test spec (hierarchy depth 1 - top + direct children). |
 | [test_spec_depth2.json](test_spec_depth2.json) | Depth-2 sample spec (GbE MAC with TX/RX pipelines expanded). |
 | [test_spec_lanes.json](test_spec_lanes.json) | Clock-domain lanes sample (RHS-style acquisition pipeline). |
 | [test_spec_soc.json](test_spec_soc.json) | Full SoC top-level sample (CPU + IC + DMA + DDR + APB peripherals). |
@@ -136,7 +136,7 @@ All runtime files live under [`skills/hdldiagzero/`](skills/hdldiagzero/) — th
 | [sample_soc.svg](sample_soc.svg) / [sample_soc_dark.svg](sample_soc_dark.svg) | Tracked light/dark renderer output from `test_spec_soc.json`. |
 | [not_sample_broken_validator_fixture.svg](not_sample_broken_validator_fixture.svg) | Intentionally broken validator regression fixture. It is supposed to fail with exactly 8 violations; it is not sample output. |
 | [pyproject.toml](pyproject.toml) | Ruff lint config. |
-| [.github/workflows/ci.yml](.github/workflows/ci.yml) | GitHub Actions: ruff + `python tests.py` on Linux / macOS / Windows × Python 3.10, 3.12. |
+| [.github/workflows/ci.yml](.github/workflows/ci.yml) | GitHub Actions: ruff + `python tests.py` on Linux / macOS / Windows x Python 3.10, 3.12. |
 | [LICENSE](LICENSE), [README.md](README.md) | Repo-root license and docs (the plugin runtime carries its own copy of LICENSE under `skills/hdldiagzero/`). |
 
 ## Install
@@ -184,18 +184,18 @@ python tests.py
 
 Runs the same checks as CI:
 
-1. **Validator regression** — runs `validate.py` on the intentionally broken `not_sample_broken_validator_fixture.svg` and asserts exactly 8 violations.
-2. **Spec validator** — confirms `validate_spec.py` accepts a known-good spec and rejects one with an unknown block id in an edge.
-3. **Renderer light + dark** — renders `test_spec.json` in both themes; each output passes geometry validation.
-4. **Install dry-run** — copies the runtime files into a throwaway dir, asserts every runtime file is present, and asserts repo-only files (README, tests, fixtures) were *not* copied.
+1. **Validator regression** - runs `validate.py` on the intentionally broken `not_sample_broken_validator_fixture.svg` and asserts exactly 8 violations.
+2. **Spec validator** - confirms `validate_spec.py` accepts a known-good spec and rejects one with an unknown block id in an edge.
+3. **Renderer light + dark** - renders `test_spec.json` in both themes; each output passes geometry validation.
+4. **Install dry-run** - copies the runtime files into a throwaway dir, asserts every runtime file is present, and asserts repo-only files (README, tests, fixtures) were *not* copied.
 
-Test conditions: pure Python stdlib, no external tools, runs in well under 10 s on any modern machine. Verified on the OS / Python matrix in [.github/workflows/ci.yml](.github/workflows/ci.yml) (Linux / macOS / Windows × Python 3.10 / 3.12).
+Test conditions: pure Python stdlib, no external tools, runs in well under 10 s on any modern machine. Verified on the OS / Python matrix in [.github/workflows/ci.yml](.github/workflows/ci.yml) (Linux / macOS / Windows x Python 3.10 / 3.12).
 
 If your system temp dir isn't writable (locked-down corporate Windows, sandboxed runner, etc.), tests fall back to `<repo>/tmp/` (gitignored). Override the location with the env var `HDLDIAG_TEST_TMP=/path/of/your/choice`.
 
 ## Author
 
-Leonardo Capossio — [bard0 design](https://www.bard0.com) — hello@bard0.com
+Leonardo Capossio - [bard0 design](https://www.bard0.com) - hello@bard0.com
 
 ## License
 

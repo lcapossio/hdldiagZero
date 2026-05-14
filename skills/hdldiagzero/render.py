@@ -300,7 +300,7 @@ def path_d(points):
 
 
 def label_anchor(points, label_cfg=None):
-    """Anchor the label at the path's bend region — that's the gutter between
+    """Anchor the label at the path's bend region - that's the gutter between
     the two endpoint blocks, where there's clear space.
 
     `label_cfg` (optional) supports per-edge overrides:
@@ -385,7 +385,7 @@ def route_all(spec, blocks_by_id, g):
 
     # Pass 2: group edges by routing channel and compute lane offsets via
     # interval-graph coloring. Two edges in the same channel only conflict if
-    # their vertical (or horizontal) spans actually come close to each other —
+    # their vertical (or horizontal) spans actually come close to each other -
     # edges at row 0 and row 4 in the same column gutter don't overlap and
     # should share a lane (offset 0).
     PADDING = 60                # edges within this many px count as overlapping
@@ -475,7 +475,7 @@ def text_color_for(*fill_hexes):
     rendered with a horizontal-split gradient, pass both halves; the text color
     chosen will be the one with the best *minimum* contrast across both halves
     (so a light-pastel gradient like Material 200 green / orange picks dark
-    text instead of unreadable white). Theme-independent — contrast against the
+    text instead of unreadable white). Theme-independent - contrast against the
     block's fill is what matters, not the canvas."""
     L_dark = _relative_luminance(0x1f, 0x29, 0x37)
     candidates = (("#ffffff", 1.0), ("#1f2937", L_dark))
@@ -595,7 +595,7 @@ def render(spec_path, out_path, theme_override=None):
 
     if spec.get("title"):
         # Title is centered on the GRID portion of the canvas, not the full
-        # canvas — otherwise the legend column pulls the title visually off to
+        # canvas - otherwise the legend column pulls the title visually off to
         # the right and away from the diagram it describes.
         out.append(f'  <text x="{grid_w/2:.1f}" y="24" text-anchor="middle" '
                    f'font-size="21" font-weight="600" fill="{theme["ink"]}" '
@@ -653,7 +653,7 @@ def render(spec_path, out_path, theme_override=None):
 
     # Group containers (hierarchy depth > 1). Drawn BEFORE blocks so the dashed
     # outline tucks behind member blocks and only shows through the gutters.
-    # IDs prefixed `group_` so the geometry validator can skip them — they're
+    # IDs prefixed `group_` so the geometry validator can skip them - they're
     # not real blocks and arrows are allowed to cross their borders.
     groups = spec.get("groups", {})
     if isinstance(groups, dict) and groups:
@@ -744,7 +744,7 @@ def render(spec_path, out_path, theme_override=None):
         else:
             # `direct` = Manhattan with no lane offset: collinear endpoints
             # produce a single horizontal/vertical segment, non-collinear ones
-            # an L. Never a diagonal — that's the whole point.
+            # an L. Never a diagonal - that's the whole point.
             eff_lane = 0 if route_mode == "direct" else lane_offset
             pts = manhattan(g, from_pt, to_pt, fs, ts, eff_lane)
             pts = [(p[0], p[1] + content_y0) for p in pts]
@@ -769,7 +769,7 @@ def render(spec_path, out_path, theme_override=None):
         lx = mx
         # Auto-clamp the label into the endpoints' horizontal span so it stays
         # over the wire. Skip when the user has supplied an explicit override
-        # (dx/dy/segment/t) — they're deliberately placing it themselves.
+        # (dx/dy/segment/t) - they're deliberately placing it themselves.
         if not e.get("label"):
             clear_x = text_w / 2 + 6
             low_x = min(from_pt[0], to_pt[0])

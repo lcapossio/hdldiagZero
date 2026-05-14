@@ -1,6 +1,6 @@
 ---
 name: hdldiagzero
-description: Generate clean SVG block diagrams of HDL / RTL top-level designs. Use whenever the user asks to draw, diagram, sketch, render, or visualize an RTL / HDL / FPGA / SoC design — including phrases like "draw the top-level RTL", "diagram of the SoC", "block diagram", "make an SVG of the design", "visualize the architecture". Applies to Verilog, SystemVerilog, VHDL, Vivado BD, and LiteX projects. Color-codes by clock domain, distinguishes AXI-MM / AXI-Lite / AXI-Stream, omits clock/reset/JTAG/debug.
+description: Generate clean SVG block diagrams of HDL / RTL top-level designs. Use whenever the user asks to draw, diagram, sketch, render, or visualize an RTL / HDL / FPGA / SoC design - including phrases like "draw the top-level RTL", "diagram of the SoC", "block diagram", "make an SVG of the design", "visualize the architecture". Applies to Verilog, SystemVerilog, VHDL, Vivado BD, and LiteX projects. Color-codes by clock domain, distinguishes AXI-MM / AXI-Lite / AXI-Stream, omits clock/reset/JTAG/debug.
 ---
 
 # hdldiagZero
@@ -8,12 +8,12 @@ description: Generate clean SVG block diagrams of HDL / RTL top-level designs. U
 Extract the design's architecture from HDL into a small JSON spec, then run the renderer in this skill's directory. A geometry validator runs as a final guardrail. Iterate on the JSON until validation passes. You don't author SVG.
 
 ```
-HDL  ──(your job)──>  spec.json  ──(render.py)──>  diagram.svg  ──(validate.py)──>  PASS/FAIL
+HDL  --(your job)-->  spec.json  --(render.py)-->  diagram.svg  --(validate.py)-->  PASS/FAIL
 ```
 
 ## Skill scripts
 
-The renderer, validators, and references all live in this skill's directory — the same directory `SKILL.md` was loaded from. Resolve their absolute paths in this priority order:
+The renderer, validators, and references all live in this skill's directory - the same directory `SKILL.md` was loaded from. Resolve their absolute paths in this priority order:
 
 1. **Use the runtime-supplied skill path** if your runtime exposes it (the absolute path of this `SKILL.md` is the canonical anchor; the script lives next to it).
 2. **Search known skill roots** for a `hdldiagzero/` sub-directory: `~/.claude/skills/`, `~/.codex/skills/`, plus any path the user mentioned as a custom skills root. The first one that contains `render.py` is the right one.
@@ -23,33 +23,33 @@ Once you have the skill directory, all script invocations below use `<skill>/...
 
 | Script | Purpose |
 |---|---|
-| `render.py spec.json out.svg` | JSON → SVG (`--theme dark` for dark mode). |
+| `render.py spec.json out.svg` | JSON -> SVG (`--theme dark` for dark mode). |
 | `validate_spec.py spec.json` | JSON structural checks. Run **before** rendering. |
 | `validate.py out.svg` | SVG geometry checks. Run **after** rendering. |
 
 References (read on demand, not always loaded):
-- `references/schema.md` — full JSON schema with examples.
-- `references/extraction.md` — concrete patterns for finding the top, walking hierarchy, identifying clock domains, classifying interfaces, and excluding vendor / debug / generated cruft.
-- `references/validation.md` — fix recipes for every validator violation.
+- `references/schema.md` - full JSON schema with examples.
+- `references/extraction.md` - concrete patterns for finding the top, walking hierarchy, identifying clock domains, classifying interfaces, and excluding vendor / debug / generated cruft.
+- `references/validation.md` - fix recipes for every validator violation.
 
-## Defaults — don't ask, just apply
+## Defaults - don't ask, just apply
 
 - **Theme**: `light`. Switch to `dark` only if the user's prompt mentions dark mode.
 - **Hierarchy depth**: `1` (top + direct children). Go deeper only if the user asked.
 - **Output paths**: `docs/architecture.json` and `docs/architecture.svg` in the project's working directory unless the user named another path.
-- **Inclusions**: see "Standing rules" below — domain coloring, AXI variants distinguished, clk/rst/JTAG/debug omitted.
+- **Inclusions**: see "Standing rules" below - domain coloring, AXI variants distinguished, clk/rst/JTAG/debug omitted.
 
-The only legitimate clarifying question is "which file is top?" when there are multiple top-level candidates and no clear indicator. Don't ask about theme, depth, or filenames — apply the defaults and let the user redirect.
+The only legitimate clarifying question is "which file is top?" when there are multiple top-level candidates and no clear indicator. Don't ask about theme, depth, or filenames - apply the defaults and let the user redirect.
 
 ## Workflow
 
-1. **Find the top module.** Pick the obvious candidate (`top.v`, `*_top.{sv,vhd}`, `system.bd`, `litex_soc.py`); ask only if multiple candidates exist with no clear winner. Patterns: `references/extraction.md` §1.
+1. **Find the top module.** Pick the obvious candidate (`top.v`, `*_top.{sv,vhd}`, `system.bd`, `litex_soc.py`); ask only if multiple candidates exist with no clear winner. Patterns: `references/extraction.md` section 1.
 
-2. **Walk hierarchy to depth N** (default 1). Skip vendor IP, soft processors, BRAM/FIFO leaves, JTAG, debug-only IP, and clock primitives at every depth. Patterns and exclusion lists: `references/extraction.md` §2 and §4.
+2. **Walk hierarchy to depth N** (default 1). Skip vendor IP, soft processors, BRAM/FIFO leaves, JTAG, debug-only IP, and clock primitives at every depth. Patterns and exclusion lists: `references/extraction.md` section 2 and section 4.
 
    When `N > 1`, every expanded parent module **must** appear in the top-level `groups` map and every child block must reference it via `group: "<parent_id>"`. The renderer draws a dashed container around each group so the hierarchy is visually obvious; without `groups`, a depth-2 spec just looks like a flat depth-1 diagram with more blocks.
 
-3. **Map each block to a clock domain.** Look at clk_* ports, MMCM/PLL outputs, transceiver-derived clocks, and CDC primitives. Use `domain_b` (a CDC block, rendered with a split fill) **only when CDC is the block's architectural purpose** — async FIFO at a pipeline boundary, a packer that bridges video/TX clocks, an explicit clock-crossing bridge. A block primarily in one domain that happens to contain a single status synchronizer keeps its primary `domain` and routes the crossing as an explicit `cdc` edge. Detail: `references/extraction.md` §3.
+3. **Map each block to a clock domain.** Look at clk_* ports, MMCM/PLL outputs, transceiver-derived clocks, and CDC primitives. Use `domain_b` (a CDC block, rendered with a split fill) **only when CDC is the block's architectural purpose** - async FIFO at a pipeline boundary, a packer that bridges video/TX clocks, an explicit clock-crossing bridge. A block primarily in one domain that happens to contain a single status synchronizer keeps its primary `domain` and routes the crossing as an explicit `cdc` edge. Detail: `references/extraction.md` section 3.
 
    If a clock frequency is not found in source files or build constraints, omit `freq_mhz` for that domain. Do not invent a value and do not write placeholder text like `? MHz`.
 
@@ -58,12 +58,12 @@ The only legitimate clarifying question is "which file is top?" when there are m
    | `kind`       | What it is |
    |--------------|----|
    | `axi-mm`     | Full AXI4 / AXI3 memory-mapped (with `awlen` / `awburst` / `arlen` / bursts). |
-   | `axi-lite`   | AXI4-Lite control bus. **Distinct from `axi-mm`** — same field names but no burst-related ports. |
-   | `axi-stream` | AXI4-Stream (`tdata` / `tvalid` / `tready` …). |
+   | `axi-lite`   | AXI4-Lite control bus. **Distinct from `axi-mm`** - same field names but no burst-related ports. |
+   | `axi-stream` | AXI4-Stream (`tdata` / `tvalid` / `tready` ...). |
    | `cdc`        | Signal that crosses domains in flight (re-synchronized at destination). |
    | `generic`    | Anything else (RGMII, SPI, custom buses, discretes). |
 
-   Read widths from port declarations; don't guess. For parametric widths, use the parameter name as a string (`"width": "DATA_W"`). Extraction details: `references/extraction.md` §5–6.
+   Read widths from port declarations; don't guess. For parametric widths, use the parameter name as a string (`"width": "DATA_W"`). Extraction details: `references/extraction.md` section 5-6.
 
 5. **Emit JSON spec** to `docs/architecture.json` (or the user-named path). Schema: `references/schema.md`.
 
@@ -73,9 +73,9 @@ The only legitimate clarifying question is "which file is top?" when there are m
 
 8. **Validate the SVG**: `python <skill>/validate.py docs/architecture.svg`. On violation, edit the JSON and re-run from step 6. Cap iterations at 3. Recipes: `references/validation.md`.
 
-9. **Final report**: one or two sentences — top module, block count, clock-domain count, validator status. Link both files (`[architecture.json](docs/architecture.json)`, `[architecture.svg](docs/architecture.svg)`) so the user can iterate by editing the JSON.
+9. **Final report**: one or two sentences - top module, block count, clock-domain count, validator status. Link both files (`[architecture.json](docs/architecture.json)`, `[architecture.svg](docs/architecture.svg)`) so the user can iterate by editing the JSON.
 
-## Standing rules — included / excluded
+## Standing rules - included / excluded
 
 These are unconditional defaults; don't surface them as questions:
 

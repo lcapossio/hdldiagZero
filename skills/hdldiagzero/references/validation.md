@@ -2,12 +2,12 @@
 
 Two validators ship with the skill:
 
-- `validate_spec.py spec.json` — structural JSON checks (run **before** rendering).
-- `validate.py out.svg` — geometry checks (run **after** rendering).
+- `validate_spec.py spec.json` - structural JSON checks (run **before** rendering).
+- `validate.py out.svg` - geometry checks (run **after** rendering).
 
 Both exit 0 on pass; non-zero with a numbered violation list otherwise.
 
-## validate_spec.py — JSON structural
+## validate_spec.py - JSON structural
 
 Strict checks. The validator rejects rather than coerces; fix the JSON
 before calling the renderer.
@@ -36,7 +36,7 @@ before calling the renderer.
 - `label` and `sublabel` are strings if present.
 - `external` must be a real JSON boolean if present (string `"false"` and
   int `0` both fail).
-- An `external: true` block cannot also set `domain` or `domain_b` — the
+- An `external: true` block cannot also set `domain` or `domain_b` - the
   block isn't in any internal clock domain by definition.
 - A non-external block must set `domain`, and that domain must be declared
   in `domains`.
@@ -47,7 +47,7 @@ before calling the renderer.
   `label` (string).
 - `lanes` (if present) is an object keyed on declared domain ids. Each entry
   must specify **exactly one** of `rows` or `cols`, with a non-empty list of
-  non-negative ints. `rows` → horizontal band, `cols` → vertical band.
+  non-negative ints. `rows` -> horizontal band, `cols` -> vertical band.
 
 **Edges**
 - `from` and `to` must reference existing block ids.
@@ -57,7 +57,7 @@ before calling the renderer.
 - `width` must be int or string when present (lists / null / objects fail).
 - `route.mode` (if set) is `"auto"`, `"direct"`, or `"orthogonal"`.
 - `route.points` (if set) is a list of at least two `[x, y]` pairs with numeric
-  coords. **Consecutive points must share x or y** — diagonal segments are
+  coords. **Consecutive points must share x or y** - diagonal segments are
   rejected; insert an orthogonal waypoint instead.
 - `label.dx` and `label.dy` are numeric; `label.segment` is int; `label.t` is
   in `[0, 1]`.
@@ -66,7 +66,7 @@ before calling the renderer.
 - All keys are known (`cell_w`, `cell_h`, `gutter_x`, `gutter_y`, `margin`).
 - All values are non-negative ints. Floats and bools rejected.
 
-## validate.py — SVG geometry
+## validate.py - SVG geometry
 
 | Code         | Means                                                       |
 |--------------|-------------------------------------------------------------|
@@ -110,7 +110,7 @@ parameter name: `"width": "DATA_W"`.
 Almost always a hand-edited SVG, not the renderer. Re-render from the JSON.
 
 ### STUB / SPACING
-Almost never with the renderer. If they fire, it's a renderer bug — capture
+Almost never with the renderer. If they fire, it's a renderer bug - capture
 the JSON and the SVG and report.
 
 ### DIAGONAL
