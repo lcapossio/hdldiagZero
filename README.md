@@ -137,6 +137,7 @@ Dark mode:
 - **Quarter-step placement** with `row` / `col` values like `1.25` or `2.5` for pulling related blocks closer together without compressing the whole diagram.
 - **Compact multi-line block labels** with `lines: [...]` for dense SoC diagrams where `label` + `sublabel` is too rigid.
 - **Functional background bands** (`bands`) and clock-domain lanes (`lanes`) for broad visual grouping, plus `legend: false` / `legend: compact` when large diagrams should spend the canvas on architecture instead of keys.
+- **Explicit extraction policy** (`extraction.hide_primitives`, `hide_processor_structure`, `hide_debug`, `hide_clock_reset`) so clean architecture defaults can be overridden for implementation-detail diagrams.
 - **Edge styles per kind**: `axi-mm`, `axi-lite`, `axi-stream`, `cdc` (purple dashed), `generic`. Distinct strokes and arrowheads, plus a connection-styles legend below the clock-domain legend.
 - **Manhattan single-bend routing** with **interval-coloring lane assignment**: parallel edges sharing a gutter that *actually* overlap in y/x get distinct lanes; non-overlapping edges share a lane so labels stay in the gutter midpoint.
 - **Row/column gutter detours** for same-row or same-column edges that need to pass around intermediate blocks.

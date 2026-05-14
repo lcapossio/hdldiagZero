@@ -37,7 +37,9 @@ References (read on demand, not always loaded):
 - **Theme**: `light`. Switch to `dark` only if the user's prompt mentions dark mode.
 - **Hierarchy depth**: `1` (top + direct children). Go deeper only if the user asked.
 - **Output paths**: `docs/architecture.json` and `docs/architecture.svg` in the project's working directory unless the user named another path.
-- **Inclusions**: see "Standing rules" below - domain coloring, AXI variants distinguished, clk/rst/JTAG/debug omitted.
+- **Inclusions**: see "Extraction policy" below - domain coloring and AXI variants
+  distinguished; clk/rst/JTAG/debug/primitives/processor internals hidden by
+  default, but explicit user requests can override that.
 
 The only legitimate clarifying question is "which file is top?" when there are multiple top-level candidates and no clear indicator. Don't ask about theme, depth, or filenames - apply the defaults and let the user redirect.
 
@@ -45,7 +47,14 @@ The only legitimate clarifying question is "which file is top?" when there are m
 
 1. **Find the top module.** Pick the obvious candidate (`top.v`, `*_top.{sv,vhd}`, `system.bd`, `litex_soc.py`); ask only if multiple candidates exist with no clear winner. Patterns: `references/extraction.md` section 1.
 
-2. **Walk hierarchy to depth N** (default 1). Skip vendor IP, soft processors, BRAM/FIFO leaves, JTAG, debug-only IP, and clock primitives at every depth. Patterns and exclusion lists: `references/extraction.md` section 2 and section 4.
+2. **Walk hierarchy to depth N** (default 1). Apply the extraction policy:
+   hide vendor IP, soft-processor internals, BRAM/FIFO leaves, JTAG,
+   debug-only IP, and clock/reset primitives by default. If the user asks to
+   show primitives, processor internals, debug, clocks, resets, or
+   implementation detail, set the matching `extraction.hide_*` field to
+   `false` in the JSON and include those structures at the requested depth.
+   Patterns and exclusion lists: `references/extraction.md` section 2 and
+   section 4.
 
    When `N > 1`, every expanded parent module **must** appear in the top-level `groups` map and every child block must reference it via `group: "<parent_id>"`. The renderer draws a dashed container around each group so the hierarchy is visually obvious; without `groups`, a depth-2 spec just looks like a flat depth-1 diagram with more blocks.
 
@@ -97,14 +106,25 @@ The only legitimate clarifying question is "which file is top?" when there are m
 
 9. **Final report**: one or two sentences - top module, block count, clock-domain count, validator status. Link both files (`[architecture.json](docs/architecture.json)`, `[architecture.svg](docs/architecture.svg)`) so the user can iterate by editing the JSON.
 
-## Standing rules - included / excluded
+## Extraction policy - included / excluded
 
-These are unconditional defaults; don't surface them as questions:
+These are defaults, not hard bans. Record overrides in top-level
+`extraction`:
+
+```json
+"extraction": {
+  "hide_primitives": false,
+  "hide_processor_structure": false,
+  "hide_debug": true,
+  "hide_clock_reset": true
+}
+```
 
 - **Skip clk/rst nets**. Color encodes domain.
 - **Skip AXI-Lite control paths to leaf peripherals**. Show AXI-Lite only when structurally important (e.g. one interconnect fan-out edge).
-- **Don't expand soft processors** (MicroBlaze, PicoRV, VexRiscv, Ibex). Single block.
-- **Drop JTAG / debug headers and paths** entirely.
-- **Drop ILA / VIO / system-ila** unless the user explicitly asks.
-- **Drop clock primitives** (MMCM, PLL, BUFG, clk_wiz). Domain shows on color.
+- **Don't expand soft processors** (MicroBlaze, PicoRV, VexRiscv, Ibex) unless `hide_processor_structure` is `false`. Default: single block.
+- **Drop memory / FIFO / vendor primitives** unless `hide_primitives` is `false`. Default: keep them folded into the surrounding architectural block.
+- **Drop JTAG / debug headers and paths** unless `hide_debug` is `false`.
+- **Drop ILA / VIO / system-ila** unless `hide_debug` is `false`.
+- **Drop clock/reset primitives** (MMCM, PLL, BUFG, clk_wiz, proc_sys_reset) unless `hide_clock_reset` is `false`. Domain shows on color by default.
 - **Don't author the SVG yourself**. The renderer owns geometry. Edits go in the JSON, not the SVG.

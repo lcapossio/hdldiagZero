@@ -25,6 +25,12 @@ VALID_ROUTE_MODES = {"auto", "direct", "orthogonal"}
 VALID_LEGENDS = {"right", "compact", "none"}
 VALID_SIDES = {"left", "right", "top", "bottom"}
 GRID_FIELDS = {"cell_w", "cell_h", "gutter_x", "gutter_y", "margin"}
+EXTRACTION_FIELDS = {
+    "hide_primitives",
+    "hide_processor_structure",
+    "hide_debug",
+    "hide_clock_reset",
+}
 DOMAIN_FIELDS = {"freq_mhz", "color", "border"}
 GROUP_FIELDS = {"label"}
 LANE_FIELDS = {"rows", "cols"}
@@ -37,8 +43,8 @@ EDGE_FIELDS = {"from", "to", "kind", "width", "route", "label"}
 ROUTE_FIELDS = {"mode", "points"}
 LABEL_FIELDS = {"dx", "dy", "segment", "t"}
 TOP_FIELDS = {
-    "title", "top", "theme", "legend", "grid", "domains", "groups", "lanes",
-    "bands", "blocks", "edges",
+    "title", "top", "theme", "legend", "grid", "extraction", "domains",
+    "groups", "lanes", "bands", "blocks", "edges",
 }
 
 _HEX_COLOR = re.compile(r"^#[0-9a-fA-F]{6}$")
@@ -98,6 +104,22 @@ def validate(spec):
                 f"legend: must be a boolean or one of {sorted(VALID_LEGENDS)} "
                 f"(got {legend!r})"
             )
+
+    # extraction policy
+    extraction = spec.get("extraction")
+    if extraction is not None:
+        if not isinstance(extraction, dict):
+            errors.append("extraction: must be an object")
+        else:
+            _check_unknown_keys(extraction, EXTRACTION_FIELDS, "extraction", errors)
+            for k, v in extraction.items():
+                if k not in EXTRACTION_FIELDS:
+                    continue
+                if not isinstance(v, bool):
+                    errors.append(
+                        f"extraction.{k}: must be a JSON boolean "
+                        f"(got {type(v).__name__} = {v!r})"
+                    )
 
     # grid
     grid = spec.get("grid")

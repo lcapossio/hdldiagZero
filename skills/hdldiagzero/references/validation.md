@@ -61,6 +61,12 @@ before calling the renderer.
 - `legend`, if present, is a boolean or one of `"right"`, `"compact"`,
   `"none"`.
 
+**Extraction**
+- `extraction`, if present, is an object whose fields are JSON booleans.
+- Allowed fields are `hide_primitives`, `hide_processor_structure`,
+  `hide_debug`, and `hide_clock_reset`.
+- Omitted fields default to the clean architecture view (`true`).
+
 **Edges**
 - `from` and `to` must reference existing block ids.
 - Self-edges (`from == to`) are rejected.

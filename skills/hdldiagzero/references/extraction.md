@@ -33,8 +33,8 @@ user. If there's an obvious one, just use it without asking.
 
 ## 2. Walking hierarchy to depth N
 
-Default depth = 1: the top + its direct children only. Skip the exclude list
-in section 4 at every depth.
+Default depth = 1: the top + its direct children only. Apply the extraction
+policy in section 4 at every depth.
 
 ### Verilog / SystemVerilog
 - Within each module, find instantiations: `<module_name> <inst_name> (...)`.
@@ -125,26 +125,46 @@ CDC primitive search:
 rg -n "xpm_cdc_|async_fifo|handshake_cdc|xpm_fifo_async" --type=verilog --type=vhdl
 ```
 
-## 4. Always exclude
+## 4. Extraction policy
 
-Drop these from the diagram regardless of depth. They're either vendor
-black-boxes, generated files, or intentionally hidden by the user:
+The clean architecture default is to hide low-level implementation detail. The
+user can override that per diagram with top-level JSON metadata:
+
+```json
+"extraction": {
+  "hide_primitives": true,
+  "hide_processor_structure": true,
+  "hide_debug": true,
+  "hide_clock_reset": true
+}
+```
+
+If the user asks to show primitives, processor internals, debug, clocks/resets,
+or implementation detail, flip the matching field to `false` and include that
+structure at the requested hierarchy depth.
+
+Default hidden categories:
 
 - **Vendor / generated trees**: anything under `*.cache/`, `*.gen/`,
   `*.runs/`, `vivado_proj/`, `quartus/db/`, `*.IP_user_files/`, `ip/`,
-  `_xil_defaultlib/`. Treat as opaque.
+  `_xil_defaultlib/`. Treat as opaque unless implementation detail was
+  explicitly requested.
 - **Soft processors**: `microblaze`, `picorv32`, `vexriscv`, `cv32e40p`,
   `ibex`, `neorv32`. Single block, no expansion. No BRAM, no MDM, no debug
-  bus.
+  bus unless `hide_processor_structure` is `false`.
 - **Memory primitives**: `RAMB18`, `RAMB36`, `BRAM_*`, `xpm_memory_*`,
   `xilinx_simple_dual_port_*`, `*_fifo_*`, `xpm_fifo_*`. Don't expand;
-  mention only if the surrounding logic is incoherent without them.
-- **JTAG**: `BSCANE2`, `JTAG_*`, `MDM`, `DAP_*`. Drop entirely.
+  mention only if the surrounding logic is incoherent without them, or if
+  `hide_primitives` is `false`.
+- **JTAG**: `BSCANE2`, `JTAG_*`, `MDM`, `DAP_*`. Drop unless
+  `hide_debug` is `false`.
 - **Debug-only IP**: `ila_*`, `vio_*`, `system_ila`, `*_debug_*`. Drop
-  unless the user explicitly asks.
+  unless `hide_debug` is `false`.
 - **Clock primitives**: `MMCME*`, `PLLE*`, `BUFG*`, `clk_wiz*`. Drop -
-  the diagram encodes domain by color, not topology.
-- **Reset primitives**: `proc_sys_reset`, `xpm_cdc_async_rst`. Drop.
+  the diagram encodes domain by color, not topology. Include only when
+  `hide_clock_reset` is `false`.
+- **Reset primitives**: `proc_sys_reset`, `xpm_cdc_async_rst`. Drop unless
+  `hide_clock_reset` is `false`.
 
 ## 5. Classifying each connection
 

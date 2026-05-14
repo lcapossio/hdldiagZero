@@ -216,6 +216,26 @@ def test_spec_validator_strict_types() -> None:
         _write_and_check(tmp, "ext_domain_b.json", bad, 1, "spec-strict-external-domain-b")
 
 
+def test_spec_validator_accepts_extraction_policy() -> None:
+    """Extraction hide/show policy is explicit metadata on the JSON spec."""
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        good = {
+            **_BASE_SPEC,
+            "extraction": {
+                "hide_primitives": False,
+                "hide_processor_structure": False,
+                "hide_debug": True,
+                "hide_clock_reset": True,
+            },
+        }
+        _write_and_check(tmp, "extraction_good.json", good, 0, "spec-extraction-good")
+        bad_type = {**_BASE_SPEC, "extraction": {"hide_primitives": "false"}}
+        _write_and_check(tmp, "extraction_bad_type.json", bad_type, 1, "spec-extraction-bad-type")
+        bad_field = {**_BASE_SPEC, "extraction": {"hide_magic": True}}
+        _write_and_check(tmp, "extraction_bad_field.json", bad_field, 1, "spec-extraction-bad-field")
+
+
 def test_renderer_light() -> None:
     with _tmpdir() as tmp:
         out = Path(tmp) / "out.svg"
@@ -1056,6 +1076,7 @@ def main() -> int:
     test_spec_validator_passes_on_test_spec()
     test_spec_validator_catches_bad_spec()
     test_spec_validator_strict_types()
+    test_spec_validator_accepts_extraction_policy()
     test_renderer_light()
     test_renderer_dark()
     test_groups_render_and_skip_geometry()
