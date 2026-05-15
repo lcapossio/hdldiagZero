@@ -191,7 +191,7 @@ uppercase header. Arrows freely cross group borders; the validator excludes
 |---------|---------------|----------|-------------|
 | `from`  | string        | required | Block id (must exist in `blocks`). |
 | `to`    | string        | required | Block id (must exist in `blocks`). |
-| `kind`  | string        | required | One of `axi-mm`, `axi-lite`, `axi-stream`, `cdc`, `generic`. |
+| `kind`  | string        | required | One of `axi-mm`, `axi-lite`, `axi-stream`, `tilelink`, `cdc`, `generic`. |
 | `width` | int \| string | optional | Bit width as int (rendered `<n>b`), or protocol / parameter as string. Long arrows without a label fail the BITWIDTH validator check. |
 | `route` | object        | optional | Per-edge routing override. See *edges[].route* below. |
 | `label` | object        | optional | Per-edge label placement override. See *edges[].label* below. |
@@ -234,6 +234,7 @@ that you know where you want the label and don't want it dragged back.
 | `axi-mm`      | Full AXI4 / AXI3 memory-mapped (with bursts).    | Thick dark.         |
 | `axi-lite`    | AXI4-Lite control bus. **Distinct from axi-mm.** | Slimmer dark blue.  |
 | `axi-stream`  | AXI4-Stream data path.                           | Olive, open head.   |
+| `tilelink`    | TileLink, including OpenTitan TL-UL fabrics.     | Teal solid.         |
 | `cdc`         | Signal/bus crossing clock domains in flight.     | Purple dashed.      |
 | `generic`     | Anything else (RGMII, SPI, custom, discretes).   | Thin grey.          |
 

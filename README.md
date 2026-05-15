@@ -1,6 +1,6 @@
 # hdldiagZero
 
-An agent skill that turns an HDL / RTL / SoC architecture description into a clean SVG block diagram. Color-codes blocks by clock domain, distinguishes AXI variants, draws CDC blocks with a split fill, omits clock / reset / JTAG / debug clutter by default, and validates the output geometry so lines never pass through blocks.
+An agent skill that turns an HDL / RTL / SoC architecture description into a clean SVG block diagram. Color-codes blocks by clock domain, distinguishes AXI and TileLink variants, draws CDC blocks with a split fill, omits clock / reset / JTAG / debug clutter by default, and validates the output geometry so lines never pass through blocks.
 
 The skill is packaged as a Claude Code plugin: the runtime files live under [skills/hdldiagzero/](skills/hdldiagzero/) and are described by [.claude-plugin/plugin.json](.claude-plugin/plugin.json) and [.claude-plugin/marketplace.json](.claude-plugin/marketplace.json). Claude Code users install via the marketplace flow; other agent runtimes (Codex, custom) can use [install.py](install.py) for a direct copy.
 
@@ -138,13 +138,13 @@ Dark mode:
 - **Compact multi-line block labels** with `lines: [...]` for dense SoC diagrams where `label` + `sublabel` is too rigid.
 - **Functional background bands** (`bands`) and clock-domain lanes (`lanes`) for broad visual grouping, plus `legend: false` / `legend: compact` when large diagrams should spend the canvas on architecture instead of keys.
 - **Explicit extraction policy** (`extraction.hide_primitives`, `hide_processor_structure`, `hide_debug`, `hide_clock_reset`) so clean architecture defaults can be overridden for implementation-detail diagrams.
-- **Edge styles per kind**: `axi-mm`, `axi-lite`, `axi-stream`, `cdc` (purple dashed), `generic`. Distinct strokes and arrowheads, plus a connection-styles legend below the clock-domain legend.
+- **Edge styles per kind**: `axi-mm`, `axi-lite`, `axi-stream`, `tilelink`, `cdc` (purple dashed), `generic`. Distinct strokes and arrowheads, plus a connection-styles legend below the clock-domain legend.
 - **Manhattan single-bend routing** with **interval-coloring lane assignment**: parallel edges sharing a gutter that *actually* overlap in y/x get distinct lanes; non-overlapping edges share a lane so labels stay in the gutter midpoint.
 - **Row/column gutter detours** for same-row or same-column edges that need to pass around intermediate blocks.
 - **WCAG-style text contrast**: block text auto-flips between light and dark by relative-luminance contrast so labels read on every fill, including CDC gradients.
 - **Light + dark themes** (`theme: dark` in the JSON or `--theme dark` on the CLI). Dark mode uses pure black canvas with brightened accent colors for arrows, labels, and external blocks.
 - **Edge bitwidth labels** at the bend midpoint, with a subtle pill mask so the line doesn't pierce the text.
-- **Geometry validator** (`validate.py`) catches line-through-block crossings, parallel-arrow collisions, unnecessary route loops, stub arrows (shaft shorter than arrowhead), tangential block entry/exit, labels overlapping foreign blocks, arrows piercing other arrows' labels, multiple endpoints meeting at the same block port, and missing edge labels.
+- **Geometry validator** (`validate.py`) catches line-through-block crossings, exact arrow-route overlaps, parallel-arrow collisions, unnecessary route loops, floating endpoints, stub arrows (shaft shorter than arrowhead), tangential block entry/exit, labels overlapping foreign blocks, arrows piercing other arrows' labels, multiple endpoints meeting at the same block port, and missing edge labels.
 
 ## Files
 

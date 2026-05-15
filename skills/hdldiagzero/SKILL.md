@@ -1,6 +1,6 @@
 ---
 name: hdldiagzero
-description: Generate clean SVG block diagrams of HDL / RTL top-level designs. Use whenever the user asks to draw, diagram, sketch, render, or visualize an RTL / HDL / FPGA / SoC design - including phrases like "draw the top-level RTL", "diagram of the SoC", "block diagram", "make an SVG of the design", "visualize the architecture". Applies to Verilog, SystemVerilog, VHDL, Vivado BD, and LiteX projects. Color-codes by clock domain, distinguishes AXI-MM / AXI-Lite / AXI-Stream, omits clock/reset/JTAG/debug.
+description: Generate clean SVG block diagrams of HDL / RTL top-level designs. Use whenever the user asks to draw, diagram, sketch, render, or visualize an RTL / HDL / FPGA / SoC design - including phrases like "draw the top-level RTL", "diagram of the SoC", "block diagram", "make an SVG of the design", "visualize the architecture". Applies to Verilog, SystemVerilog, VHDL, Vivado BD, and LiteX projects. Color-codes by clock domain, distinguishes AXI-MM / AXI-Lite / AXI-Stream / TileLink, omits clock/reset/JTAG/debug.
 ---
 
 # hdldiagZero
@@ -37,7 +37,7 @@ References (read on demand, not always loaded):
 - **Theme**: `light`. Switch to `dark` only if the user's prompt mentions dark mode.
 - **Hierarchy depth**: `1` (top + direct children). Go deeper only if the user asked.
 - **Output paths**: `docs/architecture.json` and `docs/architecture.svg` in the project's working directory unless the user named another path.
-- **Inclusions**: see "Extraction policy" below - domain coloring and AXI variants
+- **Inclusions**: see "Extraction policy" below - domain coloring and bus protocol variants
   distinguished; clk/rst/JTAG/debug/primitives/processor internals hidden by
   default, but explicit user requests can override that.
 
@@ -69,6 +69,7 @@ The only legitimate clarifying question is "which file is top?" when there are m
    | `axi-mm`     | Full AXI4 / AXI3 memory-mapped (with `awlen` / `awburst` / `arlen` / bursts). |
    | `axi-lite`   | AXI4-Lite control bus. **Distinct from `axi-mm`** - same field names but no burst-related ports. |
    | `axi-stream` | AXI4-Stream (`tdata` / `tvalid` / `tready` ...). |
+   | `tilelink`   | TileLink, including OpenTitan `TL` / `TL-UL` fabrics. |
    | `cdc`        | Signal that crosses domains in flight (re-synchronized at destination). |
    | `generic`    | Anything else (RGMII, SPI, custom buses, discretes). |
 
@@ -91,12 +92,15 @@ The only legitimate clarifying question is "which file is top?" when there are m
    more than two short label lines. When a band sits under a `group` with the
    same label, set the band `label` to `""` so the headers do not overlap.
 
-   If you use explicit `route.points`, every segment must be orthogonal, and
-   endpoints attached to blocks must leave/enter perpendicular to the touched
-   block side. Add a short outward stub before the first turn; never run the
-   first or last segment tangentially along the block edge. Do not add dogleg
-   loops when two block ports can connect directly; use `route.mode: "direct"`
-   or remove the extra waypoints.
+   If you use explicit `route.points`, the first and last point must sit
+   exactly on the source/target block boundary, every segment must be
+   orthogonal, and endpoints attached to blocks must leave/enter perpendicular
+   to the touched block side. Add a short outward stub before the first turn;
+   never run the first or last segment tangentially along the block edge. Do
+   not add dogleg loops when two block ports can connect directly; use
+   `route.mode: "direct"` or remove the extra waypoints. Do not place two
+   arrow segments on the exact same visible line; move one route to another
+   gutter.
 
 6. **Validate the spec** before rendering: `python <skill>/validate_spec.py docs/architecture.json`. Fix any reported issues; do NOT call the renderer with a broken spec.
 

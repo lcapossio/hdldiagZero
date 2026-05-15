@@ -39,16 +39,16 @@
   "edges": [
     {"from": "host",          "to": "rv_dm",         "kind": "generic", "width": "debug"},
     {"from": "rv_dm",         "to": "ibex",          "kind": "generic", "width": "debug"},
-    {"from": "ibex",          "to": "xbar_main",     "kind": "generic", "width": "TL-UL"},
-    {"from": "xbar_main",     "to": "mem_ctrls",     "kind": "generic", "width": "TL-UL"},
-    {"from": "xbar_main",     "to": "xbar_peri",     "kind": "generic", "width": "TL-UL", "label": {"segment": 2}},
+    {"from": "ibex",          "to": "xbar_main",     "kind": "tilelink", "width": "TL-UL"},
+    {"from": "xbar_main",     "to": "mem_ctrls",     "kind": "tilelink", "width": "TL-UL"},
+    {"from": "xbar_main",     "to": "xbar_peri",     "kind": "tilelink", "width": "TL-UL", "label": {"segment": 2}},
 
     {"from": "entropy",       "to": "csrng_edn",     "kind": "generic", "width": "entropy", "route": {"points": [[216, 280], [302, 280]]}},
     {"from": "csrng_edn",     "to": "keymgr",        "kind": "generic", "width": "rand"},
     {"from": "lc_ctrl",       "to": "alert_handler", "kind": "cdc",     "width": "state"},
     {"from": "alert_handler", "to": "otp_ctrl",      "kind": "cdc",     "width": "alerts", "route": {"points": [[611, 467], [650, 467], [650, 535], [1700, 535], [1700, 289], [1636, 289]]}},
 
-    {"from": "xbar_peri",     "to": "peripherals",   "kind": "generic", "width": "TL-UL"},
+    {"from": "xbar_peri",     "to": "peripherals",   "kind": "tilelink", "width": "TL-UL"},
     {"from": "peripherals",   "to": "rv_plic",       "kind": "generic", "width": "IRQ", "route": {"mode": "direct"}},
     {"from": "aon_timer",     "to": "rv_plic",       "kind": "generic", "width": "IRQ"},
     {"from": "rv_plic",       "to": "ibex",          "kind": "generic", "width": "IRQ", "route": {"points": [[1101, 645], [1050, 645], [1050, 720], [700, 720], [700, 126], [746, 126]]}, "label": {"segment": 3, "t": 0.14}}

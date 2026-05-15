@@ -61,10 +61,10 @@
     {"from": "rv_core_regs",  "to": "ibex_core",   "kind": "generic", "route": {"points": [[911, 155], [911, 128]]}},
     {"from": "ibex_core",     "to": "tlul_i",      "kind": "generic", "width": "instr", "route": {"points": [[1005, 88], [1101, 88]]}},
     {"from": "ibex_core",     "to": "tlul_d",      "kind": "generic", "width": "data", "route": {"points": [[1005, 116], [1055, 116], [1055, 184], [1101, 184]]}, "label": {"segment": 1}},
-    {"from": "tlul_i",        "to": "xbar_main",   "kind": "generic", "width": "I TL-UL"},
-    {"from": "tlul_d",        "to": "xbar_main",   "kind": "generic", "width": "D TL-UL", "route": {"points": [[1274, 184], [1320, 184], [1320, 126], [1456, 126]]}, "label": {"segment": 0}},
-    {"from": "xbar_main",     "to": "mem_ctrls",   "kind": "generic", "width": "TL-UL"},
-    {"from": "xbar_main",     "to": "xbar_peri",   "kind": "generic", "width": "TL-UL", "route": {"points": [[1566, 156], [1566, 230], [15, 230], [15, 645], [36, 645]]}, "label": {"segment": 2, "t": 0.42}},
+    {"from": "tlul_i",        "to": "xbar_main",   "kind": "tilelink", "width": "I TL-UL"},
+    {"from": "tlul_d",        "to": "xbar_main",   "kind": "tilelink", "width": "D TL-UL", "route": {"points": [[1256, 184], [1320, 184], [1320, 126], [1456, 126]]}, "label": {"segment": 0}},
+    {"from": "xbar_main",     "to": "mem_ctrls",   "kind": "tilelink", "width": "TL-UL"},
+    {"from": "xbar_main",     "to": "xbar_peri",   "kind": "tilelink", "width": "TL-UL", "route": {"points": [[1566, 156], [1566, 230], [15, 230], [15, 645], [36, 645]]}, "label": {"segment": 2, "t": 0.42}},
 
     {"from": "entropy",       "to": "csrng",       "kind": "generic", "width": "entropy"},
     {"from": "csrng",         "to": "edn",         "kind": "generic", "width": "rand"},
@@ -74,10 +74,10 @@
     {"from": "lc_ctrl",       "to": "alert_handler","kind": "cdc",     "width": "state", "route": {"points": [[216, 458], [391, 458]]}},
     {"from": "alert_handler", "to": "otp_ctrl",    "kind": "cdc",     "width": "alerts", "route": {"points": [[581, 458], [640, 458], [640, 515], [1700, 515], [1700, 289], [1636, 289]]}},
 
-    {"from": "xbar_peri",     "to": "uart_spi",    "kind": "generic", "width": "TL-UL"},
+    {"from": "xbar_peri",     "to": "uart_spi",    "kind": "tilelink", "width": "TL-UL"},
     {"from": "uart_spi",      "to": "i2c_gpio",    "kind": "generic", "width": "pads", "route": {"points": [[561, 634], [657, 634]]}},
-    {"from": "i2c_gpio",      "to": "rv_plic",     "kind": "generic", "width": "IRQ", "route": {"points": [[827, 645], [870, 645], [870, 720], [1566, 720], [1566, 690]]}, "label": {"segment": 2}},
+    {"from": "i2c_gpio",      "to": "rv_plic",     "kind": "generic", "width": "IRQ", "route": {"points": [[827, 645], [870, 645], [870, 720], [1541, 720], [1541, 668]]}, "label": {"segment": 2}},
     {"from": "aon_timer",     "to": "rv_plic",     "kind": "generic", "width": "IRQ"},
-    {"from": "rv_plic",       "to": "rv_core_regs","kind": "generic", "width": "IRQ", "route": {"points": [[1626, 645], [1720, 645], [1720, 230], [1050, 230], [1050, 184], [1005, 184]]}, "label": {"segment": 0, "t": 0.5}}
+    {"from": "rv_plic",       "to": "rv_core_regs","kind": "generic", "width": "IRQ", "route": {"points": [[1626, 645], [1780, 645], [1780, 25], [830, 25], [830, 184], [835, 184]]}, "label": {"segment": 0, "t": 0.5}}
   ]
 }

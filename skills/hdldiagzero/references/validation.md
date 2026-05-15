@@ -90,6 +90,7 @@ before calling the renderer.
 |--------------|-------------------------------------------------------------|
 | `CROSSING`   | Arrow path passes through a block it doesn't connect to.    |
 | `SPACING`    | Two parallel arrows < 15px apart (look like one line).      |
+| `OVERLAP`    | Two arrows share the exact same route segment.              |
 | `STUB`       | Arrow shaft shorter than ~1.5x the arrowhead.               |
 | `TEXT_BLOCK` | A block overlaps text that isn't its own label.             |
 | `TEXT_ARROW` | An arrow passes through text that isn't its own edge label. |
@@ -97,6 +98,7 @@ before calling the renderer.
 | `PORT`       | Two arrow endpoints on the same block within 12px.          |
 | `BITWIDTH`   | A long arrow has no nearby text label.                      |
 | `DIAGONAL`   | An arrow segment is neither horizontal nor vertical.        |
+| `ENDPOINT`   | An arrow start/end point is not attached to a block edge.   |
 | `PERPENDICULAR` | An arrow endpoint leaves/enters along the block edge.    |
 | `LOOP`       | A route detours even though a clear direct connection exists. |
 
@@ -122,6 +124,11 @@ Too many edges share one side of a block. Either split the block into
 sub-blocks at different `(row, col)`s, or restructure topology so some
 edges enter via different sides. Rare with the default renderer.
 
+### OVERLAP
+Two edges occupy the same visible horizontal or vertical run. Move one edge
+into a different gutter, or reroute it around the shared corridor. If the two
+edges represent the same bus, merge them into one higher-level bus edge.
+
 ### BITWIDTH
 The edge has no `width` in the JSON. Add it. For protocols, a string is
 fine: `"width": "RGMII"` / `"width": "SPI"`. For parametric widths use the
@@ -139,6 +146,13 @@ Either a hand-edited SVG or explicit `route.points` whose consecutive entries
 don't share an x or y coordinate. The renderer itself never emits diagonals.
 Re-render from the JSON, or insert an intermediate orthogonal waypoint
 (`[x1, y1] -> [x2, y1] -> [x2, y2]` instead of `[x1, y1] -> [x2, y2]`).
+
+### ENDPOINT
+Usually explicit `route.points`. The first point must sit exactly on the
+source block boundary and the last point must sit exactly on the target block
+boundary. Do not start inside the block or in the gutter. Use the rendered
+block `x/y/width/height` values, or prefer `route.mode` when a standard route
+is enough.
 
 ### PERPENDICULAR
 Usually explicit `route.points`. A route point on a block's left/right side

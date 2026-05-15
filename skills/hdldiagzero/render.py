@@ -92,6 +92,7 @@ THEMES = {
         "ext_text":     "#1f2937",
         "stream":       "#5C5C00",   # AXI-S accent
         "axil":         "#0D47A1",   # AXI-L accent
+        "tilelink":     "#00796B",   # TileLink / TL-UL accent
         "cdc":          "#6A1B9A",   # CDC accent
         "legend_bg":    "#ffffff",
         "legend_bord":  "#cbd5e1",
@@ -108,6 +109,7 @@ THEMES = {
         "ext_text":     "#e2e8f0",
         "stream":       "#d9f99d",
         "axil":         "#93c5fd",
+        "tilelink":     "#5eead4",
         "cdc":          "#d8b4fe",
         "legend_bg":    "#0f172a",
         "legend_bord":  "#475569",
@@ -133,6 +135,7 @@ KIND_PREFIXES = {
     "axi-mm":     "AXI-MM",
     "axi-stream": "AXI-S",
     "axi-lite":   "AXI-L",
+    "tilelink":   "",
     "cdc":        "CDC",
     "generic":    "",
 }
@@ -147,6 +150,8 @@ def kind_attrs_for(theme):
                            marker="ah-stream", dash=None),
         "axi-lite":   dict(stroke_width=2.5, stroke=theme["axil"],
                            marker="ah-axil",   dash=None),
+        "tilelink":   dict(stroke_width=2.4, stroke=theme["tilelink"],
+                           marker="ah-tilelink", dash=None),
         "cdc":        dict(stroke_width=1.8, stroke=theme["cdc"],
                            marker="ah-cdc",    dash=CDC_DASH),
         "generic":    dict(stroke_width=1.4, stroke=theme["ink_soft"],
@@ -621,6 +626,7 @@ def render(spec_path, out_path, theme_override=None):
         ("ah-thin",   theme["ink_soft"]),
         ("ah-stream", theme["stream"]),
         ("ah-axil",   theme["axil"]),
+        ("ah-tilelink", theme["tilelink"]),
         ("ah-cdc",    theme["cdc"]),
     ]:
         out.append(f'    <marker id="{marker_id}" markerWidth="9" '
@@ -947,6 +953,7 @@ def render(spec_path, out_path, theme_override=None):
                 "axi-mm":     "AXI-MM data bus",
                 "axi-lite":   "AXI4-Lite control",
                 "axi-stream": "AXI-Stream",
+                "tilelink":   "TileLink / TL-UL",
                 "cdc":        "CDC traversal (re-clocked)",
                 "generic":    "Generic / discrete",
             }

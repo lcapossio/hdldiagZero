@@ -19,7 +19,7 @@ import re
 import sys
 from pathlib import Path
 
-VALID_KINDS = {"axi-mm", "axi-lite", "axi-stream", "cdc", "generic"}
+VALID_KINDS = {"axi-mm", "axi-lite", "axi-stream", "tilelink", "cdc", "generic"}
 VALID_THEMES = {"light", "dark"}
 VALID_ROUTE_MODES = {"auto", "direct", "orthogonal"}
 VALID_LEGENDS = {"right", "compact", "none"}

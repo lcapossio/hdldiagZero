@@ -7,20 +7,22 @@ Year:   2026
 Checks:
   1. CROSSING    - arrow paths passing through blocks they don't connect to
   2. SPACING     - parallel arrows closer than MIN_SPACING px (unreadable bundles)
-  3. STUB        - arrows whose shaft is shorter than ~1.5x the arrowhead
-  4. TEXT_BLOCK  - a block overlapping text that is not its own label
-  5. TEXT_ARROW  - an arrow passing through text that is not its own edge label
-  6. TEXT_TEXT   - significant overlap between two separate text labels
-  7. PORT        - two arrows attaching to the same block within MIN_PORT_SEP px
+  3. OVERLAP     - two arrow segments sharing the exact same route
+  4. STUB        - arrows whose shaft is shorter than ~1.5x the arrowhead
+  5. TEXT_BLOCK  - a block overlapping text that is not its own label
+  6. TEXT_ARROW  - an arrow passing through text that is not its own edge label
+  7. TEXT_TEXT   - significant overlap between two separate text labels
+  8. PORT        - two arrows attaching to the same block within MIN_PORT_SEP px
                    (i.e. effectively meeting at the same point)
-  8. BITWIDTH    - an arrow longer than BITWIDTH_MIN_ARROW_LEN with no nearby
+  9. BITWIDTH    - an arrow longer than BITWIDTH_MIN_ARROW_LEN with no nearby
                    text containing a digit (no bitwidth indicator at midpoint)
-  9. DIAGONAL    - an arrow segment that is neither horizontal nor vertical.
+ 10. DIAGONAL    - an arrow segment that is neither horizontal nor vertical.
                    The layout language is strictly orthogonal; diagonals are
                    always a routing bug.
- 10. PERPENDICULAR - an arrow endpoint touching a block must leave/enter
+ 11. ENDPOINT    - an arrow start/end point is not attached to any block edge.
+ 12. PERPENDICULAR - an arrow endpoint touching a block must leave/enter
                    perpendicular to that block side, not run tangentially.
- 11. LOOP        - a route loops away even though the connected ports are
+ 13. LOOP        - a route loops away even though the connected ports are
                    collinear, facing each other, and have clear space.
 
 Exit code = number of violations (0 = pass). Writes a structured report to stdout
@@ -42,6 +44,7 @@ import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 
 MIN_SPACING = 15.0       # px - parallel arrows closer than this are unreadable
+MIN_OVERLAP = 8.0        # px - ignore only tiny endpoint/rounding coincidences
 EDGE_TOLERANCE = 4.0     # px - endpoint within this distance of rect edge = connected
 MIN_BLOCK_W = 40.0
 MIN_BLOCK_H = 25.0
@@ -432,6 +435,25 @@ def endpoint_block_side(point, blocks):
     return None, None
 
 
+def check_floating_endpoints(blocks, arrows):
+    """Every real arrow must begin and end on some block edge."""
+    violations = []
+    for a in arrows:
+        if "legend" in a.id.lower():
+            continue
+        for which, endpoint in (("start", a.points[0]), ("end", a.points[-1])):
+            b, side = endpoint_block_side(endpoint, blocks)
+            if b is not None:
+                continue
+            violations.append(
+                f"ENDPOINT: arrow '{a.id}' {which} endpoint "
+                f"({endpoint[0]:.0f},{endpoint[1]:.0f}) is not attached to "
+                f"any block edge. Move the endpoint onto the source/target "
+                f"block boundary."
+            )
+    return violations
+
+
 def check_crossings(blocks, arrows):
     violations = []
     for a in arrows:
@@ -619,6 +641,52 @@ def check_spacing(arrows):
                             f"near ({mx:.0f},{my:.0f}). Increase separation or "
                             f"merge them into a single bus arrow."
                         )
+    return violations
+
+
+def segment_overlap(s1, s2):
+    """Return overlapping length when two orthogonal segments share a line."""
+    (x1, y1), (x2, y2) = s1
+    (x3, y3), (x4, y4) = s2
+    eps = 1e-6
+    if abs(y1 - y2) <= eps and abs(y3 - y4) <= eps and abs(y1 - y3) <= eps:
+        lo = max(min(x1, x2), min(x3, x4))
+        hi = min(max(x1, x2), max(x3, x4))
+        if hi - lo >= MIN_OVERLAP:
+            return hi - lo, ((lo + hi) / 2, y1)
+    if abs(x1 - x2) <= eps and abs(x3 - x4) <= eps and abs(x1 - x3) <= eps:
+        lo = max(min(y1, y2), min(y3, y4))
+        hi = min(max(y1, y2), max(y3, y4))
+        if hi - lo >= MIN_OVERLAP:
+            return hi - lo, (x1, (lo + hi) / 2)
+    return None
+
+
+def check_overlapping_segments(arrows):
+    violations = []
+    seen = set()
+    for i, a in enumerate(arrows):
+        if a.id.startswith("legend-arrow"):
+            continue
+        for b in arrows[i + 1:]:
+            if b.id.startswith("legend-arrow"):
+                continue
+            for s1 in segments(a):
+                for s2 in segments(b):
+                    overlap = segment_overlap(s1, s2)
+                    if not overlap:
+                        continue
+                    key = (a.id, b.id)
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    length, mid = overlap
+                    violations.append(
+                        f"OVERLAP: arrows '{a.id}' and '{b.id}' share the "
+                        f"same route for {length:.0f}px near "
+                        f"({mid[0]:.0f},{mid[1]:.0f}). Move one route into "
+                        f"a different gutter or add a non-overlapping detour."
+                    )
     return violations
 
 
@@ -855,12 +923,14 @@ def main():
     violations = []
     violations += check_crossings(blocks, arrows)
     violations += check_spacing(arrows)
+    violations += check_overlapping_segments(arrows)
     violations += check_stub_arrows(arrows, markers)
     violations += check_text_overlap(blocks, arrows, texts)
     violations += check_text_text_overlap(texts)
     violations += check_port_separation(blocks, arrows)
     violations += check_bitwidth_labels(arrows, texts)
     violations += check_diagonal_arrows(arrows)
+    violations += check_floating_endpoints(blocks, arrows)
     violations += check_perpendicular_ports(blocks, arrows)
     violations += check_unnecessary_loops(blocks, arrows)
 

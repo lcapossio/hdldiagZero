@@ -175,10 +175,13 @@ Inspect the port declarations connecting two blocks:
 | `awvalid awready awaddr awlen awsize awburst wvalid wready wdata wstrb wlast bvalid bready bresp arvalid arready araddr arlen arsize arburst rvalid rready rdata rresp rlast` | `axi-mm`      |
 | Same as `axi-mm` but **without** `awlen / awburst / awsize / arlen / arburst / arsize / wlast / rlast` | `axi-lite`    |
 | `tdata tvalid tready` (often `tlast tkeep tstrb tuser tdest tid`)            | `axi-stream`  |
+| TileLink or OpenTitan TL-UL channels (`a_valid/a_ready/a_opcode/a_address/a_data`, `d_valid/d_ready/d_opcode/d_data`) | `tilelink`    |
 | Anything resynchronized at destination via xpm_cdc / async FIFO / handshake  | `cdc`         |
 | RGMII, SPI, I2C, UART, custom buses, discretes                                | `generic`     |
 
 `axi-mm` is for **full AXI** only. AXI4-Lite is `axi-lite`. Don't conflate.
+OpenTitan `TL` / `TL-UL` connections are TileLink and should use `tilelink`,
+not `generic`.
 
 ## 6. Width extraction
 

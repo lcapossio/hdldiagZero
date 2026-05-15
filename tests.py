@@ -75,10 +75,10 @@ def _tmpdir():
 
     raise RuntimeError("no writable temp directory found:\n  " + "\n  ".join(errors))
 
-# The bundled fixture deliberately contains exactly this many violations, one
-# of each rule plus the two PORT collisions. If the renderer or the validator
-# regresses, this number changes and CI fails.
-EXPECTED_FIXTURE_VIOLATIONS = 8
+# The bundled fixture deliberately contains exactly this many violations across
+# the validator rules. If the renderer or the validator regresses, this number
+# changes and CI fails.
+EXPECTED_FIXTURE_VIOLATIONS = 14
 
 FAILURES: list[str] = []
 
@@ -963,6 +963,62 @@ def test_validator_flags_tangential_block_exit() -> None:
             )
 
 
+def test_validator_flags_floating_endpoint() -> None:
+    """An arrow endpoint must sit exactly on a block boundary."""
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        svg = (
+            '<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<svg xmlns="http://www.w3.org/2000/svg" width="420" height="120" '
+            'viewBox="0 0 420 120">\n'
+            '  <rect id="a" x="10" y="40" width="80" height="40" fill="#42A5F5" '
+            'stroke="#0D47A1"/>\n'
+            '  <rect id="b" x="300" y="40" width="80" height="40" fill="#66BB6A" '
+            'stroke="#1B5E20"/>\n'
+            '  <path id="floating" d="M 90,60 L 250,60" stroke="#000" '
+            'stroke-width="2" fill="none"/>\n'
+            '  <text x="170" y="56" text-anchor="middle" font-size="12">bus</text>\n'
+            '</svg>\n'
+        )
+        out = tmp / "floating.svg"
+        out.write_text(svg, encoding="utf-8")
+        proc = run([PY, VALIDATE, str(out)], expect_rc=1, label="validate-floating-endpoint")
+        if "ENDPOINT" not in proc.stdout:
+            FAILURES.append(
+                f"[validate-floating-endpoint] expected ENDPOINT in report, "
+                f"got: {proc.stdout.strip()!r}"
+            )
+
+
+def test_validator_flags_overlapping_arrow_segments() -> None:
+    """Two arrows must not share the exact same visible route segment."""
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        svg = (
+            '<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<svg xmlns="http://www.w3.org/2000/svg" width="420" height="120" '
+            'viewBox="0 0 420 120">\n'
+            '  <rect id="a" x="10" y="40" width="80" height="40" fill="#42A5F5" '
+            'stroke="#0D47A1"/>\n'
+            '  <rect id="b" x="300" y="40" width="80" height="40" fill="#66BB6A" '
+            'stroke="#1B5E20"/>\n'
+            '  <path id="first" d="M 90,60 L 300,60" stroke="#000" '
+            'stroke-width="2" fill="none"/>\n'
+            '  <path id="second" d="M 90,60 L 300,60" stroke="#00796B" '
+            'stroke-width="2" fill="none"/>\n'
+            '  <text x="195" y="56" text-anchor="middle" font-size="12">32b</text>\n'
+            '</svg>\n'
+        )
+        out = tmp / "arrow_overlap.svg"
+        out.write_text(svg, encoding="utf-8")
+        proc = run([PY, VALIDATE, str(out)], expect_rc=4, label="validate-arrow-overlap")
+        if "OVERLAP" not in proc.stdout:
+            FAILURES.append(
+                f"[validate-arrow-overlap] expected OVERLAP in report, "
+                f"got: {proc.stdout.strip()!r}"
+            )
+
+
 def test_validator_flags_unnecessary_loop() -> None:
     """A U-shaped route is a loop when a clear direct segment exists."""
     with _tmpdir() as tmp:
@@ -1107,6 +1163,8 @@ def main() -> int:
     test_spec_validator_rejects_diagonal_route_points()
     test_validator_flags_diagonal_segment_in_svg()
     test_validator_flags_tangential_block_exit()
+    test_validator_flags_floating_endpoint()
+    test_validator_flags_overlapping_arrow_segments()
     test_validator_flags_unnecessary_loop()
     test_validator_flags_overlapping_text()
     test_validator_allows_detour_around_block()
