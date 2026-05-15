@@ -127,21 +127,10 @@ rg -n "xpm_cdc_|async_fifo|handshake_cdc|xpm_fifo_async" --type=verilog --type=v
 
 ## 4. Extraction policy
 
-The clean architecture default is to hide low-level implementation detail. The
-user can override that per diagram with top-level JSON metadata:
-
-```json
-"extraction": {
-  "hide_primitives": true,
-  "hide_processor_structure": true,
-  "hide_debug": true,
-  "hide_clock_reset": true
-}
-```
-
-If the user asks to show primitives, processor internals, debug, clocks/resets,
-or implementation detail, flip the matching field to `false` and include that
-structure at the requested hierarchy depth.
+The clean architecture default is to hide low-level implementation detail.
+These are extraction-time choices, not JSON metadata. If the user asks to show
+primitives, processor internals, debug, clocks/resets, or implementation
+detail, include that structure at the requested hierarchy depth.
 
 Default hidden categories:
 
@@ -151,20 +140,20 @@ Default hidden categories:
   explicitly requested.
 - **Soft processors**: `microblaze`, `picorv32`, `vexriscv`, `cv32e40p`,
   `ibex`, `neorv32`. Single block, no expansion. No BRAM, no MDM, no debug
-  bus unless `hide_processor_structure` is `false`.
+  bus unless the user asks for processor hierarchy.
 - **Memory primitives**: `RAMB18`, `RAMB36`, `BRAM_*`, `xpm_memory_*`,
   `xilinx_simple_dual_port_*`, `*_fifo_*`, `xpm_fifo_*`. Don't expand;
-  mention only if the surrounding logic is incoherent without them, or if
-  `hide_primitives` is `false`.
-- **JTAG**: `BSCANE2`, `JTAG_*`, `MDM`, `DAP_*`. Drop unless
-  `hide_debug` is `false`.
+  mention only if the surrounding logic is incoherent without them, or if the
+  user asks for primitive-level structure.
+- **JTAG**: `BSCANE2`, `JTAG_*`, `MDM`, `DAP_*`. Drop unless the user asks for
+  debug-oriented diagrams.
 - **Debug-only IP**: `ila_*`, `vio_*`, `system_ila`, `*_debug_*`. Drop
-  unless `hide_debug` is `false`.
+  unless the user asks for debug-oriented diagrams.
 - **Clock primitives**: `MMCME*`, `PLLE*`, `BUFG*`, `clk_wiz*`. Drop -
   the diagram encodes domain by color, not topology. Include only when
-  `hide_clock_reset` is `false`.
+  the user asks for clock/reset topology.
 - **Reset primitives**: `proc_sys_reset`, `xpm_cdc_async_rst`. Drop unless
-  `hide_clock_reset` is `false`.
+  the user asks for clock/reset topology.
 
 ## 5. Classifying each connection
 

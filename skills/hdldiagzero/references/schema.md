@@ -44,36 +44,12 @@ otherwise produce a broken SVG.
 | `theme`   | string | optional  | `"light"` (default) or `"dark"`. |
 | `legend`  | bool \| string | optional | `true` / `"right"` (default), `false` / `"none"` to hide, or `"compact"` to show only clock-domain colors. |
 | `grid`    | object | optional  | Grid sizing overrides; see below. |
-| `extraction` | object | optional | Extraction hide/show policy for primitives, processor internals, debug, and clock/reset structures. See below. |
 | `domains` | object | required* | Map of domain key -> `{freq_mhz, color, border}`. *Required unless every block is external. |
 | `groups`  | object | optional  | Map of group id -> `{label}`. Used to draw dashed hierarchy containers around member blocks (depth > 1). |
 | `lanes`   | object | optional  | Map of domain id -> `{rows: [...]}`. Draws full-width tinted bands per clock domain across the canvas. See *lanes* below. |
 | `bands`   | object | optional  | Map of functional band id -> `{label, rows/cols, color, border}`. Use for architecture regions that are not pure clock domains. |
 | `blocks`  | array  | required  | One or more blocks. |
 | `edges`   | array  | required  | May be empty. |
-
-## extraction (optional)
-
-Extraction policy is metadata for the agent that creates the JSON. It does not
-change SVG rendering directly, but it records whether the diagram intentionally
-hid or showed low-level implementation detail. All fields default to `true`
-for clean architecture diagrams.
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `hide_primitives` | boolean | `true` | Hide vendor/memory/FIFO primitives such as RAMB, XPM memory/FIFO, and generated IP leaves. Set `false` when the user asks for primitive-level structure. |
-| `hide_processor_structure` | boolean | `true` | Keep soft processors as one block. Set `false` when the user asks to expand processor internals or attached processor-local BRAM/debug buses. |
-| `hide_debug` | boolean | `true` | Drop JTAG, ILA/VIO, MDM/DAP, and debug-only paths. Set `false` for debug-oriented diagrams. |
-| `hide_clock_reset` | boolean | `true` | Hide MMCM/PLL/BUFG/clk_wiz and reset primitives. Set `false` for clock/reset topology diagrams. |
-
-```json
-"extraction": {
-  "hide_primitives": false,
-  "hide_processor_structure": true,
-  "hide_debug": true,
-  "hide_clock_reset": false
-}
-```
 
 ## domains[name]
 
@@ -117,8 +93,8 @@ each domain owns a column).
 
 | Field  | Type   | Required | Description |
 |--------|--------|----------|-------------|
-| `rows` | int[]  | one of   | Non-empty list of grid row indices the domain occupies. Spans `min(rows)`..`max(rows)`. |
-| `cols` | int[]  | one of   | Non-empty list of grid col indices the domain occupies. Spans `min(cols)`..`max(cols)`. |
+| `rows` | number[] | one of | Non-empty list of grid rows in 0.25 steps. Spans `min(rows)`..`max(rows)`. |
+| `cols` | number[] | one of | Non-empty list of grid columns in 0.25 steps. Spans `min(cols)`..`max(cols)`. |
 
 Each lane entry **must specify exactly one** of `rows` or `cols`. Different
 lanes in the same spec can choose different orientations, but they should

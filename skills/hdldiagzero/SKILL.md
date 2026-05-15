@@ -51,8 +51,7 @@ The only legitimate clarifying question is "which file is top?" when there are m
    hide vendor IP, soft-processor internals, BRAM/FIFO leaves, JTAG,
    debug-only IP, and clock/reset primitives by default. If the user asks to
    show primitives, processor internals, debug, clocks, resets, or
-   implementation detail, set the matching `extraction.hide_*` field to
-   `false` in the JSON and include those structures at the requested depth.
+   implementation detail, include those structures at the requested depth.
    Patterns and exclusion lists: `references/extraction.md` section 2 and
    section 4.
 
@@ -112,23 +111,13 @@ The only legitimate clarifying question is "which file is top?" when there are m
 
 ## Extraction policy - included / excluded
 
-These are defaults, not hard bans. Record overrides in top-level
-`extraction`:
-
-```json
-"extraction": {
-  "hide_primitives": false,
-  "hide_processor_structure": false,
-  "hide_debug": true,
-  "hide_clock_reset": true
-}
-```
+These are extraction-time defaults, not JSON schema fields and not hard bans.
 
 - **Skip clk/rst nets**. Color encodes domain.
 - **Skip AXI-Lite control paths to leaf peripherals**. Show AXI-Lite only when structurally important (e.g. one interconnect fan-out edge).
-- **Don't expand soft processors** (MicroBlaze, PicoRV, VexRiscv, Ibex) unless `hide_processor_structure` is `false`. Default: single block.
-- **Drop memory / FIFO / vendor primitives** unless `hide_primitives` is `false`. Default: keep them folded into the surrounding architectural block.
-- **Drop JTAG / debug headers and paths** unless `hide_debug` is `false`.
-- **Drop ILA / VIO / system-ila** unless `hide_debug` is `false`.
-- **Drop clock/reset primitives** (MMCM, PLL, BUFG, clk_wiz, proc_sys_reset) unless `hide_clock_reset` is `false`. Domain shows on color by default.
+- **Don't expand soft processors** (MicroBlaze, PicoRV, VexRiscv, Ibex) unless the user asks for processor hierarchy. Default: single block.
+- **Drop memory / FIFO / vendor primitives** unless the user asks for primitive-level structure. Default: keep them folded into the surrounding architectural block.
+- **Drop JTAG / debug headers and paths** unless the user asks for debug-oriented diagrams.
+- **Drop ILA / VIO / system-ila** unless the user asks for debug-oriented diagrams.
+- **Drop clock/reset primitives** (MMCM, PLL, BUFG, clk_wiz, proc_sys_reset) unless the user asks for clock/reset topology. Domain shows on color by default.
 - **Don't author the SVG yourself**. The renderer owns geometry. Edits go in the JSON, not the SVG.

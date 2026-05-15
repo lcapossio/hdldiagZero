@@ -509,6 +509,48 @@ def esc(s):
     return (str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
 
 
+def region_rect(info, g, content_y0, grid_w, canvas_w, canvas_h, span_canvas_w):
+    rows = info.get("rows") or []
+    cols = info.get("cols") or []
+    if rows:
+        rmin, rmax = min(rows), max(rows)
+        x1 = LANE_SIDE_PAD
+        x2 = (canvas_w if span_canvas_w else grid_w) - LANE_SIDE_PAD
+        y1 = (g["margin"] + rmin * (g["cell_h"] + g["gutter_y"])
+              + content_y0 - LANE_PAD_TOP)
+        y2 = (g["margin"] + rmax * (g["cell_h"] + g["gutter_y"])
+              + g["cell_h"] + content_y0 + LANE_PAD_BOT)
+    elif cols:
+        cmin, cmax = min(cols), max(cols)
+        x1 = (g["margin"] + cmin * (g["cell_w"] + g["gutter_x"])
+              - LANE_PAD_TOP)
+        x2 = (g["margin"] + cmax * (g["cell_w"] + g["gutter_x"])
+              + g["cell_w"] + LANE_PAD_BOT)
+        y1 = content_y0 + LANE_SIDE_PAD
+        y2 = canvas_h - LANE_SIDE_PAD
+    else:
+        return None
+    return x1, y1, x2, y2
+
+
+def append_region(out, rid, rect, label, fill, border, opacity):
+    x1, y1, x2, y2 = rect
+    out.append(
+        f'  <rect id="{esc(rid)}" '
+        f'x="{x1:.0f}" y="{y1:.0f}" '
+        f'width="{x2 - x1:.0f}" height="{y2 - y1:.0f}" '
+        f'fill="{fill}" fill-opacity="{opacity}" '
+        f'stroke="{border}" stroke-width="1" '
+        f'stroke-dasharray="{LANE_DASH}" rx="4"/>'
+    )
+    if label:
+        out.append(
+            f'  <text x="{x1 + 14:.0f}" y="{y1 + 18:.0f}" '
+            f'font-size="13" font-weight="700" '
+            f'fill="{border}">{esc(label)}</text>'
+        )
+
+
 def _relative_luminance(r, g, b):
     """WCAG relative luminance from 0..255 sRGB channels."""
     def chan(c):
@@ -660,97 +702,43 @@ def render(spec_path, out_path, theme_override=None):
                    f'font-size="21" font-weight="600" fill="{theme["ink"]}" '
                    f'letter-spacing="0.2">{esc(spec["title"])}</text>')
 
-    # Functional background bands. Unlike `lanes`, bands are not tied to a
-    # clock domain; use them for architectural regions like "secure services".
+    # Background regions. Bands and lanes share geometry; lanes are just
+    # domain-colored regions with a generated domain label.
     spec_bands = spec.get("bands") or {}
     if isinstance(spec_bands, dict) and spec_bands:
         for bid, info in spec_bands.items():
-            rows = info.get("rows") or []
-            cols = info.get("cols") or []
-            if rows:
-                rmin, rmax = min(rows), max(rows)
-                x1 = LANE_SIDE_PAD
-                x2 = grid_w - LANE_SIDE_PAD
-                y1 = (g["margin"] + rmin * (g["cell_h"] + g["gutter_y"])
-                      + content_y0 - LANE_PAD_TOP)
-                y2 = (g["margin"] + rmax * (g["cell_h"] + g["gutter_y"])
-                      + g["cell_h"] + content_y0 + LANE_PAD_BOT)
-            elif cols:
-                cmin, cmax = min(cols), max(cols)
-                x1 = (g["margin"] + cmin * (g["cell_w"] + g["gutter_x"])
-                      - LANE_PAD_TOP)
-                x2 = (g["margin"] + cmax * (g["cell_w"] + g["gutter_x"])
-                      + g["cell_w"] + LANE_PAD_BOT)
-                y1 = content_y0 + LANE_SIDE_PAD
-                y2 = canvas_h - LANE_SIDE_PAD
-            else:
+            rect = region_rect(
+                info, g, content_y0, grid_w, canvas_w, canvas_h,
+                span_canvas_w=False,
+            )
+            if rect is None:
                 continue
             fill = info.get("color", "#64748b")
             border = info.get("border", theme["ink_soft"])
             label = info["label"] if "label" in info else bid
-            out.append(
-                f'  <rect id="band_{esc(bid)}" '
-                f'x="{x1:.0f}" y="{y1:.0f}" '
-                f'width="{x2 - x1:.0f}" height="{y2 - y1:.0f}" '
-                f'fill="{fill}" fill-opacity="{BAND_FILL_OPACITY}" '
-                f'stroke="{border}" stroke-width="1" '
-                f'stroke-dasharray="{LANE_DASH}" rx="4"/>'
+            append_region(
+                out, f"band_{bid}", rect, label, fill, border,
+                BAND_FILL_OPACITY,
             )
-            if label:
-                out.append(
-                    f'  <text x="{x1 + 14:.0f}" y="{y1 + 18:.0f}" '
-                    f'font-size="13" font-weight="700" '
-                    f'fill="{border}">{esc(label)}</text>'
-                )
 
-    # Clock-domain lanes (tinted bands). Opt-in via top-level
-    # `lanes: {<domain>: {rows: [...]}}` for horizontal bands or `{cols: [...]}`
-    # for vertical bands. Drawn UNDER everything else; blocks and groups
-    # render on top.
     spec_lanes = spec.get("lanes") or {}
     if isinstance(spec_lanes, dict) and spec_lanes:
         for dname, info in spec_lanes.items():
-            rows = info.get("rows") or []
-            cols = info.get("cols") or []
-            if rows:
-                rmin, rmax = min(rows), max(rows)
-                x1 = LANE_SIDE_PAD
-                x2 = canvas_w - LANE_SIDE_PAD
-                y1 = (g["margin"] + rmin * (g["cell_h"] + g["gutter_y"])
-                      + content_y0 - LANE_PAD_TOP)
-                y2 = (g["margin"] + rmax * (g["cell_h"] + g["gutter_y"])
-                      + g["cell_h"] + content_y0 + LANE_PAD_BOT)
-            elif cols:
-                cmin, cmax = min(cols), max(cols)
-                # Vertical band: header goes at the top of the column where
-                # the lane begins, reading horizontally. Side padding mirrors
-                # the row case (LANE_PAD_TOP becomes left padding).
-                x1 = (g["margin"] + cmin * (g["cell_w"] + g["gutter_x"])
-                      - LANE_PAD_TOP)
-                x2 = (g["margin"] + cmax * (g["cell_w"] + g["gutter_x"])
-                      + g["cell_w"] + LANE_PAD_BOT)
-                y1 = content_y0 + LANE_SIDE_PAD
-                y2 = canvas_h - LANE_SIDE_PAD
-            else:
+            rect = region_rect(
+                info, g, content_y0, grid_w, canvas_w, canvas_h,
+                span_canvas_w=True,
+            )
+            if rect is None:
                 continue
             dinfo = domains.get(dname, {})
             fill = dinfo.get("color", "#cccccc")
             border = dinfo.get("border", theme["border"])
-            out.append(
-                f'  <rect id="lane_{esc(dname)}" '
-                f'x="{x1:.0f}" y="{y1:.0f}" '
-                f'width="{x2 - x1:.0f}" height="{y2 - y1:.0f}" '
-                f'fill="{fill}" fill-opacity="{LANE_FILL_OPACITY}" '
-                f'stroke="{border}" stroke-width="1" '
-                f'stroke-dasharray="{LANE_DASH}" rx="4"/>'
-            )
             freq = dinfo.get("freq_mhz")
             hdr = (f'{dname} domain  {freq} MHz'
                    if freq is not None else f'{dname} domain')
-            out.append(
-                f'  <text x="{x1 + 14:.0f}" y="{y1 + 18:.0f}" '
-                f'font-size="13" font-weight="700" '
-                f'fill="{border}">{esc(hdr)}</text>'
+            append_region(
+                out, f"lane_{dname}", rect, hdr, fill, border,
+                LANE_FILL_OPACITY,
             )
 
     # Group containers (hierarchy depth > 1). Drawn BEFORE blocks so the dashed

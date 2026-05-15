@@ -517,12 +517,31 @@ def check_perpendicular_ports(blocks, arrows):
     return violations
 
 
-def check_unnecessary_loops(blocks, arrows):
+def direct_route_has_channel_conflict(direct, arrow, arrows, texts):
+    for other in arrows:
+        if other is arrow or other.id.startswith("legend-arrow"):
+            continue
+        for seg in segments(other):
+            if not is_parallel(direct, seg):
+                continue
+            if not projections_overlap(direct, seg):
+                continue
+            d = seg_distance(direct, seg)
+            if d < MIN_SPACING:
+                return True
+    for t in texts:
+        if seg_rect_clip(direct, t.rect):
+            return True
+    return False
+
+
+def check_unnecessary_loops(blocks, arrows, texts):
     """Flag routes that detour when a clear straight port-to-port path exists.
 
     This is intentionally narrow: only collinear, face-to-face ports are checked.
-    Non-collinear routes, same-side u-turns, and paths blocked by another block
-    are left to the normal router/other validators.
+    Non-collinear routes, same-side u-turns, paths blocked by another block,
+    routes that would collide with another arrow lane, and paths that would
+    pierce text are left to the normal router/other validators.
     """
     violations = []
     for a in arrows:
@@ -559,6 +578,8 @@ def check_unnecessary_loops(blocks, arrows):
                 blocked = True
                 break
         if blocked:
+            continue
+        if direct_route_has_channel_conflict(direct, a, arrows, texts):
             continue
 
         direct_len = math.hypot(end[0] - start[0], end[1] - start[1])
@@ -932,7 +953,7 @@ def main():
     violations += check_diagonal_arrows(arrows)
     violations += check_floating_endpoints(blocks, arrows)
     violations += check_perpendicular_ports(blocks, arrows)
-    violations += check_unnecessary_loops(blocks, arrows)
+    violations += check_unnecessary_loops(blocks, arrows, texts)
 
     summary = (
         f"{len(blocks)} blocks, {len(arrows)} arrows, "

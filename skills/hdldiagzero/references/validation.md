@@ -53,7 +53,8 @@ before calling the renderer.
   `label` (string).
 - `lanes` (if present) is an object keyed on declared domain ids. Each entry
   must specify **exactly one** of `rows` or `cols`, with a non-empty list of
-  non-negative ints. `rows` -> horizontal band, `cols` -> vertical band.
+  non-negative numbers in 0.25 steps. `rows` -> horizontal band, `cols` ->
+  vertical band.
 - `bands` (if present) is an object keyed on functional region ids. Each entry
   must specify **exactly one** of `rows` or `cols`, using non-negative numbers
   in 0.25 steps; optional `color` / `border` values are `#RRGGBB`. `label`
@@ -61,17 +62,11 @@ before calling the renderer.
 - `legend`, if present, is a boolean or one of `"right"`, `"compact"`,
   `"none"`.
 
-**Extraction**
-- `extraction`, if present, is an object whose fields are JSON booleans.
-- Allowed fields are `hide_primitives`, `hide_processor_structure`,
-  `hide_debug`, and `hide_clock_reset`.
-- Omitted fields default to the clean architecture view (`true`).
-
 **Edges**
 - `from` and `to` must reference existing block ids.
 - Self-edges (`from == to`) are rejected.
-- `kind` must be one of `axi-mm`, `axi-lite`, `axi-stream`, `cdc`,
-  `generic`.
+- `kind` must be one of `axi-mm`, `axi-lite`, `axi-stream`, `tilelink`,
+  `cdc`, `generic`.
 - `width` must be int or string when present (lists / null / objects fail).
 - `route.mode` (if set) is `"auto"`, `"direct"`, or `"orthogonal"`.
 - `route.points` (if set) is a list of at least two `[x, y]` pairs with numeric

@@ -76,8 +76,9 @@ def _tmpdir():
     raise RuntimeError("no writable temp directory found:\n  " + "\n  ".join(errors))
 
 # The bundled fixture deliberately contains exactly this many violations across
-# the validator rules. If the renderer or the validator regresses, this number
-# changes and CI fails.
+# the validator rules: the original 8 fixture violations plus 6 ENDPOINT
+# violations on intentionally free-floating arrows. If the renderer or the
+# validator regresses, this number changes and CI fails.
 EXPECTED_FIXTURE_VIOLATIONS = 14
 
 FAILURES: list[str] = []
@@ -216,24 +217,12 @@ def test_spec_validator_strict_types() -> None:
         _write_and_check(tmp, "ext_domain_b.json", bad, 1, "spec-strict-external-domain-b")
 
 
-def test_spec_validator_accepts_extraction_policy() -> None:
-    """Extraction hide/show policy is explicit metadata on the JSON spec."""
+def test_spec_validator_rejects_extraction_metadata() -> None:
+    """Extraction policy is guidance, not inert renderer schema."""
     with _tmpdir() as tmp:
         tmp = Path(tmp)
-        good = {
-            **_BASE_SPEC,
-            "extraction": {
-                "hide_primitives": False,
-                "hide_processor_structure": False,
-                "hide_debug": True,
-                "hide_clock_reset": True,
-            },
-        }
-        _write_and_check(tmp, "extraction_good.json", good, 0, "spec-extraction-good")
-        bad_type = {**_BASE_SPEC, "extraction": {"hide_primitives": "false"}}
-        _write_and_check(tmp, "extraction_bad_type.json", bad_type, 1, "spec-extraction-bad-type")
-        bad_field = {**_BASE_SPEC, "extraction": {"hide_magic": True}}
-        _write_and_check(tmp, "extraction_bad_field.json", bad_field, 1, "spec-extraction-bad-field")
+        bad = {**_BASE_SPEC, "extraction": {"hide_primitives": False}}
+        _write_and_check(tmp, "extraction.json", bad, 1, "spec-extraction-rejected")
 
 
 def test_renderer_light() -> None:
@@ -297,7 +286,7 @@ def test_lanes_column_orientation() -> None:
             },
             "lanes": {
                 "host": {"cols": [0]},
-                "phy":  {"cols": [1]},
+                "phy":  {"cols": [1, 1.25]},
             },
             "blocks": [
                 {"id": "h0", "domain": "host", "row": 0, "col": 0},
@@ -1097,6 +1086,34 @@ def test_validator_allows_detour_around_block() -> None:
             )
 
 
+def test_validator_allows_detour_around_text() -> None:
+    """A dogleg is allowed when the direct route would pierce a label."""
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        svg = (
+            '<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<svg xmlns="http://www.w3.org/2000/svg" width="420" height="140" '
+            'viewBox="0 0 420 140">\n'
+            '  <rect id="a" x="10"  y="40" width="80" height="40" fill="#42A5F5" '
+            'stroke="#0D47A1"/>\n'
+            '  <rect id="b" x="300" y="40" width="80" height="40" fill="#42A5F5" '
+            'stroke="#0D47A1"/>\n'
+            '  <text x="195" y="64" text-anchor="middle" font-size="12">reserved label</text>\n'
+            '  <path id="detour" d="M 90,60 L 120,60 L 120,100 L 270,100 L 270,60 L 300,60" '
+            'stroke="#000" stroke-width="2" fill="none"/>\n'
+            '  <text x="195" y="96" text-anchor="middle" font-size="12">bus</text>\n'
+            '</svg>\n'
+        )
+        out = tmp / "detour_text.svg"
+        out.write_text(svg, encoding="utf-8")
+        proc = run([PY, VALIDATE, str(out)], expect_rc=0, label="validate-detour-text")
+        if "LOOP" in proc.stdout:
+            FAILURES.append(
+                f"[validate-detour-text] did not expect LOOP in report, "
+                f"got: {proc.stdout.strip()!r}"
+            )
+
+
 def test_install() -> None:
     with _tmpdir() as tmp:
         dst = Path(tmp) / "skill-install"
@@ -1132,7 +1149,7 @@ def main() -> int:
     test_spec_validator_passes_on_test_spec()
     test_spec_validator_catches_bad_spec()
     test_spec_validator_strict_types()
-    test_spec_validator_accepts_extraction_policy()
+    test_spec_validator_rejects_extraction_metadata()
     test_renderer_light()
     test_renderer_dark()
     test_groups_render_and_skip_geometry()
@@ -1168,6 +1185,7 @@ def main() -> int:
     test_validator_flags_unnecessary_loop()
     test_validator_flags_overlapping_text()
     test_validator_allows_detour_around_block()
+    test_validator_allows_detour_around_text()
     test_install()
 
     if FAILURES:

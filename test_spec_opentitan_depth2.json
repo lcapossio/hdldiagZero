@@ -3,12 +3,6 @@
   "top": "top_earlgrey",
   "legend": "right",
   "grid": {"gutter_x": 135, "gutter_y": 88},
-  "extraction": {
-    "hide_primitives": true,
-    "hide_processor_structure": false,
-    "hide_debug": true,
-    "hide_clock_reset": true
-  },
   "domains": {
     "core":   {"color": "#42A5F5", "border": "#0D47A1"},
     "bus":    {"color": "#66BB6A", "border": "#1B5E20"},
