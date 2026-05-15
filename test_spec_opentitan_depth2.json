@@ -17,7 +17,7 @@
     "aon":    {"color": "#AB47BC", "border": "#4A148C"}
   },
   "groups": {
-    "ibex_core": {"label": "Ibex core internals"},
+    "rv_core_ibex": {"label": "rv_core_ibex hierarchy"},
     "secure_services": {"label": "secure services"},
     "peripheral_subsystem": {"label": "peripheral subsystem"}
   },
@@ -29,11 +29,11 @@
   "blocks": [
     {"id": "host",          "external": true, "side": "left",              "row": 0, "col": 0, "lines": ["Host / Debug", "JTAG / UART"]},
     {"id": "rv_dm",         "domain": "core",                              "row": 0, "col": 1, "lines": ["RV Debug", "debug module"], "w": 180, "h": 72},
-    {"id": "ibex_if",       "domain": "core",                              "row": 0, "col": 1.75, "lines": ["IF", "fetch"], "group": "ibex_core", "w": 145, "h": 58},
-    {"id": "ibex_id",       "domain": "core",                              "row": 0, "col": 2.25, "lines": ["ID", "decode"], "group": "ibex_core", "w": 145, "h": 58},
-    {"id": "ibex_ex",       "domain": "core",                              "row": 0, "col": 2.75, "lines": ["EX", "execute"], "group": "ibex_core", "w": 145, "h": 58},
-    {"id": "ibex_lsu",      "domain": "core",                              "row": 0, "col": 3.25, "lines": ["LSU", "TL-UL"], "group": "ibex_core", "w": 145, "h": 58},
-    {"id": "ibex_csr",      "domain": "core",                              "row": 0.5, "col": 2.25, "lines": ["CSR / IRQ", "control"], "group": "ibex_core", "w": 160, "h": 58},
+    {"id": "rv_core_ibex",  "domain": "core",                              "row": 0, "col": 1.75, "lines": ["rv_core_ibex", "wrapper"], "group": "rv_core_ibex", "w": 170, "h": 62},
+    {"id": "ibex_core",     "domain": "core",                              "row": 0, "col": 2.25, "lines": ["ibex_core", "CPU RTL"], "group": "rv_core_ibex", "w": 170, "h": 62},
+    {"id": "rv_core_regs",  "domain": "core",                              "row": 0.5, "col": 2.25, "lines": ["rv_core", "CSRs / cfg"], "group": "rv_core_ibex", "w": 170, "h": 58},
+    {"id": "tlul_i",        "domain": "core", "domain_b": "bus",           "row": 0, "col": 3, "lines": ["instr", "TL-UL host"], "group": "rv_core_ibex", "w": 155, "h": 58},
+    {"id": "tlul_d",        "domain": "core", "domain_b": "bus",           "row": 0.5, "col": 3, "lines": ["data", "TL-UL host"], "group": "rv_core_ibex", "w": 155, "h": 58},
     {"id": "xbar_main",     "domain": "bus",                               "row": 0, "col": 4, "lines": ["Main TL-UL", "Xbar", "system fabric"]},
     {"id": "mem_ctrls",     "domain": "bus",                               "row": 0, "col": 5, "lines": ["Memory Ctrls", "ROM / SRAM", "Flash"], "w": 190, "h": 72},
 
@@ -57,11 +57,12 @@
   ],
   "edges": [
     {"from": "host",          "to": "rv_dm",       "kind": "generic", "width": "debug"},
-    {"from": "rv_dm",         "to": "ibex_if",     "kind": "generic", "width": "debug"},
-    {"from": "ibex_if",       "to": "ibex_id",     "kind": "generic", "route": {"points": [[802, 95], [835, 95]]}},
-    {"from": "ibex_id",       "to": "ibex_ex",     "kind": "generic", "route": {"points": [[980, 95], [1012, 95]]}},
-    {"from": "ibex_ex",       "to": "ibex_lsu",    "kind": "generic", "route": {"points": [[1157, 95], [1190, 95]]}},
-    {"from": "ibex_lsu",      "to": "xbar_main",   "kind": "generic", "width": "TL-UL"},
+    {"from": "rv_dm",         "to": "rv_core_ibex","kind": "generic", "width": "debug"},
+    {"from": "rv_core_regs",  "to": "ibex_core",   "kind": "generic", "route": {"points": [[911, 155], [911, 128]]}},
+    {"from": "ibex_core",     "to": "tlul_i",      "kind": "generic", "width": "instr", "route": {"points": [[1005, 88], [1101, 88]]}},
+    {"from": "ibex_core",     "to": "tlul_d",      "kind": "generic", "width": "data", "route": {"points": [[1005, 116], [1055, 116], [1055, 184], [1101, 184]]}, "label": {"segment": 1}},
+    {"from": "tlul_i",        "to": "xbar_main",   "kind": "generic", "width": "I TL-UL"},
+    {"from": "tlul_d",        "to": "xbar_main",   "kind": "generic", "width": "D TL-UL", "route": {"points": [[1274, 184], [1320, 184], [1320, 126], [1456, 126]]}, "label": {"segment": 0}},
     {"from": "xbar_main",     "to": "mem_ctrls",   "kind": "generic", "width": "TL-UL"},
     {"from": "xbar_main",     "to": "xbar_peri",   "kind": "generic", "width": "TL-UL", "route": {"points": [[1566, 156], [1566, 230], [15, 230], [15, 645], [36, 645]]}, "label": {"segment": 2, "t": 0.42}},
 
@@ -77,6 +78,6 @@
     {"from": "uart_spi",      "to": "i2c_gpio",    "kind": "generic", "width": "pads", "route": {"points": [[561, 634], [657, 634]]}},
     {"from": "i2c_gpio",      "to": "rv_plic",     "kind": "generic", "width": "IRQ", "route": {"points": [[827, 645], [870, 645], [870, 720], [1566, 720], [1566, 690]]}, "label": {"segment": 2}},
     {"from": "aon_timer",     "to": "rv_plic",     "kind": "generic", "width": "IRQ"},
-    {"from": "rv_plic",       "to": "ibex_csr",    "kind": "generic", "width": "IRQ", "route": {"points": [[1626, 645], [1720, 645], [1720, 184], [995, 184]]}, "label": {"segment": 0, "t": 0.5}}
+    {"from": "rv_plic",       "to": "rv_core_regs","kind": "generic", "width": "IRQ", "route": {"points": [[1626, 645], [1720, 645], [1720, 230], [1050, 230], [1050, 184], [1005, 184]]}, "label": {"segment": 0, "t": 0.5}}
   ]
 }
