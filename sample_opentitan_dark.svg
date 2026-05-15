@@ -97,12 +97,12 @@
   <path id="edge_csrng_edn_to_keymgr" d="M 482.2,280.0 L 614.1,280.0 L 614.1,289.0 L 746.0,289.0" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
   <rect x="528.7" y="261.2" width="39.0" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
   <text x="548.2" y="276.0" text-anchor="middle" font-size="15" fill="#e2e8f0">rand</text>
-  <path id="edge_lc_ctrl_to_alert_handler" d="M 216.0,458.0 L 303.5,458.0 L 303.5,467.0 L 391.0,467.0" stroke="#d8b4fe" stroke-width="1.8" fill="none" marker-end="url(#ah-cdc)" stroke-dasharray="6,3"/>
-  <rect x="219.6" y="439.2" width="80.2" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
-  <text x="259.8" y="454.0" text-anchor="middle" font-size="15" fill="#e2e8f0">CDC state</text>
-  <path id="edge_alert_handler_to_otp_ctrl" d="M 611.0,467.0 L 650.0,467.0 L 650.0,535.0 L 1700.0,535.0 L 1700.0,289.0 L 1636.0,289.0" stroke="#d8b4fe" stroke-width="1.8" fill="none" marker-end="url(#ah-cdc)" stroke-dasharray="6,3"/>
-  <rect x="1130.8" y="516.2" width="88.5" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
-  <text x="1175.0" y="531.0" text-anchor="middle" font-size="15" fill="#e2e8f0">CDC alerts</text>
+  <path id="edge_lc_ctrl_to_alert_handler" d="M 216.0,458.0 L 303.5,458.0 L 303.5,467.0 L 391.0,467.0" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
+  <rect x="236.1" y="439.2" width="47.2" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
+  <text x="259.8" y="454.0" text-anchor="middle" font-size="15" fill="#e2e8f0">state</text>
+  <path id="edge_alert_handler_to_otp_ctrl" d="M 611.0,467.0 L 650.0,467.0 L 650.0,535.0 L 1700.0,535.0 L 1700.0,289.0 L 1636.0,289.0" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
+  <rect x="1147.2" y="516.2" width="55.5" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
+  <text x="1175.0" y="531.0" text-anchor="middle" font-size="15" fill="#e2e8f0">alerts</text>
   <path id="edge_xbar_peri_to_peripherals" d="M 1321.0,467.0 L 1361.0,467.0 L 1361.0,446.0 L 1456.0,446.0" stroke="#5eead4" stroke-width="2.4" fill="none" marker-end="url(#ah-tilelink)"/>
   <rect x="1384.9" y="427.2" width="47.2" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
   <text x="1408.5" y="442.0" text-anchor="middle" font-size="15" fill="#e2e8f0">TL-UL</text>
@@ -115,7 +115,7 @@
   <path id="edge_rv_plic_to_ibex" d="M 1101.0,645.0 L 1050.0,645.0 L 1050.0,720.0 L 700.0,720.0 L 700.0,126.0 L 746.0,126.0" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
   <rect x="684.6" y="625.1" width="30.8" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
   <text x="700.0" y="639.8" text-anchor="middle" font-size="15" fill="#e2e8f0">IRQ</text>
-  <rect id="legend_card" x="1728" y="46" width="240" height="256" fill="#0f172a" stroke="#475569" stroke-width="1" rx="6"/>
+  <rect id="legend_card" x="1728" y="46" width="240" height="234" fill="#0f172a" stroke="#475569" stroke-width="1" rx="6"/>
   <text x="1848" y="74" text-anchor="middle" font-size="13" font-weight="700" fill="#e2e8f0" letter-spacing="0.4">Clock domains</text>
   <rect x="1742" y="86" width="22" height="14" fill="#42A5F5" stroke="#0D47A1" stroke-width="1.2" rx="2"/>
   <text x="1774" y="98" font-size="13" fill="#e2e8f0">core</text>
@@ -132,6 +132,4 @@
   <text x="1794" y="238" font-size="13" fill="#e2e8f0">Generic / discrete</text>
   <path id="legend-arrow-tilelink" d="M 1742,255.0 L 1784,255.0" stroke="#5eead4" stroke-width="2.4" fill="none" marker-end="url(#ah-tilelink)"/>
   <text x="1794" y="260" font-size="13" fill="#e2e8f0">TileLink / TL-UL</text>
-  <path id="legend-arrow-cdc" d="M 1742,277.0 L 1784,277.0" stroke="#d8b4fe" stroke-width="1.8" fill="none" marker-end="url(#ah-cdc)" stroke-dasharray="6,3"/>
-  <text x="1794" y="282" font-size="13" fill="#e2e8f0">CDC traversal (re-clocked)</text>
 </svg>

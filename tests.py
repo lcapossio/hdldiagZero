@@ -17,6 +17,7 @@ import subprocess
 import sys
 import tempfile
 import uuid
+import xml.etree.ElementTree as ET
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -144,6 +145,35 @@ def _write_and_check(tmp: Path, name: str, spec_obj, expect_rc: int, label: str)
     run([PY, VALIDATE_SPEC, str(p)], expect_rc=expect_rc, label=label)
 
 
+def _localname(tag: str) -> str:
+    return tag.split("}", 1)[-1] if "}" in tag else tag
+
+
+def _assert_rendered_spec_content(svg_path: Path, spec_path: str, label: str) -> None:
+    spec = json.loads((ROOT / spec_path).read_text(encoding="utf-8"))
+    root = ET.parse(svg_path).getroot()
+    rect_ids = {
+        elem.get("id")
+        for elem in root.iter()
+        if _localname(elem.tag) == "rect"
+    }
+    path_ids = {
+        elem.get("id")
+        for elem in root.iter()
+        if _localname(elem.tag) == "path"
+    }
+    missing_blocks = [b["id"] for b in spec["blocks"] if b["id"] not in rect_ids]
+    missing_edges = [
+        f'edge_{e["from"]}_to_{e["to"]}'
+        for e in spec["edges"]
+        if f'edge_{e["from"]}_to_{e["to"]}' not in path_ids
+    ]
+    if missing_blocks:
+        FAILURES.append(f"[{label}] missing rendered block ids: {missing_blocks}")
+    if missing_edges:
+        FAILURES.append(f"[{label}] missing rendered edge ids: {missing_edges}")
+
+
 def test_spec_validator_strict_types() -> None:
     """Strict-type checks: bool != int, string != bool, etc."""
     with _tmpdir() as tmp:
@@ -215,6 +245,8 @@ def test_spec_validator_strict_types() -> None:
             "edges": [],
         }
         _write_and_check(tmp, "ext_domain_b.json", bad, 1, "spec-strict-external-domain-b")
+        bad = _spec_with(side="left")
+        _write_and_check(tmp, "internal_side.json", bad, 1, "spec-strict-internal-side")
 
 
 def test_spec_validator_rejects_extraction_metadata() -> None:
@@ -230,6 +262,7 @@ def test_renderer_light() -> None:
         out = Path(tmp) / "out.svg"
         run([PY, RENDER, "test_spec.json", str(out)], label="render-light")
         if out.is_file():
+            _assert_rendered_spec_content(out, "test_spec.json", "render-light-content")
             run([PY, VALIDATE, str(out)], label="validate-light-output")
 
 
@@ -526,10 +559,12 @@ def test_renderer_soc_sample() -> None:
         run([PY, RENDER, "test_spec_soc.json", str(out_light)],
             label="soc-sample-light")
         if out_light.is_file():
+            _assert_rendered_spec_content(out_light, "test_spec_soc.json", "soc-sample-light-content")
             run([PY, VALIDATE, str(out_light)], label="soc-sample-light-validate")
         run([PY, RENDER, "--theme", "dark", "test_spec_soc.json", str(out_dark)],
             label="soc-sample-dark")
         if out_dark.is_file():
+            _assert_rendered_spec_content(out_dark, "test_spec_soc.json", "soc-sample-dark-content")
             run([PY, VALIDATE, str(out_dark)], label="soc-sample-dark-validate")
 
 
@@ -542,10 +577,12 @@ def test_renderer_opentitan_sample() -> None:
         run([PY, RENDER, "test_spec_opentitan.json", str(out_light)],
             label="opentitan-sample-light")
         if out_light.is_file():
+            _assert_rendered_spec_content(out_light, "test_spec_opentitan.json", "opentitan-sample-light-content")
             run([PY, VALIDATE, str(out_light)], label="opentitan-sample-light-validate")
         run([PY, RENDER, "--theme", "dark", "test_spec_opentitan.json", str(out_dark)],
             label="opentitan-sample-dark")
         if out_dark.is_file():
+            _assert_rendered_spec_content(out_dark, "test_spec_opentitan.json", "opentitan-sample-dark-content")
             run([PY, VALIDATE, str(out_dark)], label="opentitan-sample-dark-validate")
 
 
@@ -559,11 +596,21 @@ def test_renderer_opentitan_depth2_sample() -> None:
         run([PY, RENDER, "test_spec_opentitan_depth2.json", str(out_light)],
             label="opentitan-depth2-sample-light")
         if out_light.is_file():
+            _assert_rendered_spec_content(
+                out_light,
+                "test_spec_opentitan_depth2.json",
+                "opentitan-depth2-sample-light-content",
+            )
             run([PY, VALIDATE, str(out_light)],
                 label="opentitan-depth2-sample-light-validate")
         run([PY, RENDER, "--theme", "dark", "test_spec_opentitan_depth2.json", str(out_dark)],
             label="opentitan-depth2-sample-dark")
         if out_dark.is_file():
+            _assert_rendered_spec_content(
+                out_dark,
+                "test_spec_opentitan_depth2.json",
+                "opentitan-depth2-sample-dark-content",
+            )
             run([PY, VALIDATE, str(out_dark)],
                 label="opentitan-depth2-sample-dark-validate")
 
@@ -577,10 +624,12 @@ def test_renderer_lanes_sample() -> None:
         run([PY, RENDER, "test_spec_lanes.json", str(out_light)],
             label="lanes-sample-light")
         if out_light.is_file():
+            _assert_rendered_spec_content(out_light, "test_spec_lanes.json", "lanes-sample-light-content")
             run([PY, VALIDATE, str(out_light)], label="lanes-sample-light-validate")
         run([PY, RENDER, "--theme", "dark", "test_spec_lanes.json", str(out_dark)],
             label="lanes-sample-dark")
         if out_dark.is_file():
+            _assert_rendered_spec_content(out_dark, "test_spec_lanes.json", "lanes-sample-dark-content")
             run([PY, VALIDATE, str(out_dark)], label="lanes-sample-dark-validate")
 
 
@@ -643,10 +692,12 @@ def test_renderer_depth2_sample() -> None:
         run([PY, VALIDATE_SPEC, "test_spec_depth2.json"], label="depth2-spec")
         run([PY, RENDER, "test_spec_depth2.json", str(out_light)], label="depth2-light")
         if out_light.is_file():
+            _assert_rendered_spec_content(out_light, "test_spec_depth2.json", "depth2-light-content")
             run([PY, VALIDATE, str(out_light)], label="depth2-light-validate")
         run([PY, RENDER, "--theme", "dark", "test_spec_depth2.json", str(out_dark)],
             label="depth2-dark")
         if out_dark.is_file():
+            _assert_rendered_spec_content(out_dark, "test_spec_depth2.json", "depth2-dark-content")
             run([PY, VALIDATE, str(out_dark)], label="depth2-dark-validate")
 
 
@@ -658,6 +709,7 @@ def test_renderer_dark() -> None:
             label="render-dark",
         )
         if out.is_file():
+            _assert_rendered_spec_content(out, "test_spec.json", "render-dark-content")
             run([PY, VALIDATE, str(out)], label="validate-dark-output")
 
 
@@ -952,6 +1004,40 @@ def test_validator_flags_tangential_block_exit() -> None:
             )
 
 
+def test_validator_reports_perpendicular_on_named_endpoint_block() -> None:
+    """Shared endpoints should diagnose the actual edge block, not a neighbor."""
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        svg = (
+            '<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<svg xmlns="http://www.w3.org/2000/svg" width="420" height="160" '
+            'viewBox="0 0 420 160">\n'
+            '  <rect id="neighbor" x="90" y="20" width="50" height="80" fill="#66BB6A" '
+            'stroke="#1B5E20"/>\n'
+            '  <rect id="src" x="10" y="40" width="80" height="40" fill="#42A5F5" '
+            'stroke="#0D47A1"/>\n'
+            '  <rect id="dst" x="300" y="80" width="80" height="40" fill="#42A5F5" '
+            'stroke="#0D47A1"/>\n'
+            '  <path id="edge_src_to_dst" d="M 90,60 L 90,100 L 300,100" stroke="#000" '
+            'stroke-width="2" fill="none"/>\n'
+            '  <text x="195" y="96" text-anchor="middle" font-size="12">bus</text>\n'
+            '</svg>\n'
+        )
+        out = tmp / "wrong_block.svg"
+        out.write_text(svg, encoding="utf-8")
+        proc = run([PY, VALIDATE, str(out)], expect_rc=1, label="validate-perpendicular-named-block")
+        if "PERPENDICULAR" not in proc.stdout or "block 'src'" not in proc.stdout:
+            FAILURES.append(
+                f"[validate-perpendicular-named-block] expected src PERPENDICULAR, "
+                f"got: {proc.stdout.strip()!r}"
+            )
+        if "block 'neighbor'" in proc.stdout:
+            FAILURES.append(
+                f"[validate-perpendicular-named-block] diagnosed neighbor, "
+                f"got: {proc.stdout.strip()!r}"
+            )
+
+
 def test_validator_flags_floating_endpoint() -> None:
     """An arrow endpoint must sit exactly on a block boundary."""
     with _tmpdir() as tmp:
@@ -1180,6 +1266,7 @@ def main() -> int:
     test_spec_validator_rejects_diagonal_route_points()
     test_validator_flags_diagonal_segment_in_svg()
     test_validator_flags_tangential_block_exit()
+    test_validator_reports_perpendicular_on_named_endpoint_block()
     test_validator_flags_floating_endpoint()
     test_validator_flags_overlapping_arrow_segments()
     test_validator_flags_unnecessary_loop()

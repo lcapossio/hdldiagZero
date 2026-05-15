@@ -298,6 +298,8 @@ def validate(spec):
         side = b.get("side")
         if side is not None and side not in VALID_SIDES:
             errors.append(f"{prefix}: side '{side}' is not one of {sorted(VALID_SIDES)}")
+        if side is not None and not b.get("external", False):
+            errors.append(f"{prefix}: side is only valid when external=true")
 
         for f in ("w", "h"):
             if f in b:

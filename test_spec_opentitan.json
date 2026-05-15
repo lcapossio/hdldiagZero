@@ -45,8 +45,8 @@
 
     {"from": "entropy",       "to": "csrng_edn",     "kind": "generic", "width": "entropy", "route": {"points": [[216, 280], [302, 280]]}},
     {"from": "csrng_edn",     "to": "keymgr",        "kind": "generic", "width": "rand"},
-    {"from": "lc_ctrl",       "to": "alert_handler", "kind": "cdc",     "width": "state"},
-    {"from": "alert_handler", "to": "otp_ctrl",      "kind": "cdc",     "width": "alerts", "route": {"points": [[611, 467], [650, 467], [650, 535], [1700, 535], [1700, 289], [1636, 289]]}},
+    {"from": "lc_ctrl",       "to": "alert_handler", "kind": "generic", "width": "state"},
+    {"from": "alert_handler", "to": "otp_ctrl",      "kind": "generic", "width": "alerts", "route": {"points": [[611, 467], [650, 467], [650, 535], [1700, 535], [1700, 289], [1636, 289]]}},
 
     {"from": "xbar_peri",     "to": "peripherals",   "kind": "tilelink", "width": "TL-UL"},
     {"from": "peripherals",   "to": "rv_plic",       "kind": "generic", "width": "IRQ", "route": {"mode": "direct"}},

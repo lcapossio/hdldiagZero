@@ -70,7 +70,7 @@ otherwise produce a broken SVG.
 | `domain`   | string  | required* | Domain key from `domains`. *Optional if `external=true`. |
 | `domain_b` | string  | optional  | CDC blocks only. Half fill of each domain's color. Must differ from `domain` and reference a declared domain. |
 | `external` | boolean | optional  | True = off-chip / off-die. Neutral grey fill, ignores `domain`. |
-| `side`     | string  | optional  | For `external` blocks, the canvas edge where the block belongs: `left`, `right`, `top`, or `bottom`. The renderer uses the inward-facing side as the preferred edge port. |
+| `side`     | string  | optional  | Only valid when `external=true`. Canvas edge where the block belongs: `left`, `right`, `top`, or `bottom`. The renderer uses the inward-facing side as the preferred edge port. |
 | `row`      | number  | required  | 0-indexed grid row, in 0.25 steps. |
 | `col`      | number  | required  | 0-indexed grid column, in 0.25 steps. One block per `(row, col)`. |
 | `w`        | int     | optional  | Per-block width override in px. Defaults to `grid.cell_w`. Positive ints only. |

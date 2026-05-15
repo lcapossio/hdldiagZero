@@ -52,10 +52,10 @@ STUB_RATIO = 1.5         # shaft length must be >= STUB_RATIO * marker width
 MIN_PORT_SEP = 12.0      # px - two arrow endpoints on the same block must be this far apart
 DEFAULT_FONT_SIZE = 12.0
 TEXT_WIDTH_FACTOR = 0.55 # rough character-width / font-size ratio
-TEXT_LABEL_PROXIMITY = 12.0  # text within this distance of an arrow is treated as its label
-TEXT_TEXT_MIN_OVERLAP = 150.0 # px^2 - ignore tiny bbox estimation overlaps
+TEXT_LABEL_PROXIMITY = 12.0  # px - roughly one label font size from an arrow path
+TEXT_TEXT_MIN_OVERLAP = 150.0 # px^2 - about one 12px text row of overlap
 BITWIDTH_MIN_ARROW_LEN = 50.0  # px - arrows shorter than this are exempt from bitwidth check
-LOOP_EXCESS = 10.0       # px - allow small float/label wiggle before calling a loop
+LOOP_EXCESS = 10.0       # px - one small Manhattan nudge before calling a loop
 
 SVG_NS = "http://www.w3.org/2000/svg"
 NS = {"svg": SVG_NS}
@@ -435,6 +435,15 @@ def endpoint_block_side(point, blocks):
     return None, None
 
 
+def endpoint_block_side_candidates(point, blocks):
+    candidates = []
+    for b in blocks:
+        side = endpoint_side(point, b.rect)
+        if side is not None:
+            candidates.append((b, side))
+    return candidates
+
+
 def check_floating_endpoints(blocks, arrows):
     """Every real arrow must begin and end on some block edge."""
     violations = []
@@ -496,24 +505,34 @@ def check_perpendicular_ports(blocks, arrows):
             ("end", a.points[-1], a.points[-2], "enter"),
         )
         for which, endpoint, neighbor, verb in checks:
-            for b in blocks:
-                side = endpoint_side(endpoint, b.rect)
-                if side is None:
-                    continue
+            candidates = endpoint_block_side_candidates(endpoint, blocks)
+            if not candidates:
+                continue
+            id_matches = [
+                (b, side) for b, side in candidates
+                if b.id.lower() in a.id.lower()
+            ]
+            candidates = id_matches or candidates
+            failures = []
+            for b, side in candidates:
                 nx, ny = side_normal(side)
                 vx = neighbor[0] - endpoint[0]
                 vy = neighbor[1] - endpoint[1]
                 normal_dist = vx * nx + vy * ny
                 tangent_dist = abs(vy) if nx else abs(vx)
-                if tangent_dist > EDGE_TOLERANCE or normal_dist <= EDGE_TOLERANCE:
-                    violations.append(
-                        f"PERPENDICULAR: arrow '{a.id}' {which} endpoint on "
-                        f"block '{b.label}' {side} side must {verb} "
-                        f"perpendicular to the block. First/last segment is "
-                        f"from ({endpoint[0]:.0f},{endpoint[1]:.0f}) to "
-                        f"({neighbor[0]:.0f},{neighbor[1]:.0f})."
-                    )
-                break
+                if tangent_dist <= EDGE_TOLERANCE and normal_dist > EDGE_TOLERANCE:
+                    failures = []
+                    break
+                failures.append((b, side))
+            if failures:
+                b, side = failures[0]
+                violations.append(
+                    f"PERPENDICULAR: arrow '{a.id}' {which} endpoint on "
+                    f"block '{b.label}' {side} side must {verb} "
+                    f"perpendicular to the block. First/last segment is "
+                    f"from ({endpoint[0]:.0f},{endpoint[1]:.0f}) to "
+                    f"({neighbor[0]:.0f},{neighbor[1]:.0f})."
+                )
     return violations
 
 
@@ -799,7 +818,9 @@ def check_text_text_overlap(texts):
             violations.append(
                 f"TEXT_TEXT: text '{a.text}' at ({a.cx:.0f},{a.cy:.0f}) "
                 f"overlaps text '{b.text}' at ({b.cx:.0f},{b.cy:.0f}) "
-                f"(overlap area {area:.0f}px^2). Move or suppress one label."
+                f"(overlap area {area:.0f}px^2). Move one label with its "
+                f"own spec field (`label.dx` / `label.dy`, band `label`, or "
+                f"block `lines`) or suppress the duplicate header."
             )
     return violations
 

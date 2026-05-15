@@ -805,6 +805,9 @@ def render(spec_path, out_path, theme_override=None):
         explicit_lines = b.get("lines")
         if explicit_lines:
             lines = block_label_lines(b)
+            # Two-line blocks can use near-standard label size. Three or more
+            # lines switch to compact type so dense SoC blocks keep text inside
+            # the rectangle even when local `h` overrides make blocks short.
             font = 17 if len(lines) == 2 else 14
             step = 17 if len(lines) == 2 else 15
             total_h = step * (len(lines) - 1)

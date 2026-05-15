@@ -49,7 +49,7 @@ Dark mode:
 
 ### Full SoC top-level
 
-Generated from [test_spec_soc.json](test_spec_soc.json) - application SoC with a CPU complex, L2 cache (CDC), AXI interconnect, on-chip SRAM, DMA, DDR controller, off-chip DDR4, APB bridge, and an APB peripherals subsystem across four clock domains (cpu / axi / ddr / apb):
+Generated from [test_spec_soc.json](test_spec_soc.json) - application SoC with a CPU complex, CPU-local L2 cache, CPU-to-AXI bridge, AXI interconnect, on-chip SRAM, DMA, DDR controller, off-chip DDR4, APB bridge, and an APB peripherals subsystem across four clock domains (cpu / axi / ddr / apb):
 
 Light mode:
 
