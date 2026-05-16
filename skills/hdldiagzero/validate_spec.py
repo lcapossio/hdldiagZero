@@ -20,6 +20,7 @@ import sys
 from pathlib import Path
 
 VALID_KINDS = {"axi-mm", "axi-lite", "axi-stream", "tilelink", "cdc", "generic"}
+WIDTH_RE = re.compile(r"^(\d+b?|[A-Za-z0-9_/+\- ][A-Za-z0-9_/+\- ]{0,23})$")
 VALID_THEMES = {"light", "dark"}
 VALID_ROUTE_MODES = {"auto", "direct", "orthogonal"}
 VALID_LEGENDS = {"right", "compact", "none"}
@@ -180,8 +181,12 @@ def validate(spec):
                 errors.append(f"{prefix_b}: must be an object")
                 continue
             _check_unknown_keys(info, BAND_FIELDS, prefix_b, errors)
-            if "label" in info and not isinstance(info["label"], str):
-                errors.append(f"{prefix_b}: label must be a string")
+            if (
+                "label" in info
+                and info["label"] is not None
+                and not isinstance(info["label"], str)
+            ):
+                errors.append(f"{prefix_b}: label must be a string or null")
             for f in ("color", "border"):
                 if f in info and not _is_color(info[f]):
                     errors.append(
@@ -405,6 +410,7 @@ def validate(spec):
         errors.append("edges: must be a list (may be empty)")
         return errors
 
+    edge_pairs = {}
     for i, e in enumerate(edges):
         prefix = f"edges[{i}]"
         if not isinstance(e, dict):
@@ -426,6 +432,16 @@ def validate(spec):
             errors.append(
                 f"{prefix}: self-edge ('{e['from']}' to itself) not supported"
             )
+        pair = (e.get("from"), e.get("to"))
+        if pair[0] in block_ids and pair[1] in block_ids:
+            if pair in edge_pairs:
+                errors.append(
+                    f"{prefix}: duplicate edge from '{pair[0]}' to '{pair[1]}' "
+                    f"would create a duplicate SVG id; first seen at "
+                    f"edges[{edge_pairs[pair]}]"
+                )
+            else:
+                edge_pairs[pair] = i
         kind = e.get("kind", "generic")
         if not isinstance(kind, str) or kind not in VALID_KINDS:
             errors.append(
@@ -436,6 +452,12 @@ def validate(spec):
             errors.append(
                 f"{prefix}: 'width' must be int or string "
                 f"(got {type(width).__name__} = {width!r})"
+            )
+        elif isinstance(width, str) and not WIDTH_RE.match(width):
+            errors.append(
+                f"{prefix}: width string must match "
+                r"^\d+b?$|^[\w/+\- ]{1,24}$ "
+                f"(got {width!r})"
             )
 
         route = e.get("route")

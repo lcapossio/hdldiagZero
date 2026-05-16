@@ -27,7 +27,7 @@ python render.py --theme dark spec.json out.svg
 python validate.py out.svg
 ```
 
-Each validator exits 0 on PASS and a non-zero count of violations otherwise; each violation prints with coordinates so the agent (or a human) can adjust the JSON.
+Each validator exits 0 on PASS and a non-zero count of violation reports otherwise; one bad route may trigger multiple reports. Each violation prints with coordinates so the agent (or a human) can adjust the JSON.
 
 ## Sample Output
 
@@ -178,6 +178,7 @@ All runtime files live under [`skills/hdldiagzero/`](skills/hdldiagzero/) - the 
 | --- | --- |
 | [install.py](install.py) | Direct (non-marketplace) install path: copies `skills/hdldiagzero/` into a destination dir. Claude defaults; override with `--dst` for Codex / custom runtimes. |
 | [tests.py](tests.py) | Self-tests: validators, renderer light + dark, install dry-run. |
+| [CHANGELOG.md](CHANGELOG.md) | Release notes for published plugin versions. |
 | [test_spec.json](test_spec.json) | Clean renderer smoke-test spec (hierarchy depth 1 - top + direct children). |
 | [test_spec_depth2.json](test_spec_depth2.json) | Depth-2 sample spec (GbE MAC with TX/RX pipelines expanded). |
 | [test_spec_lanes.json](test_spec_lanes.json) | Clock-domain lanes sample (RHS-style acquisition pipeline). |
@@ -190,7 +191,7 @@ All runtime files live under [`skills/hdldiagzero/`](skills/hdldiagzero/) - the 
 | [sample_soc.svg](sample_soc.svg) / [sample_soc_dark.svg](sample_soc_dark.svg) | Tracked light/dark renderer output from `test_spec_soc.json`. |
 | [sample_opentitan.svg](sample_opentitan.svg) / [sample_opentitan_dark.svg](sample_opentitan_dark.svg) | Tracked light/dark renderer output from `test_spec_opentitan.json`. |
 | [sample_opentitan_depth2.svg](sample_opentitan_depth2.svg) / [sample_opentitan_depth2_dark.svg](sample_opentitan_depth2_dark.svg) | Tracked light/dark renderer output from `test_spec_opentitan_depth2.json`. |
-| [not_sample_broken_validator_fixture.svg](not_sample_broken_validator_fixture.svg) | Intentionally broken validator regression fixture. It is supposed to fail with exactly 8 violations; it is not sample output. |
+| [not_sample_broken_validator_fixture.svg](not_sample_broken_validator_fixture.svg) | Intentionally broken validator regression fixture. It is supposed to fail with exactly 20 violation reports; it is not sample output. |
 | [pyproject.toml](pyproject.toml) | Ruff lint config. |
 | [.github/workflows/ci.yml](.github/workflows/ci.yml) | GitHub Actions: ruff + `python tests.py` on Linux / macOS / Windows x Python 3.10, 3.12. |
 | [LICENSE](LICENSE), [README.md](README.md) | Repo-root license and docs (the plugin runtime carries its own copy of LICENSE under `skills/hdldiagzero/`). |
@@ -226,7 +227,7 @@ python tests.py
 
 Runs the same checks as CI:
 
-1. **Validator regression** - runs `validate.py` on the intentionally broken `not_sample_broken_validator_fixture.svg` and asserts exactly 8 violations.
+1. **Validator regression** - runs `validate.py` on the intentionally broken `not_sample_broken_validator_fixture.svg` and asserts exactly 20 violation reports.
 2. **Spec validator** - confirms `validate_spec.py` accepts a known-good spec and rejects one with an unknown block id in an edge.
 3. **Renderer light + dark** - renders `test_spec.json` in both themes; each output passes geometry validation.
 4. **Install dry-run** - copies the runtime files into a throwaway dir, asserts every runtime file is present, and asserts repo-only files (README, tests, fixtures) were *not* copied.

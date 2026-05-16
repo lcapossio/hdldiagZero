@@ -5,7 +5,10 @@ Two validators ship with the skill:
 - `validate_spec.py spec.json` - structural JSON checks (run **before** rendering).
 - `validate.py out.svg` - geometry checks (run **after** rendering).
 
-Both exit 0 on pass; non-zero with a numbered violation list otherwise.
+Both exit 0 on pass; non-zero with a numbered violation list otherwise. For
+SVG validation, the exit code is the number of violation reports, not the
+number of unique arrows or root causes; one bad route can legitimately trigger
+multiple rules.
 
 ## validate_spec.py - JSON structural
 
@@ -58,16 +61,20 @@ before calling the renderer.
 - `bands` (if present) is an object keyed on functional region ids. Each entry
   must specify **exactly one** of `rows` or `cols`, using non-negative numbers
   in 0.25 steps; optional `color` / `border` values are `#RRGGBB`. `label`
-  may be an empty string to suppress the band header.
+  may be an empty string or null to suppress the band header.
 - `legend`, if present, is a boolean or one of `"right"`, `"compact"`,
   `"none"`.
 
 **Edges**
 - `from` and `to` must reference existing block ids.
 - Self-edges (`from == to`) are rejected.
+- Duplicate ordered `(from, to)` pairs are rejected because they would render
+  duplicate SVG `id` attributes.
 - `kind` must be one of `axi-mm`, `axi-lite`, `axi-stream`, `tilelink`,
   `cdc`, `generic`.
-- `width` must be int or string when present (lists / null / objects fail).
+- `width` must be an int or a short safe string when present. String labels
+  must match `^\d+b?$|^[\w/+\- ]{1,24}$` so they stay readable and cannot be
+  abused as arbitrary diagram text.
 - `route.mode` (if set) is `"auto"`, `"direct"`, or `"orthogonal"`.
 - `route.points` (if set) is a list of at least two `[x, y]` pairs with numeric
   coords. **Consecutive points must share x or y** - diagonal segments are

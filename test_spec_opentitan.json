@@ -48,8 +48,8 @@
     {"from": "lc_ctrl",       "to": "alert_handler", "kind": "generic", "width": "state"},
     {"from": "alert_handler", "to": "otp_ctrl",      "kind": "generic", "width": "alerts", "route": {"points": [[611, 467], [650, 467], [650, 535], [1700, 535], [1700, 289], [1636, 289]]}},
 
-    {"from": "xbar_peri",     "to": "peripherals",   "kind": "tilelink", "width": "TL-UL"},
-    {"from": "peripherals",   "to": "rv_plic",       "kind": "generic", "width": "IRQ", "route": {"mode": "direct"}},
+    {"from": "xbar_peri",     "to": "peripherals",   "kind": "tilelink", "width": "TL-UL", "label": {"dx": 50}},
+    {"from": "peripherals",   "to": "rv_plic",       "kind": "generic", "width": "IRQ", "route": {"mode": "direct"}, "label": {"dy": 32}},
     {"from": "aon_timer",     "to": "rv_plic",       "kind": "generic", "width": "IRQ"},
     {"from": "rv_plic",       "to": "ibex",          "kind": "generic", "width": "IRQ", "route": {"points": [[1101, 645], [1050, 645], [1050, 720], [700, 720], [700, 126], [746, 126]]}, "label": {"segment": 3, "t": 0.14}}
   ]

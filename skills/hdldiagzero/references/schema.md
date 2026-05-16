@@ -128,7 +128,7 @@ still need the reference-diagram feel of horizontal or vertical bands.
 
 | Field    | Type   | Required | Description |
 |----------|--------|----------|-------------|
-| `label`  | string | optional | Header text shown at the top-left of the band. Defaults to the band id; set `""` to suppress the header when another label, such as a group header, already identifies the region. |
+| `label`  | string \| null | optional | Header text shown at the top-left of the band. Defaults to the band id; set `""` or `null` to suppress the header when another label, such as a group header, already identifies the region. |
 | `rows`   | number[] | one of | Non-empty list of grid rows in 0.25 steps. Spans `min(rows)`..`max(rows)`. |
 | `cols`   | number[] | one of | Non-empty list of grid columns in 0.25 steps. Spans `min(cols)`..`max(cols)`. |
 | `color`  | string | optional | Fill color (`#RRGGBB`). Defaults to slate. |
@@ -168,9 +168,14 @@ uppercase header. Arrows freely cross group borders; the validator excludes
 | `from`  | string        | required | Block id (must exist in `blocks`). |
 | `to`    | string        | required | Block id (must exist in `blocks`). |
 | `kind`  | string        | required | One of `axi-mm`, `axi-lite`, `axi-stream`, `tilelink`, `cdc`, `generic`. |
-| `width` | int \| string | optional | Bit width as int (rendered `<n>b`), or protocol / parameter as string. Long arrows without a label fail the BITWIDTH validator check. |
+| `width` | int \| string | optional | Bit width as int (rendered `<n>b`), or short protocol / parameter label matching `^\d+b?$|^[\w/+\- ]{1,24}$`. Long arrows without a label fail the BITWIDTH validator check. |
 | `route` | object        | optional | Per-edge routing override. See *edges[].route* below. |
 | `label` | object        | optional | Per-edge label placement override. See *edges[].label* below. |
+
+Each ordered `(from, to)` pair must be unique. If two logical links connect
+the same blocks, combine them into one label (for example `"cmd + rsp"`) or
+split one endpoint through a named intermediate block; duplicate pairs would
+otherwise render duplicate SVG ids.
 
 ### edges[].route
 

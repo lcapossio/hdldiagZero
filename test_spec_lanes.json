@@ -25,10 +25,11 @@
   ],
   "edges": [
     {"from": "usb_phy",   "to": "ok_host",   "kind": "generic",    "width": "USB3"},
-    {"from": "ok_host",   "to": "ok_endpts", "kind": "generic",    "width": "host bus"},
+    {"from": "ok_host",   "to": "ok_endpts", "kind": "generic",    "width": "host bus",
+                                                                   "label": {"dx": 45, "dy": 16}},
     {"from": "ok_endpts", "to": "fsm",       "kind": "cdc",        "width": "cfg"},
     {"from": "fsm",       "to": "adc_in",    "kind": "axi-stream", "width": 16,
-                                                                   "label": {"dy": 10}},
+                                                                   "label": {"dx": 55, "dy": 10}},
     {"from": "adc_in",    "to": "spi_dac",   "kind": "generic",    "width": "SPI"},
     {"from": "adc_in",    "to": "fifo_cdc",  "kind": "axi-stream", "width": 16},
     {"from": "fifo_cdc",  "to": "ddr_fsm",   "kind": "axi-mm",     "width": 32},

@@ -417,27 +417,31 @@ def route_all(spec, blocks_by_id, g):
     vert_pair = {("top", "bottom"), ("bottom", "top")}
 
     side_counts = {}
+    side_slots = {}
     edge_sides = []
-    for e in spec["edges"]:
+    for i, e in enumerate(spec["edges"]):
         a = blocks_by_id[e["from"]]
         b = blocks_by_id[e["to"]]
         fs, ts = determine_sides(a, b)
         side_counts[(a["id"], fs)] = side_counts.get((a["id"], fs), 0) + 1
         side_counts[(b["id"], ts)] = side_counts.get((b["id"], ts), 0) + 1
+        side_slots.setdefault((a["id"], fs), []).append((b["id"], e["from"], e["to"], i))
+        side_slots.setdefault((b["id"], ts), []).append((a["id"], e["from"], e["to"], i))
         edge_sides.append((fs, ts))
+    side_slot_index = {}
+    for key, slots in side_slots.items():
+        for pos, slot in enumerate(sorted(slots)):
+            side_slot_index[(key, slot[3])] = pos
 
     # Pass 1: assign endpoints (so we know each edge's actual y / x range).
-    side_index = {}
     edge_endpoints = []
-    for e, (fs, ts) in zip(spec["edges"], edge_sides):
+    for i, (e, (fs, ts)) in enumerate(zip(spec["edges"], edge_sides)):
         a = blocks_by_id[e["from"]]
         b = blocks_by_id[e["to"]]
-        ia = side_index.get((a["id"], fs), 0)
-        ib = side_index.get((b["id"], ts), 0)
+        ia = side_slot_index[((a["id"], fs), i)]
+        ib = side_slot_index[((b["id"], ts), i)]
         from_pt = side_endpoint(g, a, fs, ia, side_counts[(a["id"], fs)])
         to_pt = side_endpoint(g, b, ts, ib, side_counts[(b["id"], ts)])
-        side_index[(a["id"], fs)] = ia + 1
-        side_index[(b["id"], ts)] = ib + 1
         edge_endpoints.append((from_pt, to_pt))
 
     # Pass 2: group edges by routing channel and compute lane offsets via
@@ -457,20 +461,24 @@ def route_all(spec, blocks_by_id, g):
         tx, ty = edge_endpoints[i][1]
         if (fs, ts) in horiz_pair:
             key = tuple(sorted((a["col"], b["col"])))
-            h_channel.setdefault(key, []).append((i, min(fy, ty), max(fy, ty)))
+            h_channel.setdefault(key, []).append(
+                (i, min(fy, ty), max(fy, ty), e["from"], e["to"])
+            )
         elif (fs, ts) in vert_pair:
             key = tuple(sorted((a["row"], b["row"])))
-            v_channel.setdefault(key, []).append((i, min(fx, tx), max(fx, tx)))
+            v_channel.setdefault(key, []).append(
+                (i, min(fx, tx), max(fx, tx), e["from"], e["to"])
+            )
 
     lane_offsets = {}
 
     def color_intervals(intervals):
         """Greedy interval-graph coloring with a PADDING gap. Returns
         (lane_of_idx, n_lanes_used)."""
-        sorted_ivs = sorted(intervals, key=lambda x: x[1])
+        sorted_ivs = sorted(intervals, key=lambda x: (x[1], x[2], x[3], x[4]))
         lane_end = []
         lane_of = {}
-        for idx, lo, hi in sorted_ivs:
+        for idx, lo, hi, _src, _dst in sorted_ivs:
             assigned = -1
             for li, end in enumerate(lane_end):
                 if end + PADDING <= lo:
@@ -506,7 +514,8 @@ def route_all(spec, blocks_by_id, g):
 
 
 def esc(s):
-    return (str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
+    return (str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            .replace('"', "&quot;").replace("'", "&apos;"))
 
 
 def region_rect(info, g, content_y0, grid_w, canvas_w, canvas_h, span_canvas_w):

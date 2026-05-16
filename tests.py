@@ -77,10 +77,11 @@ def _tmpdir():
     raise RuntimeError("no writable temp directory found:\n  " + "\n  ".join(errors))
 
 # The bundled fixture deliberately contains exactly this many violations across
-# the validator rules: the original 8 fixture violations plus 6 ENDPOINT
-# violations on intentionally free-floating arrows. If the renderer or the
-# validator regresses, this number changes and CI fails.
-EXPECTED_FIXTURE_VIOLATIONS = 14
+# the validator rules: the original 8 fixture violations, 6 ENDPOINT reports
+# on intentionally free-floating arrows, and explicit LOOP / PERPENDICULAR /
+# DIAGONAL / TEXT_TEXT coverage. If the renderer or the validator regresses,
+# this number changes and CI fails.
+EXPECTED_FIXTURE_VIOLATIONS = 20
 
 FAILURES: list[str] = []
 
@@ -209,6 +210,27 @@ def test_spec_validator_strict_types() -> None:
             "edges": [{"from": "a", "to": "b", "kind": "generic", "width": [1, 2]}],
         }
         _write_and_check(tmp, "bad_width.json", bad, 1, "spec-strict-width-list")
+        bad = {
+            "domains": {"d": {"color": "#42A5F5"}},
+            "blocks": [
+                {"id": "a", "domain": "d", "row": 0, "col": 0},
+                {"id": "b", "domain": "d", "row": 0, "col": 1},
+            ],
+            "edges": [{"from": "a", "to": "b", "kind": "generic", "width": "eviltext ); //"}],
+        }
+        _write_and_check(tmp, "bad_width_str.json", bad, 1, "spec-strict-width-string")
+        bad = {
+            "domains": {"d": {"color": "#42A5F5"}},
+            "blocks": [
+                {"id": "a", "domain": "d", "row": 0, "col": 0},
+                {"id": "b", "domain": "d", "row": 0, "col": 1},
+            ],
+            "edges": [
+                {"from": "a", "to": "b", "kind": "generic", "width": "bus"},
+                {"from": "a", "to": "b", "kind": "generic", "width": "irq"},
+            ],
+        }
+        _write_and_check(tmp, "duplicate_edge.json", bad, 1, "spec-strict-duplicate-edge")
         # 3-digit color is no longer accepted (schema documents #RRGGBB only)
         bad = {
             "domains": {"d": {"color": "#abc"}},
@@ -459,7 +481,7 @@ def test_bands_render_and_skip_geometry() -> None:
 
 
 def test_band_label_can_be_suppressed() -> None:
-    """An empty band label suppresses the text so bands can sit under groups."""
+    """Empty/null band labels suppress text so bands can sit under groups."""
     with _tmpdir() as tmp:
         tmp = Path(tmp)
         spec = {
@@ -467,7 +489,7 @@ def test_band_label_can_be_suppressed() -> None:
             "domains": {"d": {"color": "#42A5F5"}},
             "bands": {
                 "system": {
-                    "label": "",
+                    "label": None,
                     "rows": [0],
                     "color": "#CBD5E1",
                     "border": "#475569",
@@ -486,8 +508,35 @@ def test_band_label_can_be_suppressed() -> None:
             if 'id="band_system"' not in svg:
                 FAILURES.append("[band-no-label-render] missing band_system rect")
             if ">system<" in svg:
-                FAILURES.append("[band-no-label-render] empty band label still rendered")
+                FAILURES.append("[band-no-label-render] suppressed band label still rendered")
             run([PY, VALIDATE, str(out)], label="band-no-label-validate")
+
+
+def test_renderer_escapes_attribute_quotes() -> None:
+    """User-controlled ids must not break out of SVG attributes."""
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        evil_id = 'a"><script>alert(1)</script>'
+        spec = {
+            "legend": False,
+            "domains": {"d": {"color": "#42A5F5"}},
+            "blocks": [
+                {"id": evil_id, "domain": "d", "row": 0, "col": 0},
+                {"id": "b", "domain": "d", "row": 0, "col": 1},
+            ],
+            "edges": [{"from": evil_id, "to": "b", "kind": "generic", "width": "bus"}],
+        }
+        spec_path = tmp / "escaped.json"
+        out = tmp / "escaped.svg"
+        spec_path.write_text(json.dumps(spec), encoding="utf-8")
+        run([PY, VALIDATE_SPEC, str(spec_path)], label="escape-spec")
+        run([PY, RENDER, str(spec_path), str(out)], label="escape-render")
+        if out.is_file():
+            svg = out.read_text(encoding="utf-8")
+            if evil_id in svg:
+                FAILURES.append("[escape-render] raw quoted id appeared in SVG")
+            if 'id="a&quot;&gt;&lt;script&gt;alert(1)&lt;/script&gt;"' not in svg:
+                FAILURES.append("[escape-render] quoted id was not attribute-escaped")
 
 
 def test_external_side_hint_controls_endpoint() -> None:
@@ -768,12 +817,13 @@ def test_spec_validator_accepts_route_and_label() -> None:
                 "blocks": [
                     {"id": "a", "domain": "d", "row": 0, "col": 0},
                     {"id": "b", "domain": "d", "row": 0, "col": 1},
+                    {"id": "c", "domain": "d", "row": 1, "col": 1},
                 ],
                 "edges": [
                     {"from": "a", "to": "b", "kind": "generic",
                      "route": {"mode": "direct"},
                      "label": {"dx": -20, "dy": 10, "segment": 0, "t": 0.42}},
-                    {"from": "a", "to": "b", "kind": "generic",
+                    {"from": "a", "to": "c", "kind": "generic",
                      "route": {"points": [[10, 20], [30, 20], [30, 40]]}},
                 ],
             }),
@@ -892,6 +942,44 @@ def _segments_from_d(d: str):
     nums = [float(n) for n in re.findall(r"-?\d+\.?\d*", d)]
     pts = list(zip(nums[0::2], nums[1::2]))
     return list(zip(pts, pts[1:]))
+
+
+def test_renderer_lane_assignment_ignores_edge_order() -> None:
+    """Reordering edge entries should not move endpoints or lane offsets."""
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        base = {
+            "legend": False,
+            "domains": {"d": {"color": "#42A5F5"}},
+            "blocks": [
+                {"id": "a", "domain": "d", "row": 0, "col": 0},
+                {"id": "b", "domain": "d", "row": 1, "col": 0},
+                {"id": "c", "domain": "d", "row": 0, "col": 2},
+                {"id": "d", "domain": "d", "row": 1, "col": 2},
+            ],
+            "edges": [
+                {"from": "a", "to": "d", "kind": "generic", "width": "bus"},
+                {"from": "b", "to": "c", "kind": "generic", "width": "bus"},
+            ],
+        }
+        rev = json.loads(json.dumps(base))
+        rev["edges"] = list(reversed(rev["edges"]))
+        paths_by_spec = []
+        for name, spec in (("base", base), ("rev", rev)):
+            spec_path = tmp / f"{name}.json"
+            out = tmp / f"{name}.svg"
+            spec_path.write_text(json.dumps(spec), encoding="utf-8")
+            run([PY, VALIDATE_SPEC, str(spec_path)], label=f"lane-order-{name}-spec")
+            run([PY, RENDER, str(spec_path), str(out)], label=f"lane-order-{name}-render")
+            svg = out.read_text(encoding="utf-8")
+            paths_by_spec.append({
+                f'edge_{e["from"]}_to_{e["to"]}': _path_d_for(svg, f'edge_{e["from"]}_to_{e["to"]}')
+                for e in base["edges"]
+            })
+        if paths_by_spec[0] != paths_by_spec[1]:
+            FAILURES.append(
+                f"[lane-order] edge order changed routing: {paths_by_spec!r}"
+            )
 
 
 def test_renderer_direct_mode_is_orthogonal() -> None:
@@ -1248,6 +1336,7 @@ def main() -> int:
     test_renderer_can_hide_legend()
     test_bands_render_and_skip_geometry()
     test_band_label_can_be_suppressed()
+    test_renderer_escapes_attribute_quotes()
     test_external_side_hint_controls_endpoint()
     test_multiline_block_labels_render()
     test_renderer_lanes_sample()
@@ -1262,6 +1351,7 @@ def main() -> int:
     test_renderer_honors_explicit_route_points()
     test_spec_validator_accepts_block_size_overrides()
     test_renderer_honors_block_size_overrides()
+    test_renderer_lane_assignment_ignores_edge_order()
     test_renderer_direct_mode_is_orthogonal()
     test_spec_validator_rejects_diagonal_route_points()
     test_validator_flags_diagonal_segment_in_svg()

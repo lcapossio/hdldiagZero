@@ -4,7 +4,7 @@
   BITWIDTH carries a digit-bearing label within TEXT_LABEL_PROXIMITY (12px) of
   its path. The 'no_label' arrow is the dedicated BITWIDTH violator.
 
-  Expected output: 8 violations
+  Expected output: 20 violation reports
     1 CROSSING   (bad_crossing through B)
     1 SPACING    (bus_a vs bus_b parallel and close)
     1 STUB       (stub shaft shorter than arrowhead)
@@ -12,8 +12,13 @@
     1 TEXT_BLOCK (block F overlapping the long stray label)
     2 PORT       (bus_a/bus_b sharing a point on D and on E)
     1 BITWIDTH   (no_label has no digit-bearing label near its midpoint)
+    6 ENDPOINT   (stub / hor_label_owner / ver_through_text float free)
+    1 LOOP       (loop_path detours despite clear face-to-face ports)
+    3 PERPENDICULAR (bad_port plus both ends of diag_path)
+    1 DIAGONAL   (diag_path has a diagonal segment)
+    1 TEXT_TEXT  (two standalone labels overlap)
 -->
-<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="900" viewBox="0 0 800 900">
   <defs>
     <style>
       .block { stroke: #334155; stroke-width: 1.5; rx: 8; }
@@ -40,7 +45,7 @@
   </defs>
 
   <text class="label" x="400" y="26">Intentionally Broken Validator Fixture</text>
-  <text class="note" x="400" y="44" text-anchor="middle">This is not sample output; it deliberately contains 8 geometry violations.</text>
+  <text class="note" x="400" y="44" text-anchor="middle">This is not sample output; it deliberately contains validator violations.</text>
 
   <rect id="A" class="block" x="50" y="80" width="150" height="100" fill="#bfdbfe"/>
   <text class="label" x="125" y="135">A</text>
@@ -94,4 +99,32 @@
   <rect id="G" class="block" x="600" y="495" width="120" height="40" fill="#67e8f9"/>
   <text class="label" x="660" y="520">G</text>
   <path id="no_label" class="bus" d="M 380,515 L 600,515" marker-end="url(#ah)"/>
+
+  <!-- BAD: LOOP - face-to-face blocks with clear direct path, but route detours. -->
+  <rect id="H" class="block" x="50" y="650" width="80" height="40" fill="#bfdbfe"/>
+  <text class="label" x="90" y="675">H</text>
+  <rect id="I" class="block" x="300" y="650" width="80" height="40" fill="#bbf7d0"/>
+  <text class="label" x="340" y="675">I</text>
+  <path id="loop_path" class="bad" d="M 130,670 L 160,670 L 160,720 L 270,720 L 270,670 L 300,670" marker-end="url(#ah-red)"/>
+  <text class="small" x="215" y="716" text-anchor="middle">bus</text>
+
+  <!-- BAD: PERPENDICULAR - start point touches J's right side but leaves vertically. -->
+  <rect id="J" class="block" x="430" y="650" width="80" height="40" fill="#fde68a"/>
+  <text class="label" x="470" y="675">J</text>
+  <rect id="K" class="block" x="650" y="700" width="80" height="40" fill="#ddd6fe"/>
+  <text class="label" x="690" y="725">K</text>
+  <path id="bad_port_path" class="warn" d="M 510,670 L 510,720 L 650,720" marker-end="url(#ah-purple)"/>
+  <text class="small" x="580" y="716" text-anchor="middle">bus</text>
+
+  <!-- BAD: DIAGONAL - also enters/exits its endpoint blocks non-perpendicularly. -->
+  <rect id="L" class="block" x="50" y="800" width="80" height="40" fill="#fecdd3"/>
+  <text class="label" x="90" y="825">L</text>
+  <rect id="M" class="block" x="250" y="840" width="80" height="40" fill="#67e8f9"/>
+  <text class="label" x="290" y="865">M</text>
+  <path id="diag_path" class="bad" d="M 130,820 L 250,860" marker-end="url(#ah-red)"/>
+  <text class="small" x="190" y="835" text-anchor="middle">diag</text>
+
+  <!-- BAD: TEXT_TEXT - standalone labels overlap significantly. -->
+  <text class="small" x="500" y="830">overlapping status label</text>
+  <text class="small" x="502" y="832">OVERLAPPING STATUS LABEL</text>
 </svg>

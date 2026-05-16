@@ -63,12 +63,12 @@
   <path id="edge_tx_fifo_to_tx_mac" d="M 976.0,271.0 L 1046.0,271.0 L 1116.0,271.0" stroke="#d9f99d" stroke-width="2.2" fill="none" marker-end="url(#ah-stream)"/>
   <rect x="979.0" y="252.2" width="80.2" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
   <text x="1019.1" y="267.0" text-anchor="middle" font-size="15" fill="#e2e8f0">AXI-S 64b</text>
-  <path id="edge_tx_mac_to_gmii_phy" d="M 1336.0,271.0 L 1376.0,271.0 L 1376.0,111.0 L 1476.0,111.0" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
-  <rect x="1348.2" y="179.2" width="55.5" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
-  <text x="1376.0" y="194.0" text-anchor="middle" font-size="15" fill="#e2e8f0">TXD 8b</text>
-  <path id="edge_gmii_phy_to_rx_mac" d="M 1476.0,133.5 L 1436.0,133.5 L 1436.0,431.0 L 1336.0,431.0" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
-  <rect x="1408.2" y="270.5" width="55.5" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
-  <text x="1436.0" y="285.2" text-anchor="middle" font-size="15" fill="#e2e8f0">RXD 8b</text>
+  <path id="edge_tx_mac_to_gmii_phy" d="M 1336.0,271.0 L 1436.0,271.0 L 1436.0,133.5 L 1476.0,133.5" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
+  <rect x="1408.2" y="190.5" width="55.5" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
+  <text x="1436.0" y="205.2" text-anchor="middle" font-size="15" fill="#e2e8f0">TXD 8b</text>
+  <path id="edge_gmii_phy_to_rx_mac" d="M 1476.0,111.0 L 1376.0,111.0 L 1376.0,431.0 L 1336.0,431.0" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
+  <rect x="1348.2" y="293.2" width="55.5" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
+  <text x="1376.0" y="308.0" text-anchor="middle" font-size="15" fill="#e2e8f0">RXD 8b</text>
   <path id="edge_rx_mac_to_rx_fifo" d="M 1116.0,431.0 L 1046.0,431.0 L 976.0,431.0" stroke="#d9f99d" stroke-width="2.2" fill="none" marker-end="url(#ah-stream)"/>
   <rect x="1032.8" y="412.2" width="80.2" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
   <text x="1072.9" y="427.0" text-anchor="middle" font-size="15" fill="#e2e8f0">AXI-S 64b</text>

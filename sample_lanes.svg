@@ -48,15 +48,15 @@
   <path id="edge_usb_phy_to_ok_host" d="M 256.0,111.0 L 336.0,111.0 L 416.0,111.0" stroke="#374151" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
   <rect x="276.5" y="92.2" width="39.0" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
   <text x="296.0" y="107.0" text-anchor="middle" font-size="15" fill="#1f2937">USB3</text>
-  <path id="edge_ok_host_to_ok_endpts" d="M 636.0,111.0 L 676.0,111.0 L 676.0,96.0 L 796.0,96.0" stroke="#374151" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
-  <rect x="700.0" y="77.2" width="72.0" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
-  <text x="736.0" y="92.0" text-anchor="middle" font-size="15" fill="#1f2937">host bus</text>
-  <path id="edge_ok_endpts_to_fsm" d="M 796.0,126.0 L 756.0,126.0 L 756.0,276.0 L 636.0,276.0" stroke="#6A1B9A" stroke-width="1.8" fill="none" marker-end="url(#ah-cdc)" stroke-dasharray="6,3"/>
-  <rect x="724.1" y="189.2" width="63.8" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
-  <text x="756.0" y="204.0" text-anchor="middle" font-size="15" fill="#1f2937">CDC cfg</text>
-  <path id="edge_fsm_to_adc_in" d="M 636.0,306.0 L 676.0,306.0 L 676.0,291.0 L 796.0,291.0" stroke="#5C5C00" stroke-width="2.2" fill="none" marker-end="url(#ah-stream)"/>
-  <rect x="695.9" y="282.2" width="80.2" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
-  <text x="736.0" y="297.0" text-anchor="middle" font-size="15" fill="#1f2937">AXI-S 16b</text>
+  <path id="edge_ok_host_to_ok_endpts" d="M 636.0,111.0 L 756.0,111.0 L 756.0,126.0 L 796.0,126.0" stroke="#374151" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
+  <rect x="705.0" y="108.2" width="72.0" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
+  <text x="741.0" y="123.0" text-anchor="middle" font-size="15" fill="#1f2937">host bus</text>
+  <path id="edge_ok_endpts_to_fsm" d="M 796.0,96.0 L 676.0,96.0 L 676.0,306.0 L 636.0,306.0" stroke="#6A1B9A" stroke-width="1.8" fill="none" marker-end="url(#ah-cdc)" stroke-dasharray="6,3"/>
+  <rect x="644.1" y="189.2" width="63.8" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
+  <text x="676.0" y="204.0" text-anchor="middle" font-size="15" fill="#1f2937">CDC cfg</text>
+  <path id="edge_fsm_to_adc_in" d="M 636.0,276.0 L 756.0,276.0 L 756.0,291.0 L 796.0,291.0" stroke="#5C5C00" stroke-width="2.2" fill="none" marker-end="url(#ah-stream)"/>
+  <rect x="710.9" y="267.2" width="80.2" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
+  <text x="751.0" y="282.0" text-anchor="middle" font-size="15" fill="#1f2937">AXI-S 16b</text>
   <path id="edge_adc_in_to_spi_dac" d="M 1016.0,291.0 L 1096.0,291.0 L 1176.0,291.0" stroke="#374151" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
   <rect x="1040.6" y="272.2" width="30.8" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
   <text x="1056.0" y="287.0" text-anchor="middle" font-size="15" fill="#1f2937">SPI</text>

@@ -31,7 +31,7 @@
     {"from": "tx_desc",     "to": "tx_fifo",     "kind": "axi-stream", "width": 64},
     {"from": "tx_fifo",     "to": "tx_mac",      "kind": "axi-stream", "width": 64},
     {"from": "tx_mac",      "to": "gmii_phy",    "kind": "generic",    "width": "TXD 8b"},
-    {"from": "gmii_phy",    "to": "rx_mac",      "kind": "generic",    "width": "RXD 8b"},
+    {"from": "gmii_phy",    "to": "rx_mac",      "kind": "generic",    "width": "RXD 8b", "label": {"dy": 34}},
     {"from": "rx_mac",      "to": "rx_fifo",     "kind": "axi-stream", "width": 64},
     {"from": "rx_fifo",     "to": "rx_desc",     "kind": "axi-stream", "width": 64}
   ]

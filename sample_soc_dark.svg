@@ -49,7 +49,7 @@
   <path id="edge_l2_to_cpu_axi" d="M 616.0,111.0 L 686.0,111.0 L 756.0,111.0" stroke="#e2e8f0" stroke-width="2.5" fill="none" marker-end="url(#ah-solid)"/>
   <rect x="619.0" y="92.2" width="96.8" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
   <text x="667.4" y="107.0" text-anchor="middle" font-size="15" fill="#e2e8f0">AXI-MM 128b</text>
-  <path id="edge_cpu_axi_to_ic" d="M 976.0,111.0 L 1046.0,111.0 L 1046.0,88.5 L 1116.0,88.5" stroke="#e2e8f0" stroke-width="2.5" fill="none" marker-end="url(#ah-solid)"/>
+  <path id="edge_cpu_axi_to_ic" d="M 976.0,111.0 L 1046.0,111.0 L 1116.0,111.0" stroke="#e2e8f0" stroke-width="2.5" fill="none" marker-end="url(#ah-solid)"/>
   <rect x="979.0" y="92.2" width="96.8" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
   <text x="1027.4" y="107.0" text-anchor="middle" font-size="15" fill="#e2e8f0">AXI-MM 128b</text>
   <path id="edge_ic_to_sram" d="M 1336.0,111.0 L 1406.0,111.0 L 1476.0,111.0" stroke="#e2e8f0" stroke-width="2.5" fill="none" marker-end="url(#ah-solid)"/>

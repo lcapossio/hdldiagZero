@@ -82,9 +82,9 @@
   <path id="edge_rv_dm_to_ibex" d="M 571.0,102.0 L 658.5,102.0 L 658.5,111.0 L 746.0,111.0" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
   <rect x="591.1" y="83.2" width="47.2" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
   <text x="614.8" y="98.0" text-anchor="middle" font-size="15" fill="#e2e8f0">debug</text>
-  <path id="edge_ibex_to_xbar_main" d="M 966.0,96.0 L 1006.0,96.0 L 1006.0,111.0 L 1101.0,111.0" stroke="#5eead4" stroke-width="2.4" fill="none" marker-end="url(#ah-tilelink)"/>
-  <rect x="1029.9" y="92.2" width="47.2" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
-  <text x="1053.5" y="107.0" text-anchor="middle" font-size="15" fill="#e2e8f0">TL-UL</text>
+  <path id="edge_ibex_to_xbar_main" d="M 966.0,126.0 L 1061.0,126.0 L 1061.0,111.0 L 1101.0,111.0" stroke="#5eead4" stroke-width="2.4" fill="none" marker-end="url(#ah-tilelink)"/>
+  <rect x="989.9" y="107.2" width="47.2" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
+  <text x="1013.5" y="122.0" text-anchor="middle" font-size="15" fill="#e2e8f0">TL-UL</text>
   <path id="edge_xbar_main_to_mem_ctrls" d="M 1321.0,111.0 L 1361.0,111.0 L 1361.0,102.0 L 1456.0,102.0" stroke="#5eead4" stroke-width="2.4" fill="none" marker-end="url(#ah-tilelink)"/>
   <rect x="1384.9" y="83.2" width="47.2" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
   <text x="1408.5" y="98.0" text-anchor="middle" font-size="15" fill="#e2e8f0">TL-UL</text>
@@ -103,15 +103,15 @@
   <path id="edge_alert_handler_to_otp_ctrl" d="M 611.0,467.0 L 650.0,467.0 L 650.0,535.0 L 1700.0,535.0 L 1700.0,289.0 L 1636.0,289.0" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
   <rect x="1147.2" y="516.2" width="55.5" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
   <text x="1175.0" y="531.0" text-anchor="middle" font-size="15" fill="#e2e8f0">alerts</text>
-  <path id="edge_xbar_peri_to_peripherals" d="M 1321.0,467.0 L 1361.0,467.0 L 1361.0,446.0 L 1456.0,446.0" stroke="#5eead4" stroke-width="2.4" fill="none" marker-end="url(#ah-tilelink)"/>
-  <rect x="1384.9" y="427.2" width="47.2" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
-  <text x="1408.5" y="442.0" text-anchor="middle" font-size="15" fill="#e2e8f0">TL-UL</text>
-  <path id="edge_peripherals_to_rv_plic" d="M 1456.0,470.0 L 1363.5,470.0 L 1363.5,634.0 L 1271.0,634.0" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
-  <rect x="1348.1" y="540.2" width="30.8" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
-  <text x="1363.5" y="555.0" text-anchor="middle" font-size="15" fill="#e2e8f0">IRQ</text>
-  <path id="edge_aon_timer_to_rv_plic" d="M 926.0,636.0 L 986.0,636.0 L 986.0,622.7 L 1101.0,622.7" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
-  <rect x="1028.1" y="603.9" width="30.8" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
-  <text x="1043.5" y="618.7" text-anchor="middle" font-size="15" fill="#e2e8f0">IRQ</text>
+  <path id="edge_xbar_peri_to_peripherals" d="M 1321.0,467.0 L 1416.0,467.0 L 1416.0,470.0 L 1456.0,470.0" stroke="#5eead4" stroke-width="2.4" fill="none" marker-end="url(#ah-tilelink)"/>
+  <rect x="1394.9" y="448.2" width="47.2" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
+  <text x="1418.5" y="463.0" text-anchor="middle" font-size="15" fill="#e2e8f0">TL-UL</text>
+  <path id="edge_peripherals_to_rv_plic" d="M 1456.0,446.0 L 1363.5,446.0 L 1363.5,634.0 L 1271.0,634.0" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
+  <rect x="1348.1" y="560.2" width="30.8" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
+  <text x="1363.5" y="575.0" text-anchor="middle" font-size="15" fill="#e2e8f0">IRQ</text>
+  <path id="edge_aon_timer_to_rv_plic" d="M 926.0,636.0 L 1041.0,636.0 L 1041.0,622.7 L 1101.0,622.7" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
+  <rect x="968.1" y="617.2" width="30.8" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
+  <text x="983.5" y="632.0" text-anchor="middle" font-size="15" fill="#e2e8f0">IRQ</text>
   <path id="edge_rv_plic_to_ibex" d="M 1101.0,645.0 L 1050.0,645.0 L 1050.0,720.0 L 700.0,720.0 L 700.0,126.0 L 746.0,126.0" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
   <rect x="684.6" y="625.1" width="30.8" height="19.0" fill="#1f2937" stroke="#4b5563" stroke-width="0.6" rx="3"/>
   <text x="700.0" y="639.8" text-anchor="middle" font-size="15" fill="#e2e8f0">IRQ</text>
