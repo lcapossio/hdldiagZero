@@ -27,7 +27,7 @@ python render.py --theme dark spec.json out.svg
 python validate.py out.svg
 ```
 
-Each validator exits 0 on PASS and a non-zero count of violation reports otherwise; one bad route may trigger multiple reports. Each violation prints with coordinates so the agent (or a human) can adjust the JSON.
+Each validator exits 0 on PASS, 1 when validation reports violations, and 2 for usage / parse errors. The SVG validator prints the exact violation count in stdout; one bad route may trigger multiple reports. Each violation prints with coordinates so the agent (or a human) can adjust the JSON.
 
 ## Sample Output
 
@@ -159,7 +159,7 @@ All runtime files live under [`skills/hdldiagzero/`](skills/hdldiagzero/) - the 
 | [skills/hdldiagzero/agents/openai.yaml](skills/hdldiagzero/agents/openai.yaml) | Marketplace/UI metadata for skill lists and default prompts. |
 | [skills/hdldiagzero/assets/hdldiagzero-small.svg](skills/hdldiagzero/assets/hdldiagzero-small.svg) | Small icon used by marketplace/UI metadata. |
 | [skills/hdldiagzero/render.py](skills/hdldiagzero/render.py) | JSON -> SVG renderer. |
-| [skills/hdldiagzero/validate.py](skills/hdldiagzero/validate.py) | SVG geometry validator (exit code = violation count). |
+| [skills/hdldiagzero/validate.py](skills/hdldiagzero/validate.py) | SVG geometry validator (exit code 0/1/2; stdout carries the violation count). |
 | [skills/hdldiagzero/validate_spec.py](skills/hdldiagzero/validate_spec.py) | JSON spec validator - run before the renderer to catch structural errors. |
 | [skills/hdldiagzero/references/schema.md](skills/hdldiagzero/references/schema.md) | Full JSON schema, loaded on demand. |
 | [skills/hdldiagzero/references/extraction.md](skills/hdldiagzero/references/extraction.md) | HDL extraction patterns: top discovery, hierarchy walking, exclusions, AXI classification. |
@@ -206,6 +206,13 @@ All runtime files live under [`skills/hdldiagzero/`](skills/hdldiagzero/) - the 
 ```
 
 Claude Code clones the repo, reads [.claude-plugin/marketplace.json](.claude-plugin/marketplace.json), and mounts [skills/hdldiagzero/](skills/hdldiagzero/) as the active skill. Restart Claude Code afterward.
+
+The marketplace entry is pinned to the published tag in [.claude-plugin/marketplace.json](.claude-plugin/marketplace.json). To pick up a newer published tag after upgrading the marketplace entry, run:
+
+```
+/plugin marketplace update hdldiag-marketplace
+/plugin install hdldiagzero@hdldiag-marketplace
+```
 
 ### Other runtimes (Codex, custom)
 

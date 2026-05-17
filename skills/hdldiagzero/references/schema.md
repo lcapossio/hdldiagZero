@@ -66,7 +66,7 @@ otherwise produce a broken SVG.
 | `id`       | string  | required  | Unique non-empty string. |
 | `label`    | string  | optional  | Defaults to `id`. |
 | `sublabel` | string  | optional  | Italic line under the label. Keep it terse. |
-| `lines`    | string[] | optional | Explicit compact label lines. Overrides `label` / `sublabel` rendering when present. |
+| `lines`    | string[] | optional | Explicit compact label lines. When present, `lines` is the complete rendered block text and `label` / `sublabel` are ignored. Prefer setting only one text model per block. |
 | `domain`   | string  | required* | Domain key from `domains`. *Optional if `external=true`. |
 | `domain_b` | string  | optional  | CDC blocks only. Half fill of each domain's color. Must differ from `domain` and reference a declared domain. |
 | `external` | boolean | optional  | True = off-chip / off-die. Neutral grey fill, ignores `domain`. |

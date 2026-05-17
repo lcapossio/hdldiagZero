@@ -498,6 +498,8 @@ def check_perpendicular_ports(blocks, arrows):
     """
     violations = []
     for a in arrows:
+        if a.id.startswith("legend-arrow"):
+            continue
         if len(a.points) < 2:
             continue
         checks = (
@@ -564,6 +566,8 @@ def check_unnecessary_loops(blocks, arrows, texts):
     """
     violations = []
     for a in arrows:
+        if a.id.startswith("legend-arrow"):
+            continue
         if len(a.points) < 3:
             continue
         start = a.points[0]
@@ -986,7 +990,7 @@ def main():
     print(f"FAIL: {summary}, {len(violations)} violations")
     for i, v in enumerate(violations, 1):
         print(f"  {i}. {v}")
-    sys.exit(min(len(violations), 250))
+    sys.exit(1)
 
 
 if __name__ == "__main__":

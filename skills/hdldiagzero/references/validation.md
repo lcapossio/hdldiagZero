@@ -5,10 +5,9 @@ Two validators ship with the skill:
 - `validate_spec.py spec.json` - structural JSON checks (run **before** rendering).
 - `validate.py out.svg` - geometry checks (run **after** rendering).
 
-Both exit 0 on pass; non-zero with a numbered violation list otherwise. For
-SVG validation, the exit code is the number of violation reports, not the
-number of unique arrows or root causes; one bad route can legitimately trigger
-multiple rules.
+Both exit 0 on pass, 1 when validation reports violations, and 2 for
+usage/parse errors. For SVG validation, stdout carries the exact violation
+count; one bad route can legitimately trigger multiple rules.
 
 ## validate_spec.py - JSON structural
 
@@ -40,7 +39,8 @@ before calling the renderer.
   local block-size overrides; omit them for the diagram-wide `grid.cell_w` /
   `grid.cell_h` defaults.
 - `label` and `sublabel` are strings if present. `lines`, when present, is a
-  non-empty list of strings and renders compact explicit block label lines.
+  non-empty list of strings and becomes the complete rendered block text;
+  `label` / `sublabel` are ignored.
 - `external` must be a real JSON boolean if present (string `"false"` and
   int `0` both fail).
 - `side`, when present, is one of `left`, `right`, `top`, `bottom`. Use it on

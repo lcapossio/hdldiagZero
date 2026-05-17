@@ -12,6 +12,7 @@ Year:   2026
 
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -99,11 +100,21 @@ def run(cmd: list[str], expect_rc: int = 0, label: str = "") -> subprocess.Compl
 
 
 def test_validator_fixture() -> None:
-    run(
+    proc = run(
         [PY, VALIDATE, "not_sample_broken_validator_fixture.svg"],
-        expect_rc=EXPECTED_FIXTURE_VIOLATIONS,
+        expect_rc=1,
         label="validator-fixture",
     )
+    match = re.search(r", (\d+) violations", proc.stdout)
+    if not match:
+        FAILURES.append("[validator-fixture] missing violation count in output")
+        return
+    got = int(match.group(1))
+    if got != EXPECTED_FIXTURE_VIOLATIONS:
+        FAILURES.append(
+            f"[validator-fixture] expected {EXPECTED_FIXTURE_VIOLATIONS} "
+            f"violations got {got}\n  stdout: {proc.stdout.strip()}"
+        )
 
 
 def test_spec_validator_passes_on_test_spec() -> None:
@@ -1057,7 +1068,7 @@ def test_validator_flags_diagonal_segment_in_svg() -> None:
         out.write_text(svg, encoding="utf-8")
         # BITWIDTH also fires, and the diagonal enters/exits both blocks without
         # perpendicular stubs; total = 4.
-        proc = run([PY, VALIDATE, str(out)], expect_rc=4, label="validate-diagonal")
+        proc = run([PY, VALIDATE, str(out)], expect_rc=1, label="validate-diagonal")
         if "DIAGONAL" not in proc.stdout:
             FAILURES.append(
                 f"[validate-diagonal] expected DIAGONAL in report, "
@@ -1174,7 +1185,7 @@ def test_validator_flags_overlapping_arrow_segments() -> None:
         )
         out = tmp / "arrow_overlap.svg"
         out.write_text(svg, encoding="utf-8")
-        proc = run([PY, VALIDATE, str(out)], expect_rc=4, label="validate-arrow-overlap")
+        proc = run([PY, VALIDATE, str(out)], expect_rc=1, label="validate-arrow-overlap")
         if "OVERLAP" not in proc.stdout:
             FAILURES.append(
                 f"[validate-arrow-overlap] expected OVERLAP in report, "
