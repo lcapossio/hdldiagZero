@@ -2,7 +2,7 @@
   "name": "hdldiagzero",
   "displayName": "hdldiagZero",
   "description": "Generate clean SVG block diagrams of HDL/RTL/SoC designs. Color-codes by clock domain, distinguishes AXI-MM/Lite/Stream, draws CDC blocks with split fill, omits clock/reset/JTAG/debug clutter, and validates output geometry.",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "author": {
     "name": "Leonardo Capossio",
     "email": "hello@bard0.com",
