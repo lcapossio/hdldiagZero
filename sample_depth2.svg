@@ -45,36 +45,39 @@
   <rect id="rx_mac" x="1116" y="386" width="220" height="90" fill="#FFA726" stroke="#E65100" stroke-width="1.4" rx="8"/>
   <text x="1226" y="429" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">RX MAC</text>
   <text x="1226" y="445" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">parser + CRC chk</text>
-  <path id="edge_host_to_csr_regs" d="M 256.0,96.0 L 296.0,96.0 L 296.0,111.0 L 396.0,111.0" stroke="#0D47A1" stroke-width="2.5" fill="none" marker-end="url(#ah-axil)"/>
-  <rect x="305.9" y="92.2" width="80.2" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
-  <text x="346.0" y="107.0" text-anchor="middle" font-size="15" fill="#1f2937">AXI-L 32b</text>
-  <path id="edge_host_to_tx_desc" d="M 256.0,126.0 L 356.0,126.0 L 356.0,271.0 L 396.0,271.0" stroke="#1f2937" stroke-width="2.5" fill="none" marker-end="url(#ah-solid)"/>
-  <rect x="304.5" y="186.8" width="88.5" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
-  <text x="348.8" y="201.5" text-anchor="middle" font-size="15" fill="#1f2937">AXI-MM 64b</text>
-  <path id="edge_csr_regs_to_mdio_master" d="M 616.0,111.0 L 686.0,111.0 L 756.0,111.0" stroke="#374151" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
-  <rect x="619.0" y="92.2" width="72.0" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
-  <text x="655.0" y="107.0" text-anchor="middle" font-size="15" fill="#1f2937">MDIO cmd</text>
-  <path id="edge_mdio_master_to_gmii_phy" d="M 976.0,111.0 L 1226.0,111.0 L 1226.0,88.5 L 1476.0,88.5" stroke="#374151" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
-  <rect x="1081.5" y="92.2" width="39.0" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
-  <text x="1101.0" y="107.0" text-anchor="middle" font-size="15" fill="#1f2937">MDIO</text>
-  <path id="edge_tx_desc_to_tx_fifo" d="M 616.0,271.0 L 686.0,271.0 L 756.0,271.0" stroke="#5C5C00" stroke-width="2.2" fill="none" marker-end="url(#ah-stream)"/>
-  <rect x="619.0" y="252.2" width="80.2" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
-  <text x="659.1" y="267.0" text-anchor="middle" font-size="15" fill="#1f2937">AXI-S 64b</text>
-  <path id="edge_tx_fifo_to_tx_mac" d="M 976.0,271.0 L 1046.0,271.0 L 1116.0,271.0" stroke="#5C5C00" stroke-width="2.2" fill="none" marker-end="url(#ah-stream)"/>
-  <rect x="979.0" y="252.2" width="80.2" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
-  <text x="1019.1" y="267.0" text-anchor="middle" font-size="15" fill="#1f2937">AXI-S 64b</text>
-  <path id="edge_tx_mac_to_gmii_phy" d="M 1336.0,271.0 L 1436.0,271.0 L 1436.0,133.5 L 1476.0,133.5" stroke="#374151" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
-  <rect x="1408.2" y="190.5" width="55.5" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
-  <text x="1436.0" y="205.2" text-anchor="middle" font-size="15" fill="#1f2937">TXD 8b</text>
-  <path id="edge_gmii_phy_to_rx_mac" d="M 1476.0,111.0 L 1376.0,111.0 L 1376.0,431.0 L 1336.0,431.0" stroke="#374151" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
-  <rect x="1348.2" y="293.2" width="55.5" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
-  <text x="1376.0" y="308.0" text-anchor="middle" font-size="15" fill="#1f2937">RXD 8b</text>
-  <path id="edge_rx_mac_to_rx_fifo" d="M 1116.0,431.0 L 1046.0,431.0 L 976.0,431.0" stroke="#5C5C00" stroke-width="2.2" fill="none" marker-end="url(#ah-stream)"/>
-  <rect x="1032.8" y="412.2" width="80.2" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
-  <text x="1072.9" y="427.0" text-anchor="middle" font-size="15" fill="#1f2937">AXI-S 64b</text>
-  <path id="edge_rx_fifo_to_rx_desc" d="M 756.0,431.0 L 686.0,431.0 L 616.0,431.0" stroke="#5C5C00" stroke-width="2.2" fill="none" marker-end="url(#ah-stream)"/>
-  <rect x="672.8" y="412.2" width="80.2" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
-  <text x="712.9" y="427.0" text-anchor="middle" font-size="15" fill="#1f2937">AXI-S 64b</text>
+  <mask id="edge-label-clearance" maskUnits="userSpaceOnUse">
+    <rect width="2004" height="512" fill="#ffffff"/>
+    <rect x="306.9" y="86.0" width="78.2" height="19.0" fill="#000000"/>
+    <rect x="305.5" y="189.0" width="86.5" height="19.0" fill="#000000"/>
+    <rect x="620.0" y="86.0" width="70.0" height="19.0" fill="#000000"/>
+    <rect x="1082.5" y="86.0" width="37.0" height="19.0" fill="#000000"/>
+    <rect x="620.0" y="246.0" width="78.2" height="19.0" fill="#000000"/>
+    <rect x="980.0" y="246.0" width="78.2" height="19.0" fill="#000000"/>
+    <rect x="1418.5" y="192.8" width="53.5" height="19.0" fill="#000000"/>
+    <rect x="1382.0" y="295.5" width="53.5" height="19.0" fill="#000000"/>
+    <rect x="1033.8" y="406.0" width="78.2" height="19.0" fill="#000000"/>
+    <rect x="673.8" y="406.0" width="78.2" height="19.0" fill="#000000"/>
+  </mask>
+  <path id="edge_host_to_csr_regs" d="M 256.0,96.0 L 296.0,96.0 L 296.0,111.0 L 396.0,111.0" stroke="#0D47A1" stroke-width="2.5" fill="none" marker-end="url(#ah-axil)" mask="url(#edge-label-clearance)"/>
+  <path id="edge_host_to_tx_desc" d="M 256.0,126.0 L 356.0,126.0 L 356.0,271.0 L 396.0,271.0" stroke="#1f2937" stroke-width="2.5" fill="none" marker-end="url(#ah-solid)" mask="url(#edge-label-clearance)"/>
+  <path id="edge_csr_regs_to_mdio_master" d="M 616.0,111.0 L 686.0,111.0 L 756.0,111.0" stroke="#374151" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)" mask="url(#edge-label-clearance)"/>
+  <path id="edge_mdio_master_to_gmii_phy" d="M 976.0,111.0 L 1226.0,111.0 L 1226.0,88.5 L 1476.0,88.5" stroke="#374151" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)" mask="url(#edge-label-clearance)"/>
+  <path id="edge_tx_desc_to_tx_fifo" d="M 616.0,271.0 L 686.0,271.0 L 756.0,271.0" stroke="#5C5C00" stroke-width="2.2" fill="none" marker-end="url(#ah-stream)" mask="url(#edge-label-clearance)"/>
+  <path id="edge_tx_fifo_to_tx_mac" d="M 976.0,271.0 L 1046.0,271.0 L 1116.0,271.0" stroke="#5C5C00" stroke-width="2.2" fill="none" marker-end="url(#ah-stream)" mask="url(#edge-label-clearance)"/>
+  <path id="edge_tx_mac_to_gmii_phy" d="M 1336.0,271.0 L 1436.0,271.0 L 1436.0,133.5 L 1476.0,133.5" stroke="#374151" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)" mask="url(#edge-label-clearance)"/>
+  <path id="edge_gmii_phy_to_rx_mac" d="M 1476.0,111.0 L 1376.0,111.0 L 1376.0,431.0 L 1336.0,431.0" stroke="#374151" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)" mask="url(#edge-label-clearance)"/>
+  <path id="edge_rx_mac_to_rx_fifo" d="M 1116.0,431.0 L 1046.0,431.0 L 976.0,431.0" stroke="#5C5C00" stroke-width="2.2" fill="none" marker-end="url(#ah-stream)" mask="url(#edge-label-clearance)"/>
+  <path id="edge_rx_fifo_to_rx_desc" d="M 756.0,431.0 L 686.0,431.0 L 616.0,431.0" stroke="#5C5C00" stroke-width="2.2" fill="none" marker-end="url(#ah-stream)" mask="url(#edge-label-clearance)"/>
+  <text x="346.0" y="100.8" text-anchor="middle" font-size="15" fill="#1f2937">AXI-L 32b</text>
+  <text x="348.8" y="203.8" text-anchor="middle" font-size="15" fill="#1f2937">AXI-MM 64b</text>
+  <text x="655.0" y="100.8" text-anchor="middle" font-size="15" fill="#1f2937">MDIO cmd</text>
+  <text x="1101.0" y="100.8" text-anchor="middle" font-size="15" fill="#1f2937">MDIO</text>
+  <text x="659.1" y="260.8" text-anchor="middle" font-size="15" fill="#1f2937">AXI-S 64b</text>
+  <text x="1019.1" y="260.8" text-anchor="middle" font-size="15" fill="#1f2937">AXI-S 64b</text>
+  <text x="1445.2" y="207.5" text-anchor="middle" font-size="15" fill="#1f2937">TXD 8b</text>
+  <text x="1408.8" y="310.2" text-anchor="middle" font-size="15" fill="#1f2937">RXD 8b</text>
+  <text x="1072.9" y="420.8" text-anchor="middle" font-size="15" fill="#1f2937">AXI-S 64b</text>
+  <text x="712.9" y="420.8" text-anchor="middle" font-size="15" fill="#1f2937">AXI-S 64b</text>
   <rect id="legend_card" x="1748" y="46" width="240" height="234" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" rx="6"/>
   <text x="1868" y="74" text-anchor="middle" font-size="13" font-weight="700" fill="#1f2937" letter-spacing="0.4">Clock domains</text>
   <rect x="1762" y="86" width="22" height="14" fill="#42A5F5" stroke="#0D47A1" stroke-width="1.2" rx="2"/>

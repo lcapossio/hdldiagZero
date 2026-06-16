@@ -397,6 +397,69 @@ def edge_label(e):
     return prefix or str(width) or ""
 
 
+def edge_label_position(mx, my, orient, text_w, text_h):
+    """Place edge labels near their segment without putting the wire through text."""
+    label_gap = 8
+    if orient == "h":
+        return mx, my - text_h * 0.15 - label_gap
+    return mx + text_w / 2 + label_gap, my + text_h * 0.35
+
+
+def edge_label_candidates(mx, my, orient, text_w, text_h):
+    label_gap = 8
+    if orient == "h":
+        return [
+            (mx, my - text_h * 0.15 - label_gap),
+            (mx, my + text_h * 0.85 + label_gap),
+        ]
+    return [
+        (mx + text_w / 2 + label_gap, my + text_h * 0.35),
+        (mx - text_w / 2 - label_gap, my + text_h * 0.35),
+    ]
+
+
+def text_rect_from_baseline(lx, ly, text_w, text_h):
+    return (
+        lx - text_w / 2,
+        ly - text_h * 0.85,
+        lx + text_w / 2,
+        ly + text_h * 0.15,
+    )
+
+
+def rect_overlap_area(r1, r2):
+    x1a, y1a, x2a, y2a = r1
+    x1b, y1b, x2b, y2b = r2
+    return max(0.0, min(x2a, x2b) - max(x1a, x1b)) * max(
+        0.0, min(y2a, y2b) - max(y1a, y1b)
+    )
+
+
+def seg_rect_clip(seg, rect):
+    (x1, y1), (x2, y2) = seg
+    rx1, ry1, rx2, ry2 = rect
+    if abs(y1 - y2) < 1e-6:
+        y = y1
+        return ry1 <= y <= ry2 and max(x1, x2) >= rx1 and min(x1, x2) <= rx2
+    if abs(x1 - x2) < 1e-6:
+        x = x1
+        return rx1 <= x <= rx2 and max(y1, y2) >= ry1 and min(y1, y2) <= ry2
+    return False
+
+
+def choose_edge_label_position(mx, my, orient, text_w, text_h, block_rects, all_segments):
+    best = None
+    for idx, (lx, ly) in enumerate(edge_label_candidates(mx, my, orient, text_w, text_h)):
+        rect = text_rect_from_baseline(lx, ly, text_w, text_h)
+        block_penalty = sum(rect_overlap_area(rect, b) for b in block_rects)
+        wire_penalty = sum(1 for seg in all_segments if seg_rect_clip(seg, rect))
+        # Prefer the first candidate (above/right) when geometry is equally clear.
+        score = (block_penalty, wire_penalty, idx)
+        if best is None or score < best[0]:
+            best = (score, lx, ly)
+    return best[1], best[2]
+
+
 def block_label_lines(b):
     if b.get("lines"):
         return [str(line) for line in b["lines"]]
@@ -847,6 +910,12 @@ def render(spec_path, out_path, theme_override=None):
                            f'text-anchor="middle" font-size="18" font-weight="600" '
                            f'fill="{text_fill}">{esc(lines[0])}</text>')
 
+    block_rects = []
+    for b in blocks:
+        x, y, w, h = block_rect(g, b)
+        block_rects.append((x, y + content_y0, x + w, y + content_y0 + h))
+
+    rendered_edges = []
     for e, from_pt, to_pt, fs, ts, lane_offset in routed:
         kind = e.get("kind", "generic")
         attrs = kind_attrs.get(kind, kind_attrs["generic"])
@@ -865,13 +934,16 @@ def render(spec_path, out_path, theme_override=None):
             eff_lane = 0 if route_mode == "direct" else lane_offset
             pts = manhattan(g, from_pt, to_pt, fs, ts, eff_lane)
             pts = [(p[0], p[1] + content_y0) for p in pts]
-        d = path_d(pts)
-        eid = f"edge_{e['from']}_to_{e['to']}"
-        dash_attr = f' stroke-dasharray="{attrs["dash"]}"' if attrs.get("dash") else ""
-        out.append(f'  <path id="{esc(eid)}" d="{d}" '
-                   f'stroke="{attrs["stroke"]}" stroke-width="{attrs["stroke_width"]}" '
-                   f'fill="none" marker-end="url(#{attrs["marker"]})"{dash_attr}/>')
+        rendered_edges.append((e, from_pt, to_pt, attrs, pts))
 
+    all_segments = [
+        (a, b)
+        for _, _, _, _, pts in rendered_edges
+        for a, b in zip(pts, pts[1:])
+    ]
+
+    label_infos = []
+    for e, from_pt, to_pt, attrs, pts in rendered_edges:
         label = edge_label(e)
         if not label:
             continue
@@ -879,11 +951,9 @@ def render(spec_path, out_path, theme_override=None):
         font = 15
         text_w = max(len(label) * font * 0.55, font * 0.6)
         text_h = font
-        if orient == "h":
-            ly = my - 4
-        else:
-            ly = my + 3
-        lx = mx
+        lx, ly = choose_edge_label_position(
+            mx, my, orient, text_w, text_h, block_rects, all_segments
+        )
         # Auto-clamp the label into the endpoints' horizontal span so it stays
         # over the wire. Skip when the user has supplied an explicit override
         # (dx/dy/segment/t) - they're deliberately placing it themselves.
@@ -893,13 +963,36 @@ def render(spec_path, out_path, theme_override=None):
             high_x = max(from_pt[0], to_pt[0])
             if high_x - low_x > clear_x * 2:
                 lx = min(max(lx, low_x + clear_x), high_x - clear_x)
+        rect = text_rect_from_baseline(lx, ly, text_w, text_h)
+        eid = f"edge_{e['from']}_to_{e['to']}"
+        label_infos.append((eid, label, lx, ly, font, rect))
+
+    if label_infos:
+        out.append('  <mask id="edge-label-clearance" maskUnits="userSpaceOnUse">')
+        out.append(f'    <rect width="{canvas_w}" height="{canvas_h}" fill="#ffffff"/>')
+        for _, _, _, _, _, rect in label_infos:
+            x1, y1, x2, y2 = rect
+            pad = 2
+            out.append(
+                f'    <rect x="{x1 - pad:.1f}" y="{y1 - pad:.1f}" '
+                f'width="{x2 - x1 + pad * 2:.1f}" '
+                f'height="{y2 - y1 + pad * 2:.1f}" fill="#000000"/>'
+            )
+        out.append('  </mask>')
+
+    mask_attr = ' mask="url(#edge-label-clearance)"' if label_infos else ""
+
+    for e, from_pt, to_pt, attrs, pts in rendered_edges:
+        d = path_d(pts)
+        eid = f"edge_{e['from']}_to_{e['to']}"
+        dash_attr = f' stroke-dasharray="{attrs["dash"]}"' if attrs.get("dash") else ""
+        out.append(f'  <path id="{esc(eid)}" d="{d}" '
+                   f'stroke="{attrs["stroke"]}" stroke-width="{attrs["stroke_width"]}" '
+                   f'fill="none" marker-end="url(#{attrs["marker"]})"'
+                   f'{dash_attr}{mask_attr}/>')
+
+    for _, label, lx, ly, font, _ in label_infos:
         anchor = "middle"
-        box_x = lx - text_w / 2 - 3
-        box_y = ly - text_h * 0.85 - 2
-        out.append(f'  <rect x="{box_x:.1f}" y="{box_y:.1f}" '
-                   f'width="{text_w + 6:.1f}" height="{text_h + 4:.1f}" '
-                   f'fill="{theme["label_bg"]}" stroke="{theme["label_bord"]}" '
-                   f'stroke-width="0.6" rx="3"/>')
         out.append(f'  <text x="{lx:.1f}" y="{ly:.1f}" text-anchor="{anchor}" '
                    f'font-size="{font}" fill="{theme["ink"]}">{esc(label)}</text>')
 

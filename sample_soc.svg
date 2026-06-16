@@ -43,33 +43,36 @@
   <rect id="periph" x="756" y="406" width="220" height="90" fill="#FFA726" stroke="#E65100" stroke-width="1.4" rx="8"/>
   <text x="866" y="449" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">Peripherals</text>
   <text x="866" y="465" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">UART x4 / SPI x2 / I2C / GPIO</text>
-  <path id="edge_cpu_to_l2" d="M 256.0,111.0 L 326.0,111.0 L 396.0,111.0" stroke="#1f2937" stroke-width="2.5" fill="none" marker-end="url(#ah-solid)"/>
-  <rect x="259.0" y="92.2" width="96.8" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
-  <text x="307.4" y="107.0" text-anchor="middle" font-size="15" fill="#1f2937">AXI-MM 128b</text>
-  <path id="edge_l2_to_cpu_axi" d="M 616.0,111.0 L 686.0,111.0 L 756.0,111.0" stroke="#1f2937" stroke-width="2.5" fill="none" marker-end="url(#ah-solid)"/>
-  <rect x="619.0" y="92.2" width="96.8" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
-  <text x="667.4" y="107.0" text-anchor="middle" font-size="15" fill="#1f2937">AXI-MM 128b</text>
-  <path id="edge_cpu_axi_to_ic" d="M 976.0,111.0 L 1046.0,111.0 L 1116.0,111.0" stroke="#1f2937" stroke-width="2.5" fill="none" marker-end="url(#ah-solid)"/>
-  <rect x="979.0" y="92.2" width="96.8" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
-  <text x="1027.4" y="107.0" text-anchor="middle" font-size="15" fill="#1f2937">AXI-MM 128b</text>
-  <path id="edge_ic_to_sram" d="M 1336.0,111.0 L 1406.0,111.0 L 1476.0,111.0" stroke="#1f2937" stroke-width="2.5" fill="none" marker-end="url(#ah-solid)"/>
-  <rect x="1339.0" y="92.2" width="88.5" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
-  <text x="1383.2" y="107.0" text-anchor="middle" font-size="15" fill="#1f2937">AXI-MM 64b</text>
-  <path id="edge_ic_to_dma" d="M 1226.0,156.0 L 1226.0,190.0 L 506.0,190.0 L 506.0,236.0" stroke="#0D47A1" stroke-width="2.5" fill="none" marker-end="url(#ah-axil)"/>
-  <rect x="465.9" y="192.1" width="80.2" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
-  <text x="506.0" y="206.8" text-anchor="middle" font-size="15" fill="#1f2937">AXI-L 32b</text>
-  <path id="edge_ic_to_ddr_ctrl" d="M 1290.0,156.0 L 1290.0,236.0" stroke="#1f2937" stroke-width="2.5" fill="none" marker-end="url(#ah-solid)"/>
-  <rect x="1241.6" y="184.2" width="96.8" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
-  <text x="1290.0" y="199.0" text-anchor="middle" font-size="15" fill="#1f2937">AXI-MM 256b</text>
-  <path id="edge_ddr_ctrl_to_ddr3" d="M 1336.0,281.0 L 1406.0,281.0 L 1476.0,281.0" stroke="#374151" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
-  <rect x="1339.0" y="262.2" width="80.2" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
-  <text x="1379.1" y="277.0" text-anchor="middle" font-size="15" fill="#1f2937">DQ/CK/cmd</text>
-  <path id="edge_ic_to_apb_br" d="M 1336.0,126.0 L 1430.0,126.0 L 1430.0,550.0 L 506.0,550.0 L 506.0,496.0" stroke="#0D47A1" stroke-width="2.5" fill="none" marker-end="url(#ah-axil)"/>
-  <rect x="927.9" y="531.2" width="80.2" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
-  <text x="968.0" y="546.0" text-anchor="middle" font-size="15" fill="#1f2937">AXI-L 32b</text>
-  <path id="edge_apb_br_to_periph" d="M 616.0,466.0 L 686.0,466.0 L 686.0,451.0 L 756.0,451.0" stroke="#0D47A1" stroke-width="2.5" fill="none" marker-end="url(#ah-axil)"/>
-  <rect x="666.9" y="440.2" width="80.2" height="19.0" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.6" rx="3"/>
-  <text x="707.0" y="455.0" text-anchor="middle" font-size="15" fill="#1f2937">AXI-L 32b</text>
+  <mask id="edge-label-clearance" maskUnits="userSpaceOnUse">
+    <rect width="2004" height="532" fill="#ffffff"/>
+    <rect x="260.0" y="86.0" width="94.8" height="19.0" fill="#000000"/>
+    <rect x="620.0" y="86.0" width="94.8" height="19.0" fill="#000000"/>
+    <rect x="980.0" y="86.0" width="94.8" height="19.0" fill="#000000"/>
+    <rect x="1340.0" y="86.0" width="86.5" height="19.0" fill="#000000"/>
+    <rect x="512.0" y="194.3" width="78.2" height="19.0" fill="#000000"/>
+    <rect x="1296.0" y="186.5" width="94.8" height="19.0" fill="#000000"/>
+    <rect x="1340.0" y="256.0" width="78.2" height="19.0" fill="#000000"/>
+    <rect x="928.9" y="525.0" width="78.2" height="19.0" fill="#000000"/>
+    <rect x="667.9" y="465.0" width="78.2" height="19.0" fill="#000000"/>
+  </mask>
+  <path id="edge_cpu_to_l2" d="M 256.0,111.0 L 326.0,111.0 L 396.0,111.0" stroke="#1f2937" stroke-width="2.5" fill="none" marker-end="url(#ah-solid)" mask="url(#edge-label-clearance)"/>
+  <path id="edge_l2_to_cpu_axi" d="M 616.0,111.0 L 686.0,111.0 L 756.0,111.0" stroke="#1f2937" stroke-width="2.5" fill="none" marker-end="url(#ah-solid)" mask="url(#edge-label-clearance)"/>
+  <path id="edge_cpu_axi_to_ic" d="M 976.0,111.0 L 1046.0,111.0 L 1116.0,111.0" stroke="#1f2937" stroke-width="2.5" fill="none" marker-end="url(#ah-solid)" mask="url(#edge-label-clearance)"/>
+  <path id="edge_ic_to_sram" d="M 1336.0,111.0 L 1406.0,111.0 L 1476.0,111.0" stroke="#1f2937" stroke-width="2.5" fill="none" marker-end="url(#ah-solid)" mask="url(#edge-label-clearance)"/>
+  <path id="edge_ic_to_dma" d="M 1226.0,156.0 L 1226.0,190.0 L 506.0,190.0 L 506.0,236.0" stroke="#0D47A1" stroke-width="2.5" fill="none" marker-end="url(#ah-axil)" mask="url(#edge-label-clearance)"/>
+  <path id="edge_ic_to_ddr_ctrl" d="M 1290.0,156.0 L 1290.0,236.0" stroke="#1f2937" stroke-width="2.5" fill="none" marker-end="url(#ah-solid)" mask="url(#edge-label-clearance)"/>
+  <path id="edge_ddr_ctrl_to_ddr3" d="M 1336.0,281.0 L 1406.0,281.0 L 1476.0,281.0" stroke="#374151" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)" mask="url(#edge-label-clearance)"/>
+  <path id="edge_ic_to_apb_br" d="M 1336.0,126.0 L 1430.0,126.0 L 1430.0,550.0 L 506.0,550.0 L 506.0,496.0" stroke="#0D47A1" stroke-width="2.5" fill="none" marker-end="url(#ah-axil)" mask="url(#edge-label-clearance)"/>
+  <path id="edge_apb_br_to_periph" d="M 616.0,466.0 L 686.0,466.0 L 686.0,451.0 L 756.0,451.0" stroke="#0D47A1" stroke-width="2.5" fill="none" marker-end="url(#ah-axil)" mask="url(#edge-label-clearance)"/>
+  <text x="307.4" y="100.8" text-anchor="middle" font-size="15" fill="#1f2937">AXI-MM 128b</text>
+  <text x="667.4" y="100.8" text-anchor="middle" font-size="15" fill="#1f2937">AXI-MM 128b</text>
+  <text x="1027.4" y="100.8" text-anchor="middle" font-size="15" fill="#1f2937">AXI-MM 128b</text>
+  <text x="1383.2" y="100.8" text-anchor="middle" font-size="15" fill="#1f2937">AXI-MM 64b</text>
+  <text x="551.1" y="209.1" text-anchor="middle" font-size="15" fill="#1f2937">AXI-L 32b</text>
+  <text x="1343.4" y="201.2" text-anchor="middle" font-size="15" fill="#1f2937">AXI-MM 256b</text>
+  <text x="1379.1" y="270.8" text-anchor="middle" font-size="15" fill="#1f2937">DQ/CK/cmd</text>
+  <text x="968.0" y="539.8" text-anchor="middle" font-size="15" fill="#1f2937">AXI-L 32b</text>
+  <text x="707.0" y="479.8" text-anchor="middle" font-size="15" fill="#1f2937">AXI-L 32b</text>
   <rect id="legend_card" x="1748" y="46" width="240" height="234" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" rx="6"/>
   <text x="1868" y="74" text-anchor="middle" font-size="13" font-weight="700" fill="#1f2937" letter-spacing="0.4">Clock domains</text>
   <rect x="1762" y="86" width="22" height="14" fill="#42A5F5" stroke="#0D47A1" stroke-width="1.2" rx="2"/>

@@ -256,15 +256,15 @@ def parse_svg(path):
     tree = ET.parse(path)
     root = tree.getroot()
 
-    # Build the set of elements that live inside <defs> so we can skip them when
-    # collecting blocks/arrows/texts. Marker arrowhead paths are NOT real arrows;
-    # gradient stops are NOT real text; etc.
-    defs_descendants = set()
-    for defs in root.iter():
-        if localname(defs.tag) != "defs":
+    # Build the set of elements that live inside support containers so we can
+    # skip them when collecting blocks/arrows/texts. Marker arrowhead paths are
+    # NOT real arrows; mask clearance rects are NOT real blocks; etc.
+    support_descendants = set()
+    for support in root.iter():
+        if localname(support.tag) not in {"defs", "mask"}:
             continue
-        for child in defs.iter():
-            defs_descendants.add(id(child))
+        for child in support.iter():
+            support_descendants.add(id(child))
 
     markers = {}
     for m in root.iter():
@@ -290,7 +290,7 @@ def parse_svg(path):
     for r in root.iter():
         if localname(r.tag) != "rect":
             continue
-        if id(r) in defs_descendants:
+        if id(r) in support_descendants:
             continue
         try:
             x = float(r.get("x", 0))
@@ -316,7 +316,7 @@ def parse_svg(path):
 
     arrows = []
     for elem in root.iter():
-        if id(elem) in defs_descendants:
+        if id(elem) in support_descendants:
             continue
         tag = localname(elem.tag)
         marker_attr = elem.get("marker-end") or elem.get("marker-start") or ""
@@ -355,7 +355,7 @@ def parse_svg(path):
     for t in root.iter():
         if localname(t.tag) != "text":
             continue
-        if id(t) in defs_descendants:
+        if id(t) in support_descendants:
             continue
         bb = text_bbox(t)
         if bb is not None:
@@ -760,6 +760,26 @@ def point_in_rect(px, py, rect):
     return x1 <= px <= x2 and y1 <= py <= y2
 
 
+def point_rect_dist(point, rect):
+    px, py = point
+    x1, y1, x2, y2 = rect
+    dx = max(x1 - px, 0.0, px - x2)
+    dy = max(y1 - py, 0.0, py - y2)
+    return math.hypot(dx, dy)
+
+
+def seg_rect_dist(seg, rect):
+    if seg_rect_clip(seg, rect):
+        return 0.0
+    x1, y1, x2, y2 = rect
+    corners = ((x1, y1), (x2, y1), (x2, y2), (x1, y2))
+    return min(
+        point_rect_dist(seg[0], rect),
+        point_rect_dist(seg[1], rect),
+        *(point_seg_dist(corner, seg) for corner in corners),
+    )
+
+
 def check_text_overlap(blocks, arrows, texts):
     """A block can overlap its own label; an arrow can pass through its own
     edge label. Anything else is a violation."""
@@ -776,7 +796,7 @@ def check_text_overlap(blocks, arrows, texts):
         best = TEXT_LABEL_PROXIMITY
         for a in arrows:
             for seg in segments(a):
-                d = point_seg_dist((tb.cx, tb.cy), seg)
+                d = seg_rect_dist(seg, tb.rect)
                 if d < best:
                     best = d
                     owner_arrow_id = a.id
@@ -890,7 +910,7 @@ def check_bitwidth_labels(arrows, texts):
         best = TEXT_LABEL_PROXIMITY
         for a in arrows:
             for seg in segments(a):
-                d = point_seg_dist((tb.cx, tb.cy), seg)
+                d = seg_rect_dist(seg, tb.rect)
                 if d < best:
                     best = d
                     owner_id = a.id

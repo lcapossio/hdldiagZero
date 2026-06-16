@@ -296,6 +296,9 @@ def test_renderer_light() -> None:
         run([PY, RENDER, "test_spec.json", str(out)], label="render-light")
         if out.is_file():
             _assert_rendered_spec_content(out, "test_spec.json", "render-light-content")
+            svg = out.read_text(encoding="utf-8")
+            if 'fill="#ffffff" stroke="#e2e8f0"' in svg:
+                FAILURES.append("[render-light] edge label background should not render")
             run([PY, VALIDATE, str(out)], label="validate-light-output")
 
 
@@ -770,6 +773,9 @@ def test_renderer_dark() -> None:
         )
         if out.is_file():
             _assert_rendered_spec_content(out, "test_spec.json", "render-dark-content")
+            svg = out.read_text(encoding="utf-8")
+            if 'fill="#1f2937" stroke="#4b5563"' in svg:
+                FAILURES.append("[render-dark] edge label background should not render")
             run([PY, VALIDATE, str(out)], label="validate-dark-output")
 
 
@@ -953,6 +959,63 @@ def _segments_from_d(d: str):
     nums = [float(n) for n in re.findall(r"-?\d+\.?\d*", d)]
     pts = list(zip(nums[0::2], nums[1::2]))
     return list(zip(pts, pts[1:]))
+
+
+def _rendered_text_bbox(svg: str, text: str):
+    root = ET.fromstring(svg)
+    for elem in root.iter():
+        if _localname(elem.tag) != "text" or (elem.text or "").strip() != text:
+            continue
+        x = float(elem.get("x", 0))
+        y = float(elem.get("y", 0))
+        font = float(elem.get("font-size", 12))
+        width = max(len(text) * font * 0.55, font * 0.6)
+        if elem.get("text-anchor") == "middle":
+            x -= width / 2
+        return (x, y - font * 0.85, x + width, y + font * 0.15)
+    return None
+
+
+def test_renderer_offsets_vertical_edge_labels_from_wire() -> None:
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        spec = {
+            "legend": False,
+            "domains": {"d": {"color": "#42A5F5"}},
+            "blocks": [
+                {"id": "top", "domain": "d", "row": 0, "col": 0},
+                {"id": "bottom", "domain": "d", "row": 1, "col": 0},
+            ],
+            "edges": [{"from": "top", "to": "bottom", "kind": "generic", "width": "IRQ"}],
+        }
+        spec_path = tmp / "vertical-label.json"
+        out = tmp / "vertical-label.svg"
+        spec_path.write_text(json.dumps(spec), encoding="utf-8")
+        run([PY, VALIDATE_SPEC, str(spec_path)], label="vertical-label-spec")
+        run([PY, RENDER, str(spec_path), str(out)], label="vertical-label-render")
+        run([PY, VALIDATE, str(out)], label="vertical-label-validate")
+        if out.is_file():
+            svg = out.read_text(encoding="utf-8")
+            d = _path_d_for(svg, "edge_top_to_bottom")
+            bbox = _rendered_text_bbox(svg, "IRQ")
+            if d is None or bbox is None:
+                FAILURES.append("[vertical-label] missing rendered edge or label")
+                return
+            if 'id="edge-label-clearance"' not in svg:
+                FAILURES.append("[vertical-label] missing edge-label clearance mask")
+            if 'mask="url(#edge-label-clearance)"' not in svg:
+                FAILURES.append("[vertical-label] edge path does not use clearance mask")
+            vertical = [
+                (x1, y1, y2)
+                for (x1, y1), (x2, y2) in _segments_from_d(d)
+                if abs(x1 - x2) < 1e-6
+            ]
+            if not vertical:
+                FAILURES.append("[vertical-label] expected a vertical edge segment")
+                return
+            vx, _, _ = max(vertical, key=lambda seg: abs(seg[2] - seg[1]))
+            if bbox[0] - vx < 8:
+                FAILURES.append("[vertical-label] label overlaps vertical edge wire")
 
 
 def test_renderer_lane_assignment_ignores_edge_order() -> None:
@@ -1363,6 +1426,7 @@ def main() -> int:
     test_spec_validator_accepts_block_size_overrides()
     test_renderer_honors_block_size_overrides()
     test_renderer_lane_assignment_ignores_edge_order()
+    test_renderer_offsets_vertical_edge_labels_from_wire()
     test_renderer_direct_mode_is_orthogonal()
     test_spec_validator_rejects_diagonal_route_points()
     test_validator_flags_diagonal_segment_in_svg()
