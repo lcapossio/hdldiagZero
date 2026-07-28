@@ -237,7 +237,8 @@ Runs the same checks as CI:
 1. **Validator regression** - runs `validate.py` on the intentionally broken `not_sample_broken_validator_fixture.svg` and asserts exactly 20 violation reports.
 2. **Spec validator** - confirms `validate_spec.py` accepts a known-good spec and rejects one with an unknown block id in an edge.
 3. **Renderer light + dark** - renders `test_spec.json` in both themes; each output passes geometry validation.
-4. **Install dry-run** - copies the runtime files into a throwaway dir, asserts every runtime file is present, and asserts repo-only files (README, tests, fixtures) were *not* copied.
+4. **Sample snapshots** - re-renders every tracked `sample_*.svg` from its spec (light + dark) and diffs it against the committed file, so a rendering change that still passes geometry validation cannot land silently. The compare is newline-normalized, so it is OS-agnostic. After an intentional rendering change, refresh the tracked samples with `python tests.py --update-samples` and commit the result.
+5. **Install dry-run** - copies the runtime files into a throwaway dir, asserts every runtime file is present, and asserts repo-only files (README, tests, fixtures) were *not* copied.
 
 Test conditions: pure Python stdlib, no external tools, runs in well under 10 s on any modern machine. Verified on the OS / Python matrix in [.github/workflows/ci.yml](.github/workflows/ci.yml) (Linux / macOS / Windows x Python 3.10 / 3.12).
 

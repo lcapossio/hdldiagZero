@@ -29,6 +29,20 @@ VALIDATE = str(SKILL_DIR / "validate.py")
 VALIDATE_SPEC = str(SKILL_DIR / "validate_spec.py")
 PY = sys.executable
 
+# (spec, light sample, dark sample). The tracked SVGs in the repo root are
+# snapshots of these renders; test_sample_snapshots re-renders each spec and
+# diffs it against the committed file, so a rendering regression that still
+# passes geometry validation cannot ship silently. Refresh the tracked files
+# after an intentional rendering change with:  python tests.py --update-samples
+SAMPLE_SNAPSHOTS = [
+    ("test_spec.json",                  "sample_output.svg",           "sample_output_dark.svg"),
+    ("test_spec_depth2.json",           "sample_depth2.svg",           "sample_depth2_dark.svg"),
+    ("test_spec_lanes.json",            "sample_lanes.svg",            "sample_lanes_dark.svg"),
+    ("test_spec_soc.json",              "sample_soc.svg",              "sample_soc_dark.svg"),
+    ("test_spec_opentitan.json",        "sample_opentitan.svg",        "sample_opentitan_dark.svg"),
+    ("test_spec_opentitan_depth2.json", "sample_opentitan_depth2.svg", "sample_opentitan_depth2_dark.svg"),
+]
+
 
 @contextmanager
 def _tmpdir():
@@ -77,12 +91,26 @@ def _tmpdir():
 
     raise RuntimeError("no writable temp directory found:\n  " + "\n  ".join(errors))
 
-# The bundled fixture deliberately contains exactly this many violations across
-# the validator rules: the original 8 fixture violations, 6 ENDPOINT reports
-# on intentionally free-floating arrows, and explicit LOOP / PERPENDICULAR /
-# DIAGONAL / TEXT_TEXT coverage. If the renderer or the validator regresses,
-# this number changes and CI fails.
-EXPECTED_FIXTURE_VIOLATIONS = 20
+# The bundled fixture deliberately exercises every validator rule. We assert a
+# minimum count per violation code rather than a single magic total: that way a
+# validator regression that stops emitting a category still fails CI, while a
+# newly added check (which only raises the total) doesn't force a fixture edit.
+# The floor total is the sum of these minimums.
+EXPECTED_FIXTURE_CODES = {
+    "CROSSING": 1,
+    "SPACING": 1,
+    "STUB": 1,
+    "TEXT_ARROW": 1,
+    "TEXT_BLOCK": 1,
+    "TEXT_TEXT": 1,
+    "PORT": 2,
+    "BITWIDTH": 1,
+    "DIAGONAL": 1,
+    "ENDPOINT": 6,
+    "PERPENDICULAR": 3,
+    "LOOP": 1,
+}
+EXPECTED_FIXTURE_MIN_TOTAL = sum(EXPECTED_FIXTURE_CODES.values())
 
 FAILURES: list[str] = []
 
@@ -109,11 +137,21 @@ def test_validator_fixture() -> None:
     if not match:
         FAILURES.append("[validator-fixture] missing violation count in output")
         return
-    got = int(match.group(1))
-    if got != EXPECTED_FIXTURE_VIOLATIONS:
+    total = int(match.group(1))
+    # Per-code coverage: count each rule's reports in the structured output.
+    counts: dict[str, int] = {}
+    for code in re.findall(r"^\s*\d+\.\s+([A-Z_]+):", proc.stdout, flags=re.MULTILINE):
+        counts[code] = counts.get(code, 0) + 1
+    for code, minimum in EXPECTED_FIXTURE_CODES.items():
+        if counts.get(code, 0) < minimum:
+            FAILURES.append(
+                f"[validator-fixture] expected >= {minimum} {code} violation(s), "
+                f"got {counts.get(code, 0)}\n  stdout: {proc.stdout.strip()}"
+            )
+    if total < EXPECTED_FIXTURE_MIN_TOTAL:
         FAILURES.append(
-            f"[validator-fixture] expected {EXPECTED_FIXTURE_VIOLATIONS} "
-            f"violations got {got}\n  stdout: {proc.stdout.strip()}"
+            f"[validator-fixture] expected >= {EXPECTED_FIXTURE_MIN_TOTAL} "
+            f"violations got {total}\n  stdout: {proc.stdout.strip()}"
         )
 
 
@@ -1392,6 +1430,57 @@ def test_install() -> None:
                 FAILURES.append(f"[install] unexpectedly copied {f} into runtime dir")
 
 
+def _render_sample(spec: str, out_path: Path, dark: bool, label: str) -> bool:
+    cmd = [PY, RENDER]
+    if dark:
+        cmd += ["--theme", "dark"]
+    cmd += [spec, str(out_path)]
+    proc = run(cmd, label=label)
+    return proc.returncode == 0 and out_path.is_file()
+
+
+def test_sample_snapshots() -> None:
+    """Each tracked sample SVG must equal a fresh render of its spec.
+
+    Comparison is via read_text() (universal-newline), so CRLF vs LF never
+    matters and the check stays OS-agnostic. This catches silent visual
+    regressions - layout/label/color drift that still passes geometry
+    validation - which the per-sample validate tests cannot see."""
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        for spec, light_name, dark_name in SAMPLE_SNAPSHOTS:
+            for dark, name in ((False, light_name), (True, dark_name)):
+                out = tmp / name
+                label = f"snapshot-{name}"
+                if not _render_sample(spec, out, dark, label):
+                    continue
+                tracked = ROOT / name
+                if not tracked.is_file():
+                    FAILURES.append(f"[{label}] tracked sample {name} is missing")
+                    continue
+                if out.read_text(encoding="utf-8") != tracked.read_text(encoding="utf-8"):
+                    FAILURES.append(
+                        f"[{label}] {name} differs from a fresh render of {spec}. "
+                        "If the change is intentional, refresh the tracked samples "
+                        "with `python tests.py --update-samples`."
+                    )
+
+
+def update_samples() -> int:
+    """Regenerate every tracked sample SVG in place (--update-samples)."""
+    for spec, light_name, dark_name in SAMPLE_SNAPSHOTS:
+        for dark, name in ((False, light_name), (True, dark_name)):
+            if _render_sample(spec, ROOT / name, dark, f"update-{name}"):
+                print(f"  wrote {name}")
+    if FAILURES:
+        print("FAIL (errors while regenerating samples)")
+        for f in FAILURES:
+            print(f"  {f}")
+        return 1
+    print("samples updated")
+    return 0
+
+
 def main() -> int:
     test_validator_fixture()
     test_spec_validator_passes_on_test_spec()
@@ -1418,6 +1507,7 @@ def main() -> int:
     test_renderer_opentitan_sample()
     test_renderer_opentitan_depth2_sample()
     test_renderer_depth2_sample()
+    test_sample_snapshots()
     test_renderer_omits_unknown_clock_frequency()
     test_renderer_routes_same_row_reverse_edges_in_gutter()
     test_spec_validator_accepts_route_and_label()
@@ -1450,4 +1540,6 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    if "--update-samples" in sys.argv[1:]:
+        raise SystemExit(update_samples())
     raise SystemExit(main())

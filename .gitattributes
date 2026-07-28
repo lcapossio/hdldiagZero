@@ -1,0 +1,6 @@
+# Keep tracked SVG snapshots newline-stable across operating systems. render.py
+# writes in the local text convention (CRLF on Windows), so without this a
+# contributor running `python tests.py --update-samples` on Windows would
+# commit CRLF churn. Git stores these as LF everywhere. The snapshot test
+# compares with universal-newline reads, so it is unaffected either way.
+*.svg text eol=lf

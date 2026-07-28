@@ -1,9 +1,8 @@
 # JSON spec schema
 
-Reference for the JSON the renderer expects. The agent SHOULD validate the
-spec with `validate_spec.py` before rendering - it catches structural errors
-(missing block ids in edges, duplicate cells, unknown domains) that would
-otherwise produce a broken SVG.
+Reference for the JSON the renderer expects. Validate with `validate_spec.py`
+before rendering - it catches structural errors (missing block ids in edges,
+duplicate cells, unknown domains) that would otherwise produce a broken SVG.
 
 ## Example
 
@@ -18,19 +17,19 @@ otherwise produce a broken SVG.
     "ddr":   {"freq_mhz": 333, "color": "#66BB6A", "border": "#1B5E20"}
   },
   "blocks": [
-    {"id": "phy",          "label": "Video Source",   "external": true,                            "row": 0, "col": 0, "sublabel": "[16 lanes x 16b]"},
-    {"id": "pix_packer",   "label": "pix_packer",     "domain": "video", "domain_b": "axi",        "row": 0, "col": 1, "sublabel": "video / axi CDC"},
-    {"id": "rx_dma",       "label": "RX DMA",         "domain": "axi",                             "row": 0, "col": 2},
-    {"id": "interconnect", "label": "AXI Interconnect","domain": "axi",                            "row": 0, "col": 3},
-    {"id": "cpu",          "label": "SoftCore MCU",   "domain": "axi",                             "row": 0, "col": 4},
-    {"id": "ddr_ctrl",     "label": "DDR Ctrl",       "domain": "ddr",                             "row": 1, "col": 4}
+    {"id": "phy",          "label": "Video Source",    "external": true,                     "row": 0, "col": 0, "sublabel": "[16 lanes x 16b]"},
+    {"id": "pix_packer",   "label": "pix_packer",      "domain": "video", "domain_b": "axi", "row": 0, "col": 1, "sublabel": "video / axi CDC"},
+    {"id": "rx_dma",       "label": "RX DMA",          "domain": "axi",                      "row": 0, "col": 2},
+    {"id": "interconnect", "label": "AXI Interconnect", "domain": "axi",                     "row": 0, "col": 3},
+    {"id": "cpu",          "label": "SoftCore MCU",    "domain": "axi",                      "row": 1, "col": 3},
+    {"id": "ddr_ctrl",     "label": "DDR Ctrl",        "domain": "ddr",                      "row": 0, "col": 4}
   ],
   "edges": [
-    {"from": "phy",          "to": "pix_packer",   "kind": "generic",    "width": "16x16b"},
-    {"from": "pix_packer",   "to": "rx_dma",       "kind": "axi-stream", "width": 64},
-    {"from": "rx_dma",       "to": "interconnect", "kind": "axi-mm",     "width": 64},
-    {"from": "cpu",          "to": "interconnect", "kind": "axi-lite",   "width": 32},
-    {"from": "interconnect", "to": "ddr_ctrl",     "kind": "axi-mm",     "width": 128}
+    {"from": "phy",        "to": "pix_packer",   "kind": "generic",    "width": "16x16b"},
+    {"from": "pix_packer", "to": "rx_dma",       "kind": "axi-stream", "width": 64},
+    {"from": "rx_dma",     "to": "interconnect", "kind": "axi-mm",     "width": 64},
+    {"from": "cpu",        "to": "interconnect", "kind": "axi-lite",   "width": 32},
+    {"from": "interconnect","to": "ddr_ctrl",    "kind": "axi-mm",     "width": 128}
   ]
 }
 ```
@@ -43,11 +42,11 @@ otherwise produce a broken SVG.
 | `top`     | string | optional  | Informational; identifies the top module. |
 | `theme`   | string | optional  | `"light"` (default) or `"dark"`. |
 | `legend`  | bool \| string | optional | `true` / `"right"` (default), `false` / `"none"` to hide, or `"compact"` to show only clock-domain colors. |
-| `grid`    | object | optional  | Grid sizing overrides; see below. |
+| `grid`    | object | optional  | Grid sizing overrides; see *grid*. |
 | `domains` | object | required* | Map of domain key -> `{freq_mhz, color, border}`. *Required unless every block is external. |
-| `groups`  | object | optional  | Map of group id -> `{label}`. Used to draw dashed hierarchy containers around member blocks (depth > 1). |
-| `lanes`   | object | optional  | Map of domain id -> `{rows: [...]}`. Draws full-width tinted bands per clock domain across the canvas. See *lanes* below. |
-| `bands`   | object | optional  | Map of functional band id -> `{label, rows/cols, color, border}`. Use for architecture regions that are not pure clock domains. |
+| `groups`  | object | optional  | Map of group id -> `{label}`. Dashed hierarchy containers around member blocks (depth > 1). See *groups*. |
+| `lanes`   | object | optional  | Map of domain id -> `{rows \| cols}`. Full-canvas tinted band per clock domain. See *lanes*. |
+| `bands`   | object | optional  | Map of band id -> `{label, rows \| cols, color, border}`. Regions that are not pure clock domains. See *bands*. |
 | `blocks`  | array  | required  | One or more blocks. |
 | `edges`   | array  | required  | May be empty. |
 
@@ -55,9 +54,9 @@ otherwise produce a broken SVG.
 
 | Field      | Type   | Required | Description |
 |------------|--------|----------|-------------|
-| `freq_mhz` | number | optional | Shown in the legend when known. Omit this field when the frequency is unknown; never use placeholders like `?` or `? MHz`. |
+| `freq_mhz` | number | optional | Shown in the legend. Omit when unknown; never use placeholders like `?` or `? MHz`. |
 | `color`    | string | optional | Block fill (`#RRGGBB`). Auto-assigned from a Material palette if missing. |
-| `border`   | string | optional | Block stroke. Auto-paired to the fill if missing. |
+| `border`   | string | optional | Block stroke (`#RRGGBB`). Auto-paired to the fill if missing. |
 
 ## blocks[]
 
@@ -65,73 +64,51 @@ otherwise produce a broken SVG.
 |------------|---------|-----------|-------------|
 | `id`       | string  | required  | Unique non-empty string. |
 | `label`    | string  | optional  | Defaults to `id`. |
-| `sublabel` | string  | optional  | Italic line under the label. Keep it terse. |
-| `lines`    | string[] | optional | Explicit compact label lines. When present, `lines` is the complete rendered block text and `label` / `sublabel` are ignored. Prefer setting only one text model per block. |
+| `sublabel` | string  | optional  | Terse italic line under the label. |
+| `lines`    | string[] | optional | Explicit compact label lines. When present, this is the complete block text and `label` / `sublabel` are ignored. Set only one text model per block. |
 | `domain`   | string  | required* | Domain key from `domains`. *Optional if `external=true`. |
-| `domain_b` | string  | optional  | CDC blocks only. Half fill of each domain's color. Must differ from `domain` and reference a declared domain. |
-| `external` | boolean | optional  | True = off-chip / off-die. Neutral grey fill, ignores `domain`. |
-| `side`     | string  | optional  | Only valid when `external=true`. Canvas edge where the block belongs: `left`, `right`, `top`, or `bottom`. The renderer uses the inward-facing side as the preferred edge port. |
+| `domain_b` | string  | optional  | CDC blocks only; renders a split fill. Must be a declared domain **different** from `domain`. |
+| `external` | boolean | optional  | True = off-chip/off-die: neutral grey fill, ignores `domain` (cannot set `domain`/`domain_b`). |
+| `side`     | string  | optional  | `external` blocks only: `left`/`right`/`top`/`bottom` canvas edge; the inward-facing side becomes the preferred port. |
 | `row`      | number  | required  | 0-indexed grid row, in 0.25 steps. |
 | `col`      | number  | required  | 0-indexed grid column, in 0.25 steps. One block per `(row, col)`. |
-| `w`        | int     | optional  | Per-block width override in px. Defaults to `grid.cell_w`. Positive ints only. |
-| `h`        | int     | optional  | Per-block height override in px. Defaults to `grid.cell_h`. Positive ints only. |
-| `group`    | string  | optional  | Group id from `groups`. Member blocks are wrapped in a dashed rectangle at render time. Use this when expanding a parent block at depth > 1 - the group represents the parent. |
+| `w`        | int     | optional  | Per-block width override, px (positive int). Defaults to `grid.cell_w`. |
+| `h`        | int     | optional  | Per-block height override, px (positive int). Defaults to `grid.cell_h`. |
+| `group`    | string  | optional  | Group id from `groups` (the parent module at depth > 1). Members are wrapped in a dashed rectangle. |
 
 ## lanes (optional)
 
-Clock-domain "swim lanes" - tinted bands that visually group all blocks of
-one domain. Each entry maps a domain id (must exist in `domains`) to the
-grid rows or columns that domain occupies. The renderer draws each lane as
-a low-opacity tint of the domain's color with a dashed border in the
-domain's accent color, and prints the domain header
-(`<name> domain  <freq> MHz`) at the top-left of the lane.
-
-A lane is either **horizontal** (`rows`, spanning full canvas width - pick
-this when data flows top-to-bottom through CDCs) or **vertical** (`cols`,
-spanning full canvas height - pick this when data flows left-to-right and
-each domain owns a column).
+Clock-domain swim lanes: a low-opacity tint of the domain's color with a
+dashed accent border and a `<name> domain  <freq> MHz` header. Each entry keys
+a **declared** domain id. Use `rows` (horizontal, data flows top-to-bottom
+through CDCs) or `cols` (vertical, data flows left-to-right, one column per
+domain) - **exactly one** per entry. Lanes should not overlap; the renderer
+doesn't prevent visual collisions, so skip lanes when rows/cols mix domains.
 
 | Field  | Type   | Required | Description |
 |--------|--------|----------|-------------|
-| `rows` | number[] | one of | Non-empty list of grid rows in 0.25 steps. Spans `min(rows)`..`max(rows)`. |
-| `cols` | number[] | one of | Non-empty list of grid columns in 0.25 steps. Spans `min(cols)`..`max(cols)`. |
-
-Each lane entry **must specify exactly one** of `rows` or `cols`. Different
-lanes in the same spec can choose different orientations, but they should
-not overlap - the renderer doesn't prevent visual collisions.
+| `rows` | number[] | one of | Non-empty grid rows in 0.25 steps. Spans `min`..`max`. Horizontal band. |
+| `cols` | number[] | one of | Non-empty grid columns in 0.25 steps. Spans `min`..`max`. Vertical band. |
 
 ```json
-"lanes": {
-  "usb": {"rows": [0]},
-  "acq": {"rows": [1]},
-  "ui":  {"rows": [2]}
-}
+"lanes": {"usb": {"rows": [0]}, "acq": {"rows": [1]}, "ui": {"rows": [2]}}
 ```
-
 ```json
-"lanes": {
-  "host": {"cols": [0]},
-  "sys":  {"cols": [1, 2]},
-  "phy":  {"cols": [3]}
-}
+"lanes": {"host": {"cols": [0]}, "sys": {"cols": [1, 2]}, "phy": {"cols": [3]}}
 ```
-
-Skip lanes if your rows / columns mix domains; the visual collision will
-look worse than the default per-block color.
 
 ## bands (optional)
 
-Functional background bands are like lanes, but they are not tied to clock
-domains. Use them for broad architectural regions such as "core + bus",
-"secure services", or "peripherals + AON" when rows/columns mix domains but
-still need the reference-diagram feel of horizontal or vertical bands.
+Like lanes but not tied to clock domains - use for broad regions ("core + bus",
+"secure services", "peripherals + AON") where rows/cols mix domains. Same
+`rows` xor `cols` rule as lanes.
 
 | Field    | Type   | Required | Description |
 |----------|--------|----------|-------------|
-| `label`  | string \| null | optional | Header text shown at the top-left of the band. Defaults to the band id; set `""` or `null` to suppress the header when another label, such as a group header, already identifies the region. |
-| `rows`   | number[] | one of | Non-empty list of grid rows in 0.25 steps. Spans `min(rows)`..`max(rows)`. |
-| `cols`   | number[] | one of | Non-empty list of grid columns in 0.25 steps. Spans `min(cols)`..`max(cols)`. |
-| `color`  | string | optional | Fill color (`#RRGGBB`). Defaults to slate. |
+| `label`  | string \| null | optional | Header at top-left. Defaults to the band id; set `""` or `null` to suppress it (e.g. when a group header already labels the region). |
+| `rows`   | number[] | one of | Non-empty grid rows in 0.25 steps. Spans `min`..`max`. |
+| `cols`   | number[] | one of | Non-empty grid columns in 0.25 steps. Spans `min`..`max`. |
+| `color`  | string | optional | Fill (`#RRGGBB`). Defaults to slate. |
 | `border` | string | optional | Border/header color (`#RRGGBB`). Defaults to soft ink. |
 
 ```json
@@ -143,70 +120,57 @@ still need the reference-diagram feel of horizontal or vertical bands.
 
 ## groups (optional)
 
-Hierarchical containers. When extracting an HDL design at depth > 1, the
-expanded children of a parent block should reference a group whose id is the
-parent module name. The renderer computes the bounding box of all member
-blocks and draws a dashed rectangle around them with the group label as an
-uppercase header. Arrows freely cross group borders; the validator excludes
-`group_*` rects from its block list.
+Hierarchical containers. At depth > 1, expanded children reference a group
+whose id is the parent module name. The renderer draws a dashed rectangle
+around the members' bounding box with an uppercase header; arrows cross group
+borders freely and the validator excludes `group_*` rects from its block list.
 
 | Field   | Type   | Required | Description |
 |---------|--------|----------|-------------|
-| `label` | string | optional | Header text rendered at the top-left of the dashed rect. Defaults to the group id when omitted. |
+| `label` | string | optional | Header at top-left of the dashed rect. Defaults to the group id. |
 
 ```json
-"groups": {
-  "tx_path": {"label": "tx_path"},
-  "rx_path": {"label": "rx_path"}
-}
+"groups": {"tx_path": {"label": "tx_path"}, "rx_path": {"label": "rx_path"}}
 ```
 
 ## edges[]
 
 | Field   | Type          | Required | Description |
 |---------|---------------|----------|-------------|
-| `from`  | string        | required | Block id (must exist in `blocks`). |
-| `to`    | string        | required | Block id (must exist in `blocks`). |
+| `from`  | string        | required | Block id (must exist). |
+| `to`    | string        | required | Block id (must exist). |
 | `kind`  | string        | required | One of `axi-mm`, `axi-lite`, `axi-stream`, `tilelink`, `cdc`, `generic`. |
-| `width` | int \| string | optional | Bit width as int (rendered `<n>b`), or short protocol / parameter label matching `^\d+b?$|^[\w/+\- ]{1,24}$`. Long arrows without a label fail the BITWIDTH validator check. |
-| `route` | object        | optional | Per-edge routing override. See *edges[].route* below. |
-| `label` | object        | optional | Per-edge label placement override. See *edges[].label* below. |
+| `width` | int \| string | optional | Bit width int (rendered `<n>b`) or short protocol/parameter label matching `^\d+b?$|^[\w/+\- ]{1,24}$`. Long unlabeled arrows fail the BITWIDTH check. |
+| `route` | object        | optional | Per-edge routing override. See *edges[].route*. |
+| `label` | object        | optional | Per-edge label placement override. See *edges[].label*. |
 
-Each ordered `(from, to)` pair must be unique. If two logical links connect
-the same blocks, combine them into one label (for example `"cmd + rsp"`) or
-split one endpoint through a named intermediate block; duplicate pairs would
-otherwise render duplicate SVG ids.
+Each ordered `(from, to)` pair must be unique (duplicates would render
+duplicate SVG ids). For two links between the same blocks, merge the labels
+(e.g. `"cmd + rsp"`) or route one through a named intermediate block.
 
 ### edges[].route
 
-By default the renderer picks side endpoints and a single-bend Manhattan path
-with lane offsets to keep parallel edges apart. Use `route` to override that
-on one edge without disturbing the rest.
+Default: side endpoints + single-bend Manhattan path with lane offsets to keep
+parallel edges apart. Prefer `mode` over `points` - absolute coords go stale
+when blocks move; `mode: "direct"` survives layout edits. Use `points` only for
+an awkward wire where auto-routing collides with a neighbor.
 
 | Field    | Type             | Default  | Description |
 |----------|------------------|----------|-------------|
-| `mode`   | string           | `"auto"` | `"auto"` keeps the standard Manhattan routing with parallel-edge lane offsets. `"direct"` is Manhattan with **no** lane offset - collinear endpoints produce a single straight segment, non-collinear ones a single orthogonal bend. `"orthogonal"` is a synonym for `"auto"`. Diagonal output is impossible in every mode. |
-| `points` | `[[x, y], ...]`  | omitted  | Explicit waypoints in **final SVG coordinates** (i.e. the same numbers you'd read off the rendered file). When provided, this *is* the path - the renderer skips both endpoint selection and Manhattan routing. The list must have at least two points. **Consecutive points must share x or y**; diagonal segments are rejected at spec-validation time. To go from `(x1, y1)` to `(x2, y2)` insert an intermediate `(x2, y1)` or `(x1, y2)`. If the first or last point touches a block, the adjacent segment must leave/enter perpendicular to that block side; add a short outward stub before turning. |
-
-Prefer `mode` over `points` when possible: absolute coords get stale when
-blocks move, while `mode: "direct"` survives layout edits. Use `points` only
-for an awkward wire where automatic routing collides with a neighbor.
+| `mode`   | string           | `"auto"` | `"auto"`/`"orthogonal"`: standard Manhattan with parallel-edge lane offsets. `"direct"`: no lane offset - one straight segment when collinear, one bend otherwise. Never diagonal. |
+| `points` | `[[x, y], ...]`  | omitted  | Explicit waypoints in **final SVG coordinates**; when set this *is* the path (no endpoint selection or routing). >=2 points; **consecutive points must share x or y** (diagonals rejected - insert `(x2, y1)` or `(x1, y2)`). A point touching a block must leave/enter perpendicular to that side - add a short outward stub before turning. |
 
 ### edges[].label
 
-The renderer auto-places labels at the longest segment of the path. Use
-`label` to nudge a single label out of the way of an unrelated wire.
+Auto-placed at the longest path segment. Setting any field below also disables
+the auto-clamp that pulls the label back onto the endpoints' span.
 
 | Field     | Type   | Default | Description |
 |-----------|--------|---------|-------------|
-| `dx`      | number | `0`     | Horizontal pixel offset added to the auto anchor. Negative moves left. |
-| `dy`      | number | `0`     | Vertical pixel offset added to the auto anchor. Negative moves up. |
-| `segment` | int    | omitted | When set, place the label on segment index *N* of the path (0 = first segment, -1 = last). Overrides the longest-segment heuristic. |
-| `t`       | number | `0.5`   | When `segment` is set, fractional position along that segment (0..1). |
-
-Setting any of `dx`/`dy`/`segment`/`t` also disables the auto-clamp that
-normally pulls the label back onto the endpoints' span - the assumption is
-that you know where you want the label and don't want it dragged back.
+| `dx`      | number | `0`     | Horizontal px offset from the auto anchor (negative = left). |
+| `dy`      | number | `0`     | Vertical px offset from the auto anchor (negative = up). |
+| `segment` | int    | omitted | Place on segment index *N* (0 = first, -1 = last), overriding the longest-segment heuristic. |
+| `t`       | number | `0.5`   | With `segment` set, fractional position along it (0..1). |
 
 ## kind catalog
 
@@ -219,19 +183,16 @@ that you know where you want the label and don't want it dragged back.
 | `cdc`         | Signal/bus crossing clock domains in flight.     | Purple dashed.      |
 | `generic`     | Anything else (RGMII, SPI, custom, discretes).   | Thin grey.          |
 
-AXI4 (full) and AXI4-Lite are separate `kind` values even though they share
-port-name conventions. Pick `axi-lite` if the bus has *no* burst-related
-ports (`awlen`, `awburst`, `arlen`, `wlast`, `rlast` all absent).
+Full AXI and AXI4-Lite are separate kinds despite shared port names: pick
+`axi-lite` only when the bus has **no** burst ports (`awlen`, `awburst`,
+`arlen`, `wlast`, `rlast` all absent).
 
 ## grid (optional)
 
 | Field      | Default | Description |
 |------------|---------|-------------|
-| `cell_w`   | 220     | Block width (px). |
-| `cell_h`   | 90      | Block height. |
-| `gutter_x` | 90      | Horizontal gutter between columns. |
+| `cell_w`   | 220     | Block width (px). Widen if block names truncate. |
+| `cell_h`   | 90      | Block height (px). |
+| `gutter_x` | 90      | Horizontal gutter between columns. Widen if edge labels overflow into blocks. |
 | `gutter_y` | 70      | Vertical gutter between rows. |
 | `margin`   | 36      | Canvas margin around the grid. |
-
-Widen `gutter_x` if edge labels overflow into adjacent blocks.
-Widen `cell_w` if block names truncate.

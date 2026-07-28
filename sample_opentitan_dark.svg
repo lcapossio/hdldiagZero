@@ -78,19 +78,19 @@
   <text x="1186" y="648" text-anchor="middle" font-size="17" font-weight="500" fill="#1f2937">interrupts</text>
   <mask id="edge-label-clearance" maskUnits="userSpaceOnUse">
     <rect width="1984" height="726" fill="#ffffff"/>
-    <rect x="267.1" y="86.0" width="45.2" height="19.0" fill="#000000"/>
-    <rect x="592.1" y="77.0" width="45.2" height="19.0" fill="#000000"/>
-    <rect x="990.9" y="101.0" width="45.2" height="19.0" fill="#000000"/>
-    <rect x="1385.9" y="77.0" width="45.2" height="19.0" fill="#000000"/>
-    <rect x="1039.5" y="279.5" width="45.2" height="19.0" fill="#000000"/>
-    <rect x="228.1" y="255.0" width="61.8" height="19.0" fill="#000000"/>
-    <rect x="529.7" y="255.0" width="37.0" height="19.0" fill="#000000"/>
-    <rect x="237.1" y="433.0" width="45.2" height="19.0" fill="#000000"/>
-    <rect x="1148.2" y="510.0" width="53.5" height="19.0" fill="#000000"/>
-    <rect x="1395.9" y="473.0" width="45.2" height="19.0" fill="#000000"/>
-    <rect x="1369.5" y="562.5" width="28.8" height="19.0" fill="#000000"/>
-    <rect x="969.1" y="611.0" width="28.8" height="19.0" fill="#000000"/>
-    <rect x="706.0" y="627.3" width="28.8" height="19.0" fill="#000000"/>
+    <rect x="266.9" y="86.0" width="45.7" height="19.0" fill="#000000"/>
+    <rect x="591.9" y="77.0" width="45.7" height="19.0" fill="#000000"/>
+    <rect x="990.7" y="101.0" width="45.7" height="19.0" fill="#000000"/>
+    <rect x="1385.7" y="77.0" width="45.7" height="19.0" fill="#000000"/>
+    <rect x="1039.5" y="279.5" width="45.7" height="19.0" fill="#000000"/>
+    <rect x="232.0" y="255.0" width="54.0" height="19.0" fill="#000000"/>
+    <rect x="531.2" y="255.0" width="34.0" height="19.0" fill="#000000"/>
+    <rect x="241.5" y="433.0" width="36.5" height="19.0" fill="#000000"/>
+    <rect x="1154.7" y="510.0" width="40.7" height="19.0" fill="#000000"/>
+    <rect x="1395.7" y="473.0" width="45.7" height="19.0" fill="#000000"/>
+    <rect x="1369.5" y="562.5" width="30.7" height="19.0" fill="#000000"/>
+    <rect x="968.2" y="611.0" width="30.7" height="19.0" fill="#000000"/>
+    <rect x="706.0" y="627.3" width="30.7" height="19.0" fill="#000000"/>
   </mask>
   <path id="edge_host_to_rv_dm" d="M 256.0,111.0 L 323.5,111.0 L 323.5,102.0 L 391.0,102.0" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)" mask="url(#edge-label-clearance)"/>
   <path id="edge_rv_dm_to_ibex" d="M 571.0,102.0 L 658.5,102.0 L 658.5,111.0 L 746.0,111.0" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)" mask="url(#edge-label-clearance)"/>
@@ -109,15 +109,15 @@
   <text x="614.8" y="91.8" text-anchor="middle" font-size="15" fill="#e2e8f0">debug</text>
   <text x="1013.5" y="115.8" text-anchor="middle" font-size="15" fill="#e2e8f0">TL-UL</text>
   <text x="1408.5" y="91.8" text-anchor="middle" font-size="15" fill="#e2e8f0">TL-UL</text>
-  <text x="1062.1" y="294.2" text-anchor="middle" font-size="15" fill="#e2e8f0">TL-UL</text>
+  <text x="1062.3" y="294.2" text-anchor="middle" font-size="15" fill="#e2e8f0">TL-UL</text>
   <text x="259.0" y="269.8" text-anchor="middle" font-size="15" fill="#e2e8f0">entropy</text>
   <text x="548.2" y="269.8" text-anchor="middle" font-size="15" fill="#e2e8f0">rand</text>
   <text x="259.8" y="447.8" text-anchor="middle" font-size="15" fill="#e2e8f0">state</text>
   <text x="1175.0" y="524.8" text-anchor="middle" font-size="15" fill="#e2e8f0">alerts</text>
   <text x="1418.5" y="487.8" text-anchor="middle" font-size="15" fill="#e2e8f0">TL-UL</text>
-  <text x="1383.9" y="577.2" text-anchor="middle" font-size="15" fill="#e2e8f0">IRQ</text>
+  <text x="1384.8" y="577.2" text-anchor="middle" font-size="15" fill="#e2e8f0">IRQ</text>
   <text x="983.5" y="625.8" text-anchor="middle" font-size="15" fill="#e2e8f0">IRQ</text>
-  <text x="720.4" y="642.1" text-anchor="middle" font-size="15" fill="#e2e8f0">IRQ</text>
+  <text x="721.3" y="642.1" text-anchor="middle" font-size="15" fill="#e2e8f0">IRQ</text>
   <rect id="legend_card" x="1728" y="46" width="240" height="234" fill="#0f172a" stroke="#475569" stroke-width="1" rx="6"/>
   <text x="1848" y="74" text-anchor="middle" font-size="13" font-weight="700" fill="#e2e8f0" letter-spacing="0.4">Clock domains</text>
   <rect x="1742" y="86" width="22" height="14" fill="#42A5F5" stroke="#0D47A1" stroke-width="1.2" rx="2"/>

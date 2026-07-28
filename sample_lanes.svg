@@ -47,14 +47,14 @@
   <text x="1666" y="485" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">DDR3 controller</text>
   <mask id="edge-label-clearance" maskUnits="userSpaceOnUse">
     <rect width="2084" height="552" fill="#ffffff"/>
-    <rect x="277.5" y="86.0" width="37.0" height="19.0" fill="#000000"/>
-    <rect x="706.0" y="133.0" width="70.0" height="19.0" fill="#000000"/>
-    <rect x="682.0" y="191.5" width="61.8" height="19.0" fill="#000000"/>
-    <rect x="711.9" y="292.0" width="78.2" height="19.0" fill="#000000"/>
-    <rect x="1041.6" y="266.0" width="28.8" height="19.0" fill="#000000"/>
-    <rect x="912.0" y="349.0" width="78.2" height="19.0" fill="#000000"/>
-    <rect x="1020.0" y="446.0" width="86.5" height="19.0" fill="#000000"/>
-    <rect x="1400.0" y="446.0" width="94.8" height="19.0" fill="#000000"/>
+    <rect x="274.4" y="86.0" width="43.2" height="19.0" fill="#000000"/>
+    <rect x="710.6" y="133.0" width="60.7" height="19.0" fill="#000000"/>
+    <rect x="682.0" y="191.5" width="60.7" height="19.0" fill="#000000"/>
+    <rect x="714.8" y="292.0" width="72.4" height="19.0" fill="#000000"/>
+    <rect x="1041.9" y="266.0" width="28.2" height="19.0" fill="#000000"/>
+    <rect x="912.0" y="349.0" width="72.4" height="19.0" fill="#000000"/>
+    <rect x="1020.0" y="446.0" width="87.4" height="19.0" fill="#000000"/>
+    <rect x="1400.0" y="446.0" width="95.7" height="19.0" fill="#000000"/>
   </mask>
   <path id="edge_usb_phy_to_ok_host" d="M 256.0,111.0 L 336.0,111.0 L 416.0,111.0" stroke="#374151" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)" mask="url(#edge-label-clearance)"/>
   <path id="edge_ok_host_to_ok_endpts" d="M 636.0,111.0 L 756.0,111.0 L 756.0,126.0 L 796.0,126.0" stroke="#374151" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)" mask="url(#edge-label-clearance)"/>
@@ -66,12 +66,12 @@
   <path id="edge_ddr_fsm_to_mig" d="M 1396.0,471.0 L 1476.0,471.0 L 1556.0,471.0" stroke="#1f2937" stroke-width="2.5" fill="none" marker-end="url(#ah-solid)" mask="url(#edge-label-clearance)"/>
   <text x="296.0" y="100.8" text-anchor="middle" font-size="15" fill="#1f2937">USB3</text>
   <text x="741.0" y="147.8" text-anchor="middle" font-size="15" fill="#1f2937">host bus</text>
-  <text x="712.9" y="206.2" text-anchor="middle" font-size="15" fill="#1f2937">CDC cfg</text>
+  <text x="712.3" y="206.2" text-anchor="middle" font-size="15" fill="#1f2937">CDC cfg</text>
   <text x="751.0" y="306.8" text-anchor="middle" font-size="15" fill="#1f2937">AXI-S 16b</text>
   <text x="1056.0" y="280.8" text-anchor="middle" font-size="15" fill="#1f2937">SPI</text>
-  <text x="951.1" y="363.8" text-anchor="middle" font-size="15" fill="#1f2937">AXI-S 16b</text>
-  <text x="1063.2" y="460.8" text-anchor="middle" font-size="15" fill="#1f2937">AXI-MM 32b</text>
-  <text x="1447.4" y="460.8" text-anchor="middle" font-size="15" fill="#1f2937">AXI-MM 256b</text>
+  <text x="948.2" y="363.8" text-anchor="middle" font-size="15" fill="#1f2937">AXI-S 16b</text>
+  <text x="1063.7" y="460.8" text-anchor="middle" font-size="15" fill="#1f2937">AXI-MM 32b</text>
+  <text x="1447.8" y="460.8" text-anchor="middle" font-size="15" fill="#1f2937">AXI-MM 256b</text>
   <rect id="legend_card" x="1828" y="46" width="240" height="234" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" rx="6"/>
   <text x="1948" y="74" text-anchor="middle" font-size="13" font-weight="700" fill="#1f2937" letter-spacing="0.4">Clock domains</text>
   <rect x="1842" y="86" width="22" height="14" fill="#42A5F5" stroke="#0D47A1" stroke-width="1.2" rx="2"/>

@@ -33,8 +33,10 @@ Caveats:
   - Path parser handles M/L/H/V/Z. Curves (C/Q/A) are sampled at endpoints only.
   - Block detection: any <rect> with width >= 40 and height >= 25 is treated as a
     block. Smaller rects (legend swatches, decorations) are ignored.
-  - Text bbox is estimated from font-size and character count (no font metrics);
-    width is roughly len(text) * font_size * 0.55.
+  - Text bbox width is estimated by summing per-glyph advance widths (Adobe AFM
+    metrics for the Helvetica / Arial-class sans stack) at the element's
+    font-size; height is the font-size. No hinting / kerning, but far closer
+    than a fixed monospace ratio for proportional strings.
 """
 
 import sys
@@ -51,7 +53,6 @@ MIN_BLOCK_H = 25.0
 STUB_RATIO = 1.5         # shaft length must be >= STUB_RATIO * marker width
 MIN_PORT_SEP = 12.0      # px - two arrow endpoints on the same block must be this far apart
 DEFAULT_FONT_SIZE = 12.0
-TEXT_WIDTH_FACTOR = 0.55 # rough character-width / font-size ratio
 TEXT_LABEL_PROXIMITY = 12.0  # px - roughly one label font size from an arrow path
 TEXT_TEXT_MIN_OVERLAP = 150.0 # px^2 - about one 12px text row of overlap
 BITWIDTH_MIN_ARROW_LEN = 50.0  # px - arrows shorter than this are exempt from bitwidth check
@@ -59,6 +60,42 @@ LOOP_EXCESS = 10.0       # px - one small Manhattan nudge before calling a loop
 
 SVG_NS = "http://www.w3.org/2000/svg"
 NS = {"svg": SVG_NS}
+
+# Per-glyph advance widths (1/1000 em) for the Helvetica / Arial-class sans
+# stack the renderer emits, from the Adobe AFM metrics. Summing real advances
+# is what makes the text checks honest: a monospace "len * 0.55" ratio scores
+# "WWMM" and "iiil" identically, which produced both phantom TEXT_* overlaps
+# and missed real ones. Arial is metrically near-identical to Helvetica, and
+# these ratios are stable across the sans fonts in FONT_STACK, so this is a far
+# better estimate than a flat factor even when the viewer substitutes a font.
+GLYPH_ADVANCE = {
+    " ": 278, "!": 278, '"': 355, "#": 556, "$": 556, "%": 889, "&": 667,
+    "'": 191, "(": 333, ")": 333, "*": 389, "+": 584, ",": 278, "-": 333,
+    ".": 278, "/": 278, "0": 556, "1": 556, "2": 556, "3": 556, "4": 556,
+    "5": 556, "6": 556, "7": 556, "8": 556, "9": 556, ":": 278, ";": 278,
+    "<": 584, "=": 584, ">": 584, "?": 556, "@": 1015, "A": 667, "B": 667,
+    "C": 722, "D": 722, "E": 667, "F": 611, "G": 778, "H": 722, "I": 278,
+    "J": 500, "K": 667, "L": 556, "M": 833, "N": 722, "O": 778, "P": 667,
+    "Q": 778, "R": 722, "S": 667, "T": 611, "U": 722, "V": 667, "W": 944,
+    "X": 667, "Y": 667, "Z": 611, "[": 278, "\\": 278, "]": 278, "^": 469,
+    "_": 556, "`": 333, "a": 556, "b": 556, "c": 500, "d": 556, "e": 556,
+    "f": 278, "g": 556, "h": 556, "i": 222, "j": 222, "k": 500, "l": 222,
+    "m": 833, "n": 556, "o": 556, "p": 556, "q": 556, "r": 333, "s": 500,
+    "t": 278, "u": 556, "v": 500, "w": 722, "x": 500, "y": 500, "z": 500,
+    "{": 334, "|": 260, "}": 334, "~": 584,
+}
+GLYPH_ADVANCE_DEFAULT = 556  # unknown / non-ASCII glyph: a typical lowercase advance
+
+
+def text_width(s, font_size):
+    """Rendered advance width of *s* at *font_size* px, via proportional metrics.
+
+    Sums per-glyph advances from GLYPH_ADVANCE rather than the old
+    len(s) * font * 0.55 monospace approximation, so mixed-width strings are
+    measured honestly.
+    """
+    ems = sum(GLYPH_ADVANCE.get(ch, GLYPH_ADVANCE_DEFAULT) for ch in s)
+    return ems / 1000.0 * font_size
 
 
 @dataclass
@@ -163,7 +200,7 @@ def text_bbox(elem):
             except ValueError:
                 pass
     anchor = elem.get("text-anchor", "start")
-    width = max(len(s) * font * TEXT_WIDTH_FACTOR, font * 0.6)
+    width = max(text_width(s, font), font * 0.6)
     height = font
     if anchor == "middle":
         x -= width / 2
