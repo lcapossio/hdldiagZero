@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="2339" height="726" viewBox="0 0 2339 726" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" style="background:#f8fafc">
+<svg xmlns="http://www.w3.org/2000/svg" width="2339" height="756" viewBox="0 0 2339 756" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" style="background:#f8fafc">
   <defs>
     <marker id="ah-solid" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#1f2937"/></marker>
     <marker id="ah-thin" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#374151"/></marker>
@@ -15,7 +15,7 @@
     <linearGradient id="grad-alert_handler" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="50%" stop-color="#EF5350"/><stop offset="50%" stop-color="#AB47BC"/></linearGradient>
     <linearGradient id="grad-xbar_peri" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="50%" stop-color="#FFA726"/><stop offset="50%" stop-color="#66BB6A"/></linearGradient>
   </defs>
-  <rect width="2339" height="726" fill="#f8fafc" id="_canvas_bg"/>
+  <rect width="2339" height="756" fill="#f8fafc" id="_canvas_bg"/>
   <text x="1033.5" y="24" text-anchor="middle" font-size="21" font-weight="600" fill="#1f2937" letter-spacing="0.2">OpenTitan Earl Grey SoC sample (depth 2)</text>
   <rect id="band_core_bus" x="10" y="36" width="2047" height="223" fill="#DBEAFE" fill-opacity="0.1" stroke="#2563EB" stroke-width="1" stroke-dasharray="6,4" rx="4"/>
   <text x="24" y="54" font-size="13" font-weight="700" fill="#2563EB">core + bus fabric</text>
@@ -106,7 +106,7 @@
   <text x="1541" y="630" text-anchor="middle" font-size="17" font-weight="600" fill="#1f2937">RV PLIC</text>
   <text x="1541" y="648" text-anchor="middle" font-size="17" font-weight="500" fill="#1f2937">interrupts</text>
   <mask id="edge-label-clearance" maskUnits="userSpaceOnUse">
-    <rect width="2339" height="726" fill="#ffffff"/>
+    <rect width="2339" height="756" fill="#ffffff"/>
     <rect x="266.9" y="86.0" width="45.7" height="19.0" fill="#000000"/>
     <rect x="575.0" y="77.0" width="45.7" height="19.0" fill="#000000"/>
     <rect x="1036.8" y="63.0" width="32.3" height="19.0" fill="#000000"/>

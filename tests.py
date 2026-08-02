@@ -598,9 +598,13 @@ def test_external_side_hint_controls_endpoint() -> None:
         spec = {
             "legend": False,
             "domains": {"d": {"color": "#42A5F5"}},
+            # A right-edge external block sits in the rightmost column; `side`
+            # forces its port onto the inward-facing (left) side rather than the
+            # geometric nearest side. (Placing it in the left column would make
+            # `side: right` self-contradictory and route the arrow off-canvas.)
             "blocks": [
-                {"id": "core", "domain": "d", "row": 0, "col": 1},
-                {"id": "pads", "external": True, "side": "right", "row": 0, "col": 0},
+                {"id": "core", "domain": "d", "row": 0, "col": 0},
+                {"id": "pads", "external": True, "side": "right", "row": 0, "col": 1},
             ],
             "edges": [{"from": "core", "to": "pads", "kind": "generic", "width": "pins"}],
         }
@@ -612,10 +616,10 @@ def test_external_side_hint_controls_endpoint() -> None:
         if out.is_file():
             svg = out.read_text(encoding="utf-8")
             d = _path_d_for(svg, "edge_core_to_pads")
-            if d is None or not d.rstrip().endswith("L 36.0,81.0"):
+            if d is None or not d.rstrip().endswith("L 376.0,81.0"):
                 FAILURES.append(
-                    "[side-render] expected edge to terminate on pads left side, "
-                    f"got {d!r}"
+                    "[side-render] expected edge to terminate on pads left "
+                    f"(inward) side, got {d!r}"
                 )
             run([PY, VALIDATE, str(out)], label="side-validate")
 

@@ -103,6 +103,7 @@ before calling the renderer.
 | `ENDPOINT`   | An arrow start/end point is not attached to a block edge.   |
 | `PERPENDICULAR` | An arrow endpoint leaves/enters along the block edge.    |
 | `LOOP`       | A route detours even though a clear direct connection exists. |
+| `CANVAS_BOUNDS` | A block, label, or arrow extends past the canvas edge and is clipped. |
 
 ## Fix recipes
 
@@ -173,6 +174,18 @@ block, but the route still leaves the direct segment and comes back. Remove
 the extra waypoints or set `route.mode: "direct"`. If the detour exists to
 avoid a text label, prefer moving the label with `label.dx` / `label.dy`;
 block-to-block geometry should stay direct.
+
+### CANVAS_BOUNDS
+Something is drawn outside the canvas and gets clipped. The renderer already
+grows the canvas to enclose blocks, edge labels, and group boxes that spill
+below or to the right of the grid, so this usually means a route was forced
+off the left/top edge. The common cause is a self-contradictory external
+block: `side` names a canvas edge that disagrees with the block's `(row, col)`
+(e.g. `side: "right"` on a block in column 0), so its port faces away from its
+neighbours and the arrow loops out of frame. Place the external block in the
+row/column that matches its `side` (a `side: "right"` block belongs in the
+rightmost column), or drop the `side` hint and let the renderer pick the
+nearest side.
 
 ## When iteration doesn't converge
 

@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.2.10
+
+- Fixed a canvas-sizing bug where edge labels and arrows routed in the bottom
+  gutter (below the last block row) were clipped past the canvas edge - visible
+  on the `AXI-L 32b` label in the SoC sample. `render.py` now measures all drawn
+  geometry (blocks, edge paths, edge labels, group boxes) before emitting the
+  `<svg>` and grows the canvas to enclose it; dimensions stay integer.
+- Added a `CANVAS_BOUNDS` geometry rule to `validate.py` that flags any block,
+  label, or arrow clipped by the canvas edge - the backstop that would have
+  caught the above. A self-contradictory external `side` hint (e.g. `side:
+  "right"` in the leftmost column) is reported here rather than silently
+  auto-grown; see `references/validation.md`.
+- Regenerated the tracked sample SVGs under the corrected canvas bounds.
+
 ## 1.2.9
 
 - Fixed text-width estimation in both `render.py` and `validate.py`: replaced

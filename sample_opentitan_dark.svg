@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1984" height="726" viewBox="0 0 1984 726" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" style="background:#000000">
+<svg xmlns="http://www.w3.org/2000/svg" width="2008" height="756" viewBox="0 0 2008 756" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" style="background:#000000">
   <defs>
     <marker id="ah-solid" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#e2e8f0"/></marker>
     <marker id="ah-thin" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#9ca3af"/></marker>
@@ -13,7 +13,7 @@
     <linearGradient id="grad-alert_handler" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="50%" stop-color="#EF5350"/><stop offset="50%" stop-color="#AB47BC"/></linearGradient>
     <linearGradient id="grad-xbar_peri" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="50%" stop-color="#FFA726"/><stop offset="50%" stop-color="#66BB6A"/></linearGradient>
   </defs>
-  <rect width="1984" height="726" fill="#000000" id="_canvas_bg"/>
+  <rect width="2008" height="756" fill="#000000" id="_canvas_bg"/>
   <text x="856.0" y="24" text-anchor="middle" font-size="21" font-weight="600" fill="#e2e8f0" letter-spacing="0.2">OpenTitan Earl Grey SoC sample</text>
   <rect id="band_core_bus" x="10" y="36" width="1692" height="134" fill="#DBEAFE" fill-opacity="0.1" stroke="#2563EB" stroke-width="1" stroke-dasharray="6,4" rx="4"/>
   <text x="24" y="54" font-size="13" font-weight="700" fill="#2563EB">core + bus fabric</text>
@@ -77,7 +77,7 @@
   <text x="1186" y="630" text-anchor="middle" font-size="17" font-weight="600" fill="#1f2937">RV PLIC</text>
   <text x="1186" y="648" text-anchor="middle" font-size="17" font-weight="500" fill="#1f2937">interrupts</text>
   <mask id="edge-label-clearance" maskUnits="userSpaceOnUse">
-    <rect width="1984" height="726" fill="#ffffff"/>
+    <rect width="2008" height="756" fill="#ffffff"/>
     <rect x="266.9" y="86.0" width="45.7" height="19.0" fill="#000000"/>
     <rect x="591.9" y="77.0" width="45.7" height="19.0" fill="#000000"/>
     <rect x="990.7" y="101.0" width="45.7" height="19.0" fill="#000000"/>
@@ -118,21 +118,21 @@
   <text x="1384.8" y="577.2" text-anchor="middle" font-size="15" fill="#e2e8f0">IRQ</text>
   <text x="983.5" y="625.8" text-anchor="middle" font-size="15" fill="#e2e8f0">IRQ</text>
   <text x="721.3" y="642.1" text-anchor="middle" font-size="15" fill="#e2e8f0">IRQ</text>
-  <rect id="legend_card" x="1728" y="46" width="240" height="234" fill="#0f172a" stroke="#475569" stroke-width="1" rx="6"/>
-  <text x="1848" y="74" text-anchor="middle" font-size="13" font-weight="700" fill="#e2e8f0" letter-spacing="0.4">Clock domains</text>
-  <rect x="1742" y="86" width="22" height="14" fill="#42A5F5" stroke="#0D47A1" stroke-width="1.2" rx="2"/>
-  <text x="1774" y="98" font-size="13" fill="#e2e8f0">core</text>
-  <rect x="1742" y="108" width="22" height="14" fill="#66BB6A" stroke="#1B5E20" stroke-width="1.2" rx="2"/>
-  <text x="1774" y="120" font-size="13" fill="#e2e8f0">bus</text>
-  <rect x="1742" y="130" width="22" height="14" fill="#EF5350" stroke="#B71C1C" stroke-width="1.2" rx="2"/>
-  <text x="1774" y="142" font-size="13" fill="#e2e8f0">secure</text>
-  <rect x="1742" y="152" width="22" height="14" fill="#FFA726" stroke="#E65100" stroke-width="1.2" rx="2"/>
-  <text x="1774" y="164" font-size="13" fill="#e2e8f0">peri</text>
-  <rect x="1742" y="174" width="22" height="14" fill="#AB47BC" stroke="#4A148C" stroke-width="1.2" rx="2"/>
-  <text x="1774" y="186" font-size="13" fill="#e2e8f0">aon</text>
-  <text x="1848" y="214" text-anchor="middle" font-size="13" font-weight="700" fill="#e2e8f0" letter-spacing="0.4">Connection styles</text>
-  <path id="legend-arrow-generic" d="M 1742,233.0 L 1784,233.0" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
-  <text x="1794" y="238" font-size="13" fill="#e2e8f0">Generic / discrete</text>
-  <path id="legend-arrow-tilelink" d="M 1742,255.0 L 1784,255.0" stroke="#5eead4" stroke-width="2.4" fill="none" marker-end="url(#ah-tilelink)"/>
-  <text x="1794" y="260" font-size="13" fill="#e2e8f0">TileLink / TL-UL</text>
+  <rect id="legend_card" x="1752" y="46" width="240" height="234" fill="#0f172a" stroke="#475569" stroke-width="1" rx="6"/>
+  <text x="1872" y="74" text-anchor="middle" font-size="13" font-weight="700" fill="#e2e8f0" letter-spacing="0.4">Clock domains</text>
+  <rect x="1766" y="86" width="22" height="14" fill="#42A5F5" stroke="#0D47A1" stroke-width="1.2" rx="2"/>
+  <text x="1798" y="98" font-size="13" fill="#e2e8f0">core</text>
+  <rect x="1766" y="108" width="22" height="14" fill="#66BB6A" stroke="#1B5E20" stroke-width="1.2" rx="2"/>
+  <text x="1798" y="120" font-size="13" fill="#e2e8f0">bus</text>
+  <rect x="1766" y="130" width="22" height="14" fill="#EF5350" stroke="#B71C1C" stroke-width="1.2" rx="2"/>
+  <text x="1798" y="142" font-size="13" fill="#e2e8f0">secure</text>
+  <rect x="1766" y="152" width="22" height="14" fill="#FFA726" stroke="#E65100" stroke-width="1.2" rx="2"/>
+  <text x="1798" y="164" font-size="13" fill="#e2e8f0">peri</text>
+  <rect x="1766" y="174" width="22" height="14" fill="#AB47BC" stroke="#4A148C" stroke-width="1.2" rx="2"/>
+  <text x="1798" y="186" font-size="13" fill="#e2e8f0">aon</text>
+  <text x="1872" y="214" text-anchor="middle" font-size="13" font-weight="700" fill="#e2e8f0" letter-spacing="0.4">Connection styles</text>
+  <path id="legend-arrow-generic" d="M 1766,233.0 L 1808,233.0" stroke="#9ca3af" stroke-width="1.4" fill="none" marker-end="url(#ah-thin)"/>
+  <text x="1818" y="238" font-size="13" fill="#e2e8f0">Generic / discrete</text>
+  <path id="legend-arrow-tilelink" d="M 1766,255.0 L 1808,255.0" stroke="#5eead4" stroke-width="2.4" fill="none" marker-end="url(#ah-tilelink)"/>
+  <text x="1818" y="260" font-size="13" fill="#e2e8f0">TileLink / TL-UL</text>
 </svg>

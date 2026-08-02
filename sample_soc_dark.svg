@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="2004" height="532" viewBox="0 0 2004 532" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" style="background:#000000">
+<svg xmlns="http://www.w3.org/2000/svg" width="2004" height="586" viewBox="0 0 2004 586" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" style="background:#000000">
   <defs>
     <marker id="ah-solid" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#e2e8f0"/></marker>
     <marker id="ah-thin" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#9ca3af"/></marker>
@@ -12,7 +12,7 @@
     <linearGradient id="grad-ddr_ctrl" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="50%" stop-color="#66BB6A"/><stop offset="50%" stop-color="#EF5350"/></linearGradient>
     <linearGradient id="grad-apb_br" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="50%" stop-color="#66BB6A"/><stop offset="50%" stop-color="#FFA726"/></linearGradient>
   </defs>
-  <rect width="2004" height="532" fill="#000000" id="_canvas_bg"/>
+  <rect width="2004" height="586" fill="#000000" id="_canvas_bg"/>
   <text x="866.0" y="24" text-anchor="middle" font-size="21" font-weight="600" fill="#e2e8f0" letter-spacing="0.2">Application SoC top-level (depth 1)</text>
   <rect id="cpu" x="36" y="66" width="220" height="90" fill="#42A5F5" stroke="#0D47A1" stroke-width="1.4" rx="8"/>
   <text x="146" y="109" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">Cortex-A53 x2</text>
@@ -44,7 +44,7 @@
   <text x="866" y="449" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">Peripherals</text>
   <text x="866" y="465" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">UART x4 / SPI x2 / I2C / GPIO</text>
   <mask id="edge-label-clearance" maskUnits="userSpaceOnUse">
-    <rect width="2004" height="532" fill="#ffffff"/>
+    <rect width="2004" height="586" fill="#ffffff"/>
     <rect x="260.0" y="86.0" width="95.7" height="19.0" fill="#000000"/>
     <rect x="620.0" y="86.0" width="95.7" height="19.0" fill="#000000"/>
     <rect x="980.0" y="86.0" width="95.7" height="19.0" fill="#000000"/>

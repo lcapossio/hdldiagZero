@@ -43,6 +43,7 @@ at the same point.
 """
 
 import json
+import math
 import sys
 
 DEFAULT_GRID = dict(cell_w=220, cell_h=90, gutter_x=120, gutter_y=70, margin=36)
@@ -754,6 +755,109 @@ def render(spec_path, out_path, theme_override=None):
 
     routed = route_all(spec, blocks_by_id, g)
 
+    # Pre-compute every drawn primitive's geometry so the canvas can be sized to
+    # enclose it. Blocks, edge paths, edge labels, and group boxes can all
+    # extend past the bare grid - most commonly an edge label placed in the
+    # bottom gutter, below the last block row - yet the <svg> width/height are
+    # emitted before that geometry would otherwise be known. Nothing here
+    # touches `out`; the drawing code below reuses these lists verbatim.
+    block_rects = []
+    for b in blocks:
+        x, y, w, h = block_rect(g, b)
+        block_rects.append((x, y + content_y0, x + w, y + content_y0 + h))
+
+    rendered_edges = []
+    for e, from_pt, to_pt, fs, ts, lane_offset in routed:
+        kind = e.get("kind", "generic")
+        attrs = kind_attrs.get(kind, kind_attrs["generic"])
+        route_cfg = e.get("route") or {}
+        explicit_points = route_cfg.get("points")
+        route_mode = route_cfg.get("mode", "auto")
+        if explicit_points:
+            # Explicit waypoints are final SVG coordinates: the title-bar offset
+            # is already baked in, so do NOT re-apply content_y0.
+            pts = [(float(p[0]), float(p[1])) for p in explicit_points]
+        else:
+            # `direct` = Manhattan with no lane offset. Never a diagonal.
+            eff_lane = 0 if route_mode == "direct" else lane_offset
+            pts = manhattan(g, from_pt, to_pt, fs, ts, eff_lane)
+            pts = [(p[0], p[1] + content_y0) for p in pts]
+        rendered_edges.append((e, from_pt, to_pt, attrs, pts))
+
+    all_segments = [
+        (a, b)
+        for _, _, _, _, pts in rendered_edges
+        for a, b in zip(pts, pts[1:])
+    ]
+
+    label_infos = []
+    for e, from_pt, to_pt, attrs, pts in rendered_edges:
+        label = edge_label(e)
+        if not label:
+            continue
+        mx, my, orient = label_anchor(pts, e.get("label"))
+        font = 15
+        text_w = max(text_width(label, font), font * 0.6)
+        text_h = font
+        lx, ly = choose_edge_label_position(
+            mx, my, orient, text_w, text_h, block_rects, all_segments
+        )
+        # Auto-clamp the label into the endpoints' horizontal span so it stays
+        # over the wire, unless the user placed it explicitly (dx/dy/segment/t).
+        if not e.get("label"):
+            clear_x = text_w / 2 + 6
+            low_x = min(from_pt[0], to_pt[0])
+            high_x = max(from_pt[0], to_pt[0])
+            if high_x - low_x > clear_x * 2:
+                lx = min(max(lx, low_x + clear_x), high_x - clear_x)
+        rect = text_rect_from_baseline(lx, ly, text_w, text_h)
+        eid = f"edge_{e['from']}_to_{e['to']}"
+        label_infos.append((eid, label, lx, ly, font, rect))
+
+    # Group boxes (dashed hierarchy containers) extend past their member blocks
+    # by GROUP_PAD_*; compute them once here for both canvas bounds and drawing.
+    group_boxes = {}
+    groups = spec.get("groups", {})
+    if isinstance(groups, dict) and groups:
+        members_by_group = {gid: [] for gid in groups}
+        for b in blocks:
+            gid = b.get("group")
+            if gid in members_by_group:
+                members_by_group[gid].append(b)
+        for gid, members in members_by_group.items():
+            if not members:
+                continue
+            xs1, ys1, xs2, ys2 = [], [], [], []
+            for b in members:
+                bx, by, bw, bh = block_rect(g, b)
+                xs1.append(bx)
+                ys1.append(by + content_y0)
+                xs2.append(bx + bw)
+                ys2.append(by + content_y0 + bh)
+            group_boxes[gid] = (
+                min(xs1) - GROUP_PAD_X, min(ys1) - GROUP_PAD_TOP,
+                max(xs2) + GROUP_PAD_X, max(ys2) + GROUP_PAD_BOT,
+            )
+
+    # Grow the canvas so no primitive is clipped at the right or bottom edge.
+    # Blocks fill the grid exactly, so only labels / group boxes / edge paths
+    # can exceed it; keep a full margin of breathing room beyond the farthest.
+    content_right = grid_w - g["margin"]
+    content_bottom = grid_h - g["margin"]
+    bound_boxes = list(block_rects) + list(group_boxes.values())
+    bound_boxes += [info[-1] for info in label_infos]
+    for _, _, _, _, pts in rendered_edges:
+        for px, py in pts:
+            content_right = max(content_right, px)
+            content_bottom = max(content_bottom, py)
+    for _, _, x2, y2 in bound_boxes:
+        content_right = max(content_right, x2)
+        content_bottom = max(content_bottom, y2)
+    # Round up so the canvas dims stay integers and always fully enclose the
+    # (possibly fractional) content extents.
+    canvas_w = math.ceil(max(grid_w, content_right + g["margin"]) + legend_area_w)
+    canvas_h = math.ceil(max(canvas_h, content_bottom + g["margin"]))
+
     out = []
     out.append('<?xml version="1.0" encoding="UTF-8"?>')
     # The `style="background:..."` attribute fills the SVG element's render
@@ -848,39 +952,19 @@ def render(spec_path, out_path, theme_override=None):
     # outline tucks behind member blocks and only shows through the gutters.
     # IDs prefixed `group_` so the geometry validator can skip them - they're
     # not real blocks and arrows are allowed to cross their borders.
-    groups = spec.get("groups", {})
-    if isinstance(groups, dict) and groups:
-        members_by_group = {gid: [] for gid in groups}
-        for b in blocks:
-            gid = b.get("group")
-            if gid in members_by_group:
-                members_by_group[gid].append(b)
-        for gid, members in members_by_group.items():
-            if not members:
-                continue
-            xs1, ys1, xs2, ys2 = [], [], [], []
-            for b in members:
-                bx, by, bw, bh = block_rect(g, b)
-                xs1.append(bx)
-                ys1.append(by + content_y0)
-                xs2.append(bx + bw)
-                ys2.append(by + content_y0 + bh)
-            gx1 = min(xs1) - GROUP_PAD_X
-            gy1 = min(ys1) - GROUP_PAD_TOP
-            gx2 = max(xs2) + GROUP_PAD_X
-            gy2 = max(ys2) + GROUP_PAD_BOT
-            out.append(
-                f'  <rect id="group_{esc(gid)}" x="{gx1:.0f}" y="{gy1:.0f}" '
-                f'width="{gx2 - gx1:.0f}" height="{gy2 - gy1:.0f}" fill="none" '
-                f'stroke="{theme["ink_soft"]}" stroke-width="1.2" '
-                f'stroke-dasharray="{GROUP_DASH}" rx="10"/>'
-            )
-            glabel = groups[gid].get("label") or gid
-            out.append(
-                f'  <text x="{gx1 + 14:.0f}" y="{gy1 + 18:.0f}" font-size="14" '
-                f'font-weight="700" letter-spacing="1.2" '
-                f'fill="{theme["ink_soft"]}">{esc(glabel.upper())}</text>'
-            )
+    for gid, (gx1, gy1, gx2, gy2) in group_boxes.items():
+        out.append(
+            f'  <rect id="group_{esc(gid)}" x="{gx1:.0f}" y="{gy1:.0f}" '
+            f'width="{gx2 - gx1:.0f}" height="{gy2 - gy1:.0f}" fill="none" '
+            f'stroke="{theme["ink_soft"]}" stroke-width="1.2" '
+            f'stroke-dasharray="{GROUP_DASH}" rx="10"/>'
+        )
+        glabel = groups[gid].get("label") or gid
+        out.append(
+            f'  <text x="{gx1 + 14:.0f}" y="{gy1 + 18:.0f}" font-size="14" '
+            f'font-weight="700" letter-spacing="1.2" '
+            f'fill="{theme["ink_soft"]}">{esc(glabel.upper())}</text>'
+        )
 
     for b in blocks:
         x, y, w, h = block_rect(g, b)
@@ -940,63 +1024,6 @@ def render(spec_path, out_path, theme_override=None):
                 out.append(f'  <text x="{cx:.0f}" y="{cy:.0f}" '
                            f'text-anchor="middle" font-size="18" font-weight="600" '
                            f'fill="{text_fill}">{esc(lines[0])}</text>')
-
-    block_rects = []
-    for b in blocks:
-        x, y, w, h = block_rect(g, b)
-        block_rects.append((x, y + content_y0, x + w, y + content_y0 + h))
-
-    rendered_edges = []
-    for e, from_pt, to_pt, fs, ts, lane_offset in routed:
-        kind = e.get("kind", "generic")
-        attrs = kind_attrs.get(kind, kind_attrs["generic"])
-        route_cfg = e.get("route") or {}
-        explicit_points = route_cfg.get("points")
-        route_mode = route_cfg.get("mode", "auto")
-        if explicit_points:
-            # Explicit waypoints are taken as final SVG coordinates: the user
-            # copied them off a previous render, so the title-bar offset is
-            # already baked in. Do NOT re-apply content_y0 here.
-            pts = [(float(p[0]), float(p[1])) for p in explicit_points]
-        else:
-            # `direct` = Manhattan with no lane offset: collinear endpoints
-            # produce a single horizontal/vertical segment, non-collinear ones
-            # an L. Never a diagonal - that's the whole point.
-            eff_lane = 0 if route_mode == "direct" else lane_offset
-            pts = manhattan(g, from_pt, to_pt, fs, ts, eff_lane)
-            pts = [(p[0], p[1] + content_y0) for p in pts]
-        rendered_edges.append((e, from_pt, to_pt, attrs, pts))
-
-    all_segments = [
-        (a, b)
-        for _, _, _, _, pts in rendered_edges
-        for a, b in zip(pts, pts[1:])
-    ]
-
-    label_infos = []
-    for e, from_pt, to_pt, attrs, pts in rendered_edges:
-        label = edge_label(e)
-        if not label:
-            continue
-        mx, my, orient = label_anchor(pts, e.get("label"))
-        font = 15
-        text_w = max(text_width(label, font), font * 0.6)
-        text_h = font
-        lx, ly = choose_edge_label_position(
-            mx, my, orient, text_w, text_h, block_rects, all_segments
-        )
-        # Auto-clamp the label into the endpoints' horizontal span so it stays
-        # over the wire. Skip when the user has supplied an explicit override
-        # (dx/dy/segment/t) - they're deliberately placing it themselves.
-        if not e.get("label"):
-            clear_x = text_w / 2 + 6
-            low_x = min(from_pt[0], to_pt[0])
-            high_x = max(from_pt[0], to_pt[0])
-            if high_x - low_x > clear_x * 2:
-                lx = min(max(lx, low_x + clear_x), high_x - clear_x)
-        rect = text_rect_from_baseline(lx, ly, text_w, text_h)
-        eid = f"edge_{e['from']}_to_{e['to']}"
-        label_infos.append((eid, label, lx, ly, font, rect))
 
     if label_infos:
         out.append('  <mask id="edge-label-clearance" maskUnits="userSpaceOnUse">')

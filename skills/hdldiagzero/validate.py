@@ -24,6 +24,8 @@ Checks:
                    perpendicular to that block side, not run tangentially.
  13. LOOP        - a route loops away even though the connected ports are
                    collinear, facing each other, and have clear space.
+ 14. CANVAS_BOUNDS - a block, text label, or arrow extends past the SVG canvas
+                   edge and is clipped by the viewBox.
 
 Exit code = number of violations (0 = pass). Writes a structured report to stdout
 that the calling agent can feed back into the next generation pass.
@@ -57,6 +59,7 @@ TEXT_LABEL_PROXIMITY = 12.0  # px - roughly one label font size from an arrow pa
 TEXT_TEXT_MIN_OVERLAP = 150.0 # px^2 - about one 12px text row of overlap
 BITWIDTH_MIN_ARROW_LEN = 50.0  # px - arrows shorter than this are exempt from bitwidth check
 LOOP_EXCESS = 10.0       # px - one small Manhattan nudge before calling a loop
+CANVAS_BOUNDS_TOL = 2.0  # px - content within this of the canvas edge isn't clipped
 
 SVG_NS = "http://www.w3.org/2000/svg"
 NS = {"svg": SVG_NS}
@@ -398,7 +401,7 @@ def parse_svg(path):
         if bb is not None:
             texts.append(bb)
 
-    return blocks, arrows, markers, texts
+    return blocks, arrows, markers, texts, svg_w, svg_h
 
 
 def segments(arrow):
@@ -1016,12 +1019,53 @@ def check_stub_arrows(arrows, markers):
     return violations
 
 
+def check_canvas_bounds(blocks, arrows, texts, svg_w, svg_h):
+    """Flag any drawn primitive clipped by the canvas edge.
+
+    The renderer must size the canvas to enclose every block, edge path, edge
+    label, and group box; anything outside [0, svg_w] x [0, svg_h] is clipped by
+    the viewBox. The other geometry rules only compare primitives to each other,
+    so a canvas-sizing regression (e.g. an edge label placed below the last row)
+    slips past them - this rule is the backstop."""
+    violations = []
+    if not (svg_w and svg_h):
+        return violations
+    t = CANVAS_BOUNDS_TOL
+
+    def report(kind, ident, x1, y1, x2, y2):
+        edges = []
+        if x1 < -t:
+            edges.append(f"left by {-x1:.0f}px")
+        if y1 < -t:
+            edges.append(f"top by {-y1:.0f}px")
+        if x2 > svg_w + t:
+            edges.append(f"right by {x2 - svg_w:.0f}px")
+        if y2 > svg_h + t:
+            edges.append(f"bottom by {y2 - svg_h:.0f}px")
+        if edges:
+            violations.append(
+                f"CANVAS_BOUNDS: {kind} '{ident}' extends past the "
+                f"{svg_w:.0f}x{svg_h:.0f} canvas ({', '.join(edges)}) and is "
+                f"clipped. The renderer must grow the canvas to enclose it."
+            )
+
+    for b in blocks:
+        report("block", b.id, b.x, b.y, b.x + b.w, b.y + b.h)
+    for tb in texts:
+        report("text", tb.text, tb.x1, tb.y1, tb.x2, tb.y2)
+    for a in arrows:
+        xs = [p[0] for p in a.points]
+        ys = [p[1] for p in a.points]
+        report("arrow", a.id, min(xs), min(ys), max(xs), max(ys))
+    return violations
+
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: validate.py <svg-file>", file=sys.stderr)
         sys.exit(2)
     svg_path = sys.argv[1]
-    blocks, arrows, markers, texts = parse_svg(svg_path)
+    blocks, arrows, markers, texts, svg_w, svg_h = parse_svg(svg_path)
 
     violations = []
     violations += check_crossings(blocks, arrows)
@@ -1036,6 +1080,7 @@ def main():
     violations += check_floating_endpoints(blocks, arrows)
     violations += check_perpendicular_ports(blocks, arrows)
     violations += check_unnecessary_loops(blocks, arrows, texts)
+    violations += check_canvas_bounds(blocks, arrows, texts, svg_w, svg_h)
 
     summary = (
         f"{len(blocks)} blocks, {len(arrows)} arrows, "

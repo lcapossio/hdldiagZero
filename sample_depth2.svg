@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="2004" height="512" viewBox="0 0 2004 512" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" style="background:#f8fafc">
+<svg xmlns="http://www.w3.org/2000/svg" width="2004" height="526" viewBox="0 0 2004 526" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" style="background:#f8fafc">
   <defs>
     <marker id="ah-solid" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#1f2937"/></marker>
     <marker id="ah-thin" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#374151"/></marker>
@@ -11,7 +11,7 @@
     <linearGradient id="grad-tx_fifo" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="50%" stop-color="#66BB6A"/><stop offset="50%" stop-color="#FFA726"/></linearGradient>
     <linearGradient id="grad-rx_fifo" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="50%" stop-color="#FFA726"/><stop offset="50%" stop-color="#66BB6A"/></linearGradient>
   </defs>
-  <rect width="2004" height="512" fill="#f8fafc" id="_canvas_bg"/>
+  <rect width="2004" height="526" fill="#f8fafc" id="_canvas_bg"/>
   <text x="866.0" y="24" text-anchor="middle" font-size="21" font-weight="600" fill="#1f2937" letter-spacing="0.2">GbE MAC pipeline (hierarchy depth 2)</text>
   <rect id="group_tx_path" x="380" y="198" width="972" height="132" fill="none" stroke="#374151" stroke-width="1.2" stroke-dasharray="6,4" rx="10"/>
   <text x="394" y="216" font-size="14" font-weight="700" letter-spacing="1.2" fill="#374151">TX_PATH</text>
@@ -46,7 +46,7 @@
   <text x="1226" y="429" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">RX MAC</text>
   <text x="1226" y="445" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">parser + CRC chk</text>
   <mask id="edge-label-clearance" maskUnits="userSpaceOnUse">
-    <rect width="2004" height="512" fill="#ffffff"/>
+    <rect width="2004" height="526" fill="#ffffff"/>
     <rect x="310.6" y="86.0" width="70.7" height="19.0" fill="#000000"/>
     <rect x="304.6" y="189.0" width="87.4" height="19.0" fill="#000000"/>
     <rect x="620.0" y="86.0" width="75.7" height="19.0" fill="#000000"/>
