@@ -10,6 +10,7 @@ Author: Leonardo Capossio - bard0 design - hello@bard0.com
 Year:   2026
 """
 
+import itertools
 import json
 import os
 import re
@@ -117,7 +118,7 @@ FAILURES: list[str] = []
 
 def run(cmd: list[str], expect_rc: int = 0, label: str = "") -> subprocess.CompletedProcess:
     label = label or " ".join(cmd)
-    proc = subprocess.run(cmd, capture_output=True, text=True, cwd=ROOT)
+    proc = subprocess.run(cmd, capture_output=True, text=True, cwd=ROOT, check=False)
     if proc.returncode != expect_rc:
         FAILURES.append(
             f"[{label}] expected rc={expect_rc} got {proc.returncode}\n"
@@ -1000,7 +1001,7 @@ def _segments_from_d(d: str):
     import re
     nums = [float(n) for n in re.findall(r"-?\d+\.?\d*", d)]
     pts = list(zip(nums[0::2], nums[1::2]))
-    return list(zip(pts, pts[1:]))
+    return list(itertools.pairwise(pts))
 
 
 def _rendered_text_bbox(svg: str, text: str):

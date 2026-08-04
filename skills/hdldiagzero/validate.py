@@ -41,9 +41,9 @@ Caveats:
     than a fixed monospace ratio for proportional strings.
 """
 
-import sys
-import re
 import math
+import re
+import sys
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 
@@ -423,10 +423,10 @@ def seg_rect_clip(seg, rect):
             t = q / p
             if p < 0:
                 if t > t_max: return False
-                if t > t_min: t_min = t
+                t_min = max(t_min, t)
             else:
                 if t < t_min: return False
-                if t < t_max: t_max = t
+                t_max = min(t_max, t)
     return (t_max - t_min) > 1e-3
 
 
@@ -491,7 +491,7 @@ def check_floating_endpoints(blocks, arrows):
         if "legend" in a.id.lower():
             continue
         for which, endpoint in (("start", a.points[0]), ("end", a.points[-1])):
-            b, side = endpoint_block_side(endpoint, blocks)
+            b, _side = endpoint_block_side(endpoint, blocks)
             if b is not None:
                 continue
             violations.append(
@@ -828,9 +828,10 @@ def check_text_overlap(blocks, arrows, texts):
         # Identify the owning block: smallest block whose rect contains the text centroid.
         owner_block = None
         for b in blocks:
-            if point_in_rect(tb.cx, tb.cy, b.rect):
-                if owner_block is None or (b.w * b.h) < (owner_block.w * owner_block.h):
-                    owner_block = b
+            if point_in_rect(tb.cx, tb.cy, b.rect) and (
+                owner_block is None or (b.w * b.h) < (owner_block.w * owner_block.h)
+            ):
+                owner_block = b
         # Identify the owning arrow: closest arrow within proximity threshold.
         owner_arrow_id = None
         best = TEXT_LABEL_PROXIMITY

@@ -66,7 +66,7 @@ def _is_color(v) -> bool:
 
 
 def _check_unknown_keys(d, known, prefix, errors):
-    for k in d.keys():
+    for k in d:
         if k not in known:
             errors.append(f"{prefix}: unknown field '{k}'")
 

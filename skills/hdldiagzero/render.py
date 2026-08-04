@@ -42,11 +42,12 @@ each block side are distributed evenly along the edge so two arrows never meet
 at the same point.
 """
 
+import itertools
 import json
 import math
 import sys
 
-DEFAULT_GRID = dict(cell_w=220, cell_h=90, gutter_x=120, gutter_y=70, margin=36)
+DEFAULT_GRID = {"cell_w": 220, "cell_h": 90, "gutter_x": 120, "gutter_y": 70, "margin": 36}
 
 FONT_STACK = ("ui-sans-serif, system-ui, -apple-system, 'Segoe UI', "
               "Roboto, 'Helvetica Neue', Arial, sans-serif")
@@ -176,18 +177,18 @@ KIND_PREFIXES = {
 def kind_attrs_for(theme):
     """Per-kind line/marker attributes, colored against the active theme."""
     return {
-        "axi-mm":     dict(stroke_width=2.5, stroke=theme["ink"],
-                           marker="ah-solid",  dash=None),
-        "axi-stream": dict(stroke_width=2.2, stroke=theme["stream"],
-                           marker="ah-stream", dash=None),
-        "axi-lite":   dict(stroke_width=2.5, stroke=theme["axil"],
-                           marker="ah-axil",   dash=None),
-        "tilelink":   dict(stroke_width=2.4, stroke=theme["tilelink"],
-                           marker="ah-tilelink", dash=None),
-        "cdc":        dict(stroke_width=1.8, stroke=theme["cdc"],
-                           marker="ah-cdc",    dash=CDC_DASH),
-        "generic":    dict(stroke_width=1.4, stroke=theme["ink_soft"],
-                           marker="ah-thin",   dash=None),
+        "axi-mm":     {"stroke_width": 2.5, "stroke": theme["ink"],
+                           "marker": "ah-solid",  "dash": None},
+        "axi-stream": {"stroke_width": 2.2, "stroke": theme["stream"],
+                           "marker": "ah-stream", "dash": None},
+        "axi-lite":   {"stroke_width": 2.5, "stroke": theme["axil"],
+                           "marker": "ah-axil",   "dash": None},
+        "tilelink":   {"stroke_width": 2.4, "stroke": theme["tilelink"],
+                           "marker": "ah-tilelink", "dash": None},
+        "cdc":        {"stroke_width": 1.8, "stroke": theme["cdc"],
+                           "marker": "ah-cdc",    "dash": CDC_DASH},
+        "generic":    {"stroke_width": 1.4, "stroke": theme["ink_soft"],
+                           "marker": "ah-thin",   "dash": None},
     }
 
 
@@ -393,7 +394,7 @@ def label_anchor(points, label_cfg=None):
     labels stay clear of adjacent block bodies."""
     cfg = label_cfg or {}
     if "segment" in cfg or "t" in cfg:
-        segs = list(zip(points, points[1:]))
+        segs = list(itertools.pairwise(points))
         n_segs = len(segs)
         seg_idx = int(cfg.get("segment", 0))
         if seg_idx < 0:
@@ -405,7 +406,7 @@ def label_anchor(points, label_cfg=None):
         y = a[1] + (b[1] - a[1]) * t
     else:
         best = (0, points[0], points[-1])
-        for a, b in zip(points, points[1:]):
+        for a, b in itertools.pairwise(points):
             length = abs(a[0] - b[0]) + abs(a[1] - b[1])
             if length > best[0]:
                 best = (length, a, b)
@@ -587,7 +588,7 @@ def route_all(spec, blocks_by_id, g):
         return lane_of, len(lane_end)
 
     def assign_lanes(channel_dict, gutter):
-        for _key, intervals in channel_dict.items():
+        for intervals in channel_dict.values():
             lane_of, n_lanes = color_intervals(intervals)
             if n_lanes <= 1:
                 for idx in lane_of:
@@ -787,7 +788,7 @@ def render(spec_path, out_path, theme_override=None):
     all_segments = [
         (a, b)
         for _, _, _, _, pts in rendered_edges
-        for a, b in zip(pts, pts[1:])
+        for a, b in itertools.pairwise(pts)
     ]
 
     label_infos = []
@@ -922,7 +923,7 @@ def render(spec_path, out_path, theme_override=None):
                 continue
             fill = info.get("color", "#64748b")
             border = info.get("border", theme["ink_soft"])
-            label = info["label"] if "label" in info else bid
+            label = info.get("label", bid)
             append_region(
                 out, f"band_{bid}", rect, label, fill, border,
                 BAND_FILL_OPACITY,
