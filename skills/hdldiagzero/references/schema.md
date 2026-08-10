@@ -67,7 +67,8 @@ duplicate cells, unknown domains) that would otherwise produce a broken SVG.
 | `sublabel` | string  | optional  | Terse italic line under the label. |
 | `lines`    | string[] | optional | Explicit compact label lines. When present, this is the complete block text and `label` / `sublabel` are ignored. Set only one text model per block. |
 | `domain`   | string  | required* | Domain key from `domains`. *Optional if `external=true`. |
-| `domain_b` | string  | optional  | Internal CDC blocks only; renders a split fill. Must be a declared domain **different** from `domain`. `domain` renders on the left half and `domain_b` on the right; order them to match the physical position of neighboring blocks that consume each clock. |
+| `domain_b` | string  | optional  | Internal CDC blocks only; renders a split fill. Must be a declared domain **different** from `domain`. |
+| `cdc_side` | string  | optional  | CDC blocks only: side occupied by `domain_b`: `left`, `right` (default), `top`, or `bottom`. `domain` occupies the opposite half. Match this to the physical position of neighboring blocks that consume each clock. |
 | `external` | boolean | optional  | True = off-chip/off-die. Without `domain`, renders neutral grey; with `domain`, uses the domain fill plus a dashed off-chip border. Cannot set `domain_b`. |
 | `side`     | string  | optional  | `external` blocks only: `left`/`right`/`top`/`bottom` canvas edge; the inward-facing side becomes the preferred port. |
 | `row`      | number  | required  | 0-indexed grid row, in 0.25 steps. |

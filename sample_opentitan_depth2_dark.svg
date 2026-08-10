@@ -11,7 +11,7 @@
     <linearGradient id="grad-tlul_i" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="50%" stop-color="#42A5F5"/><stop offset="50%" stop-color="#66BB6A"/></linearGradient>
     <linearGradient id="grad-tlul_d" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="50%" stop-color="#42A5F5"/><stop offset="50%" stop-color="#66BB6A"/></linearGradient>
     <linearGradient id="grad-otp_ctrl" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="50%" stop-color="#EF5350"/><stop offset="50%" stop-color="#AB47BC"/></linearGradient>
-    <linearGradient id="grad-lc_ctrl" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="50%" stop-color="#EF5350"/><stop offset="50%" stop-color="#AB47BC"/></linearGradient>
+    <linearGradient id="grad-lc_ctrl" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="50%" stop-color="#AB47BC"/><stop offset="50%" stop-color="#EF5350"/></linearGradient>
     <linearGradient id="grad-alert_handler" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="50%" stop-color="#EF5350"/><stop offset="50%" stop-color="#AB47BC"/></linearGradient>
     <linearGradient id="grad-xbar_peri" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="50%" stop-color="#FFA726"/><stop offset="50%" stop-color="#66BB6A"/></linearGradient>
   </defs>

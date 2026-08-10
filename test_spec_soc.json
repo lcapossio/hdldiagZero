@@ -16,7 +16,7 @@
     {"id": "sram",     "label": "OCM",           "domain": "axi",                    "row": 0, "col": 4, "sublabel": "256 KB on-chip"},
     {"id": "dma",      "label": "DMA",           "domain": "axi",                    "row": 1, "col": 1, "sublabel": "8 channels"},
     {"id": "ddr_ctrl", "label": "DDR4 Ctrl",     "domain": "axi", "domain_b": "ddr", "row": 1, "col": 3, "sublabel": "PHY + ctrl"},
-    {"id": "ddr3",     "label": "DDR4 SDRAM",    "external": true,                   "row": 1, "col": 4, "sublabel": "off-chip"},
+    {"id": "ddr3",     "label": "DDR4 SDRAM",    "external": true, "domain": "ddr", "row": 1, "col": 4, "sublabel": "off-chip"},
     {"id": "apb_br",   "label": "APB bridge",    "domain": "axi", "domain_b": "apb", "row": 2, "col": 1, "sublabel": "axi -> apb"},
     {"id": "periph",   "label": "Peripherals",   "domain": "apb",                    "row": 2, "col": 2, "sublabel": "UART x4 / SPI x2 / I2C / GPIO"}
   ],

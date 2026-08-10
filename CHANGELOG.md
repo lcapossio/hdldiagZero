@@ -5,8 +5,11 @@
 - Added non-fatal `LEGEND_UNUSED` hints for declared clock domains that paint no
   block or lane, and `CDC_ORIENTATION` hints when connected left/right neighbors
   suggest a CDC split is reversed.
-- Documented the CDC split convention: `domain` is the left half and `domain_b`
-  is the right half.
+- Documented the default CDC split convention: `domain` is the left half and
+  `domain_b` is the right half.
+- Added `cdc_side` so the `domain_b` half of a CDC block can face left, right,
+  top, or bottom. Orientation hints now consider connected neighbors on all four
+  sides and recommend the best unambiguous setting.
 - Allowed `external: true` blocks to declare `domain`; these now keep the domain
   fill and use a dashed off-chip border. External CDC blocks remain invalid.
 

@@ -37,7 +37,7 @@
     {"id": "aes",           "domain": "secure",                            "row": 1, "col": 2.25, "lines": ["AES", "block cipher"], "group": "secure_services", "w": 150, "h": 62},
     {"id": "otp_ctrl",      "domain": "secure", "domain_b": "aon",         "row": 1, "col": 4, "lines": ["OTP Ctrl", "fuses", "secrets"], "group": "secure_services", "w": 180, "h": 72},
 
-    {"id": "lc_ctrl",       "domain": "secure", "domain_b": "aon",         "row": 2, "col": 0, "lines": ["Life Cycle", "device state"], "group": "secure_services", "w": 180, "h": 72},
+    {"id": "lc_ctrl",       "domain": "secure", "domain_b": "aon", "cdc_side": "left", "row": 2, "col": 0, "lines": ["Life Cycle", "device state"], "group": "secure_services", "w": 180, "h": 72},
     {"id": "alert_handler", "domain": "secure", "domain_b": "aon",         "row": 2, "col": 1, "lines": ["Alert Handler", "fault response"], "group": "secure_services", "w": 190, "h": 72},
     {"id": "keymgr",        "domain": "secure",                            "row": 2, "col": 2, "lines": ["Key Manager", "root keys"], "group": "secure_services"},
     {"id": "kmac",          "domain": "secure",                            "row": 2, "col": 2.75, "lines": ["KMAC / HMAC", "hash / MAC"], "group": "secure_services", "w": 180, "h": 72},

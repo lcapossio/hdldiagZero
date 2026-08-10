@@ -33,7 +33,7 @@ LANE_FIELDS = {"rows", "cols"}
 BAND_FIELDS = {"label", "rows", "cols", "color", "border"}
 BLOCK_FIELDS = {
     "id", "label", "sublabel", "domain", "domain_b", "external", "row", "col",
-    "group", "w", "h", "side", "lines",
+    "group", "w", "h", "side", "cdc_side", "lines",
 }
 EDGE_FIELDS = {"from", "to", "kind", "width", "route", "label"}
 ROUTE_FIELDS = {"mode", "points"}
@@ -361,6 +361,16 @@ def validate(spec):
 
         domain = b.get("domain")
         domain_b = b.get("domain_b")
+        cdc_side = b.get("cdc_side")
+
+        if cdc_side is not None:
+            if not isinstance(cdc_side, str) or cdc_side not in VALID_SIDES:
+                errors.append(
+                    f"{prefix}: cdc_side '{cdc_side}' is not one of "
+                    f"{sorted(VALID_SIDES)}"
+                )
+            if domain_b is None:
+                errors.append(f"{prefix}: 'cdc_side' requires 'domain_b'")
 
         if external:
             # A clocked off-chip block may share a rendered domain with an
@@ -581,9 +591,9 @@ def lint(spec):
                     "it to a block or lane that runs on this clock."
                 )
 
-    # The default CDC gradient is domain=left and domain_b=right. Look only at
-    # connected neighbors with a clear horizontal relationship; vertical
-    # layouts do not provide enough evidence for a useful orientation hint.
+    # `cdc_side` names the side occupied by domain_b; domain occupies the
+    # opposite side. Score all four possible orientations from connected
+    # neighbors, and warn only when one direction is the unique best fit.
     if not isinstance(edges, list):
         return warnings
     blocks_by_id = {
@@ -608,31 +618,58 @@ def lint(spec):
         domain = block.get("domain")
         domain_b = block.get("domain_b")
         bid = block.get("id")
+        row = block.get("row")
         col = block.get("col")
         if not all(isinstance(value, str) for value in (bid, domain, domain_b)):
             continue
-        if not _is_number(col):
+        if not _is_number(row) or not _is_number(col):
             continue
+        opposite = {
+            "left": "right", "right": "left", "top": "bottom", "bottom": "top"
+        }
+        scores = {side: 0 for side in ("left", "right", "top", "bottom")}
         for neighbor in neighbors.get(bid, []):
+            neighbor_row = neighbor.get("row")
             neighbor_col = neighbor.get("col")
-            neighbor_domain = neighbor.get("domain")
-            neighbor_id = neighbor.get("id")
-            if not _is_number(neighbor_col) or not isinstance(neighbor_id, str):
+            if not _is_number(neighbor_row) or not _is_number(neighbor_col):
                 continue
-            side = None
-            expected = None
-            rendered_half = None
-            if neighbor_col < col and neighbor_domain == domain_b:
-                side, expected, rendered_half = "left", domain_b, domain
-            elif neighbor_col > col and neighbor_domain == domain:
-                side, expected, rendered_half = "right", domain, domain_b
-            if side:
-                warnings.append(
-                    f'CDC_ORIENTATION: block "{bid}" splits {domain}|{domain_b}, '
-                    f'but its {expected} neighbor "{neighbor_id}" sits on the '
-                    f'{side}, where the {rendered_half} half renders. Consider '
-                    "swapping 'domain' and 'domain_b'."
-                )
+            dx = float(neighbor_col) - float(col)
+            dy = float(neighbor_row) - float(row)
+            if abs(dx) > abs(dy):
+                neighbor_side = "right" if dx > 0 else "left"
+            elif abs(dy) > abs(dx):
+                neighbor_side = "bottom" if dy > 0 else "top"
+            else:
+                # Co-located and exactly diagonal neighbors do not identify a
+                # unique face of the CDC block.
+                continue
+            neighbor_domain = neighbor.get("domain")
+            neighbor_domain_b = neighbor.get("domain_b")
+            if isinstance(neighbor_domain_b, str):
+                # Compare with the clock color actually painted on the
+                # neighbor's face toward this block. An orthogonal split puts
+                # both colors along that face, so it supplies no clear vote.
+                facing_side = opposite[neighbor_side]
+                neighbor_b_side = neighbor.get("cdc_side", "right")
+                if facing_side == neighbor_b_side:
+                    neighbor_domain = neighbor_domain_b
+                elif facing_side != opposite.get(neighbor_b_side):
+                    neighbor_domain = None
+            if neighbor_domain == domain_b:
+                scores[neighbor_side] += 1
+            elif neighbor_domain == domain:
+                scores[opposite[neighbor_side]] += 1
+
+        best_score = max(scores.values())
+        best_sides = [side for side, score in scores.items() if score == best_score]
+        actual_side = block.get("cdc_side", "right")
+        if best_score and len(best_sides) == 1 and scores.get(actual_side, 0) < best_score:
+            recommended = best_sides[0]
+            warnings.append(
+                f'CDC_ORIENTATION: block "{bid}" splits {domain}|{domain_b} with '
+                f'domain_b on the {actual_side}, but connected neighbors fit the '
+                f'{recommended} side better. Set \'cdc_side\' to "{recommended}".'
+            )
 
     return warnings
 

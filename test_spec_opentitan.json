@@ -26,9 +26,9 @@
     {"id": "csrng_edn",     "domain": "secure",                            "row": 1, "col": 0.75, "lines": ["CSRNG / EDN", "randomness"], "w": 180, "h": 72},
     {"id": "keymgr",        "domain": "secure",                            "row": 1, "col": 2, "lines": ["Key Manager", "root keys"]},
     {"id": "crypto",        "domain": "secure",                            "row": 1, "col": 3, "lines": ["Crypto IP", "AES / KMAC", "OTBN"], "w": 180, "h": 72},
-    {"id": "otp_ctrl",      "domain": "secure", "domain_b": "aon",         "row": 1, "col": 4, "lines": ["OTP Ctrl", "fuses", "secrets"], "w": 180, "h": 72},
+    {"id": "otp_ctrl",      "domain": "secure", "domain_b": "aon", "cdc_side": "left", "row": 1, "col": 4, "lines": ["OTP Ctrl", "fuses", "secrets"], "w": 180, "h": 72},
 
-    {"id": "lc_ctrl",       "domain": "secure", "domain_b": "aon",         "row": 2, "col": 0, "lines": ["Life Cycle", "device state"], "w": 180, "h": 72},
+    {"id": "lc_ctrl",       "domain": "secure", "domain_b": "aon", "cdc_side": "left", "row": 2, "col": 0, "lines": ["Life Cycle", "device state"], "w": 180, "h": 72},
     {"id": "alert_handler", "domain": "secure", "domain_b": "aon",         "row": 2, "col": 1, "lines": ["Alert Handler", "fault response"]},
     {"id": "xbar_peri",     "domain": "peri", "domain_b": "bus",           "row": 2, "col": 3, "lines": ["Peripheral", "Xbar", "TL-UL fanout"]},
     {"id": "peripherals",   "domain": "peri",                              "row": 2, "col": 4, "lines": ["I/O Peripherals", "UART / SPI", "I2C / GPIO"], "w": 190, "h": 72},

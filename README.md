@@ -130,7 +130,7 @@ Dark mode:
 ## Features
 
 - **JSON-spec-driven render**: the agent extracts a small architecture spec; the renderer (`render.py`) produces the SVG. The renderer owns geometry - the agent doesn't pick coordinates.
-- **Clock-domain coloring** with a tuned Material-tone palette. Each domain has a separate fill and dark border. CDC blocks (`domain_b: ...`) render with a horizontal-split linear gradient bridging two domains.
+- **Clock-domain coloring** with a tuned Material-tone palette. Each domain has a separate fill and dark border. CDC blocks (`domain_b: ...`) use `cdc_side` to place the second domain on the `left`, `right`, `top`, or `bottom` half nearest its connected neighbors.
 - **External / off-chip blocks** (`external: true`) use neutral grey without a domain; when clocked, they can retain a domain fill and use a dashed border to preserve the chip-boundary distinction.
 - **Edge-side external blocks** with optional `side` hints (`left`, `right`, `top`, `bottom`) so I/O blocks can sit on canvas edges and expose inward-facing ports.
 - **Per-block sizing** with optional `w` / `h` overrides for compact leaves or larger hub blocks, while `grid.cell_w` / `grid.cell_h` remain the diagram-wide defaults.

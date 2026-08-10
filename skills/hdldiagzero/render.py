@@ -887,16 +887,22 @@ def render(spec_path, out_path, theme_override=None):
                f'refX="8" refY="3" orient="auto">'
                f'<path d="M0.5,0.5 L0.5,5.5 L8,3 z" fill="{theme["bg"]}" '
                f'stroke="{theme["ink"]}" stroke-width="1"/></marker>')
-    # CDC linear gradients: half source-domain color, half destination-domain.
+    # CDC linear gradients: `cdc_side` names the half occupied by domain_b.
+    # Default right preserves the original left=domain/right=domain_b contract.
     for b in blocks:
         if not b.get("domain_b"):
             continue
         a = domains.get(b.get("domain", ""), {}).get("color", "#cccccc")
         c = domains.get(b["domain_b"], {}).get("color", "#cccccc")
+        cdc_side = b.get("cdc_side", "right")
+        vertical = cdc_side in ("top", "bottom")
+        reverse = cdc_side in ("left", "top")
+        first, second = (c, a) if reverse else (a, c)
+        x2, y2 = ("0%", "100%") if vertical else ("100%", "0%")
         out.append(f'    <linearGradient id="grad-{esc(b["id"])}" '
-                   f'x1="0%" y1="0%" x2="100%" y2="0%">'
-                   f'<stop offset="50%" stop-color="{a}"/>'
-                   f'<stop offset="50%" stop-color="{c}"/>'
+                   f'x1="0%" y1="0%" x2="{x2}" y2="{y2}">'
+                   f'<stop offset="50%" stop-color="{first}"/>'
+                   f'<stop offset="50%" stop-color="{second}"/>'
                    f'</linearGradient>')
     out.append('  </defs>')
 

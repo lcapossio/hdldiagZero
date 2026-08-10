@@ -34,9 +34,9 @@
   <rect id="ddr_ctrl" x="1116" y="236" width="220" height="90" fill="url(#grad-ddr_ctrl)" stroke="#4b5563" stroke-width="1.4" rx="8"/>
   <text x="1226" y="279" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">DDR4 Ctrl</text>
   <text x="1226" y="295" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">PHY + ctrl</text>
-  <rect id="ddr3" x="1476" y="236" width="220" height="90" fill="#374151" stroke="#9ca3af" stroke-width="1.4" rx="8"/>
-  <text x="1586" y="279" text-anchor="middle" font-size="18" font-weight="600" fill="#e2e8f0">DDR4 SDRAM</text>
-  <text x="1586" y="295" text-anchor="middle" font-size="15" font-style="italic" fill="#e2e8f0" opacity="0.85">off-chip</text>
+  <rect id="ddr3" x="1476" y="236" width="220" height="90" fill="#EF5350" stroke="#9ca3af" stroke-width="1.4" rx="8" stroke-dasharray="7,4"/>
+  <text x="1586" y="279" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">DDR4 SDRAM</text>
+  <text x="1586" y="295" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">off-chip</text>
   <rect id="apb_br" x="396" y="406" width="220" height="90" fill="url(#grad-apb_br)" stroke="#4b5563" stroke-width="1.4" rx="8"/>
   <text x="506" y="449" text-anchor="middle" font-size="18" font-weight="600" fill="#1f2937">APB bridge</text>
   <text x="506" y="465" text-anchor="middle" font-size="15" font-style="italic" fill="#1f2937" opacity="0.85">axi -&gt; apb</text>

@@ -329,6 +329,23 @@ def test_spec_validator_strict_types() -> None:
         _write_and_check(tmp, "ext_domain_b.json", bad, 1, "spec-strict-external-domain-b")
         bad = _spec_with(side="left")
         _write_and_check(tmp, "internal_side.json", bad, 1, "spec-strict-internal-side")
+        bad = _spec_with(cdc_side="top")
+        _write_and_check(tmp, "cdc_side_without_cdc.json", bad, 1, "spec-cdc-side-no-domain-b")
+        bad = {
+            "domains": {"d": {"color": "#42A5F5"}, "e": {"color": "#FFA726"}},
+            "blocks": [
+                {
+                    "id": "a",
+                    "domain": "d",
+                    "domain_b": "e",
+                    "cdc_side": "diagonal",
+                    "row": 0,
+                    "col": 0,
+                }
+            ],
+            "edges": [],
+        }
+        _write_and_check(tmp, "bad_cdc_side.json", bad, 1, "spec-cdc-side-invalid")
 
 
 def test_spec_validator_authoring_hints() -> None:
@@ -399,9 +416,12 @@ def test_spec_validator_authoring_hints() -> None:
         path = tmp / "reversed_cdc.json"
         path.write_text(json.dumps(reversed_cdc), encoding="utf-8")
         proc = run([PY, VALIDATE_SPEC, str(path)], label="spec-hint-cdc-orientation")
-        if proc.stdout.count("CDC_ORIENTATION") != 2:
+        if (
+            proc.stdout.count("CDC_ORIENTATION") != 1
+            or "Set 'cdc_side' to \"left\"" not in proc.stdout
+        ):
             FAILURES.append(
-                "[spec-hint-cdc-orientation] expected one hint per mismatched neighbor, got: "
+                "[spec-hint-cdc-orientation] expected a cdc_side=left hint, got: "
                 f"{proc.stdout.strip()!r}"
             )
 
@@ -414,6 +434,83 @@ def test_spec_validator_authoring_hints() -> None:
         if "CDC_ORIENTATION" in proc.stdout:
             FAILURES.append(
                 "[spec-hint-cdc-corrected] did not expect orientation hint, got: "
+                f"{proc.stdout.strip()!r}"
+            )
+
+        vertical_cdc = {
+            "domains": {
+                "source": {"color": "#66BB6A"},
+                "sink": {"color": "#FFA726"},
+            },
+            "blocks": [
+                {"id": "producer", "domain": "source", "row": 0, "col": 0},
+                {
+                    "id": "vertical_cdc",
+                    "domain": "source",
+                    "domain_b": "sink",
+                    "cdc_side": "top",
+                    "row": 1,
+                    "col": 0,
+                },
+                {"id": "consumer", "domain": "sink", "row": 2, "col": 0},
+            ],
+            "edges": [
+                {"from": "producer", "to": "vertical_cdc"},
+                {"from": "vertical_cdc", "to": "consumer"},
+            ],
+        }
+        path = tmp / "vertical_cdc_wrong.json"
+        path.write_text(json.dumps(vertical_cdc), encoding="utf-8")
+        proc = run([PY, VALIDATE_SPEC, str(path)], label="spec-hint-cdc-vertical")
+        if "Set 'cdc_side' to \"bottom\"" not in proc.stdout:
+            FAILURES.append(
+                "[spec-hint-cdc-vertical] expected a cdc_side=bottom hint, got: "
+                f"{proc.stdout.strip()!r}"
+            )
+
+        vertical_cdc["blocks"][1]["cdc_side"] = "bottom"
+        path = tmp / "vertical_cdc_correct.json"
+        path.write_text(json.dumps(vertical_cdc), encoding="utf-8")
+        proc = run([PY, VALIDATE_SPEC, str(path)], label="spec-hint-cdc-vertical-correct")
+        if "CDC_ORIENTATION" in proc.stdout:
+            FAILURES.append(
+                "[spec-hint-cdc-vertical-correct] did not expect orientation hint, got: "
+                f"{proc.stdout.strip()!r}"
+            )
+
+        # CDC-to-CDC comparisons use the color painted on the facing neighbor
+        # half. Both blocks expose sink on their touching faces here.
+        adjacent_cdcs = {
+            "domains": {
+                "source": {"color": "#66BB6A"},
+                "sink": {"color": "#FFA726"},
+            },
+            "blocks": [
+                {
+                    "id": "first",
+                    "domain": "source",
+                    "domain_b": "sink",
+                    "cdc_side": "right",
+                    "row": 0,
+                    "col": 0,
+                },
+                {
+                    "id": "second",
+                    "domain": "source",
+                    "domain_b": "sink",
+                    "cdc_side": "left",
+                    "row": 0,
+                    "col": 1,
+                },
+            ],
+            "edges": [{"from": "first", "to": "second"}],
+        }
+        path = tmp / "adjacent_cdcs.json"
+        path.write_text(json.dumps(adjacent_cdcs), encoding="utf-8")
+        proc = run([PY, VALIDATE_SPEC, str(path)], label="spec-hint-adjacent-cdcs")
+        if "CDC_ORIENTATION" in proc.stdout:
+            FAILURES.append(
+                "[spec-hint-adjacent-cdcs] matching facing halves should not warn, got: "
                 f"{proc.stdout.strip()!r}"
             )
 
@@ -769,6 +866,68 @@ def test_external_domain_fill_and_border() -> None:
                         f"got {rect.get('stroke-dasharray')!r}"
                     )
             run([PY, VALIDATE, str(out)], label="external-domain-validate")
+
+
+def test_cdc_side_controls_gradient_orientation() -> None:
+    """domain_b can occupy the half facing any of the four block sides."""
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        blocks = []
+        for col, side in enumerate(("right", "left", "top", "bottom")):
+            blocks.append(
+                {
+                    "id": f"cdc_{side}",
+                    "domain": "a",
+                    "domain_b": "b",
+                    "cdc_side": side,
+                    "row": 0,
+                    "col": col,
+                }
+            )
+        spec = {
+            "legend": False,
+            "domains": {
+                "a": {"color": "#42A5F5"},
+                "b": {"color": "#FFA726"},
+            },
+            "blocks": blocks,
+            "edges": [],
+        }
+        spec_path = tmp / "cdc_sides.json"
+        out = tmp / "cdc_sides.svg"
+        spec_path.write_text(json.dumps(spec), encoding="utf-8")
+        run([PY, VALIDATE_SPEC, str(spec_path)], label="cdc-sides-spec")
+        run([PY, RENDER, str(spec_path), str(out)], label="cdc-sides-render")
+        if out.is_file():
+            root = ET.parse(out).getroot()
+            expected = {
+                "grad-cdc_right": ("100%", "0%", ["#42A5F5", "#FFA726"]),
+                "grad-cdc_left": ("100%", "0%", ["#FFA726", "#42A5F5"]),
+                "grad-cdc_top": ("0%", "100%", ["#FFA726", "#42A5F5"]),
+                "grad-cdc_bottom": ("0%", "100%", ["#42A5F5", "#FFA726"]),
+            }
+            gradients = {
+                elem.get("id"): elem
+                for elem in root.iter()
+                if _localname(elem.tag) == "linearGradient"
+            }
+            for gradient_id, (x2, y2, colors) in expected.items():
+                gradient = gradients.get(gradient_id)
+                if gradient is None:
+                    FAILURES.append(f"[cdc-sides-render] missing {gradient_id}")
+                    continue
+                actual_colors = [child.get("stop-color") for child in gradient]
+                if (
+                    gradient.get("x2") != x2
+                    or gradient.get("y2") != y2
+                    or actual_colors != colors
+                ):
+                    FAILURES.append(
+                        f"[cdc-sides-render] {gradient_id} orientation mismatch: "
+                        f"x2={gradient.get('x2')} y2={gradient.get('y2')} "
+                        f"colors={actual_colors}"
+                    )
+            run([PY, VALIDATE, str(out)], label="cdc-sides-validate")
 
 
 def test_multiline_block_labels_render() -> None:
@@ -1654,6 +1813,7 @@ def main() -> int:
     test_renderer_escapes_attribute_quotes()
     test_external_side_hint_controls_endpoint()
     test_external_domain_fill_and_border()
+    test_cdc_side_controls_gradient_orientation()
     test_multiline_block_labels_render()
     test_renderer_lanes_sample()
     test_renderer_soc_sample()

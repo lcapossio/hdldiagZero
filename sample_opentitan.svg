@@ -8,8 +8,8 @@
     <marker id="ah-tilelink" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#00796B"/></marker>
     <marker id="ah-cdc" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#6A1B9A"/></marker>
     <marker id="ah-open" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0.5,0.5 L0.5,5.5 L8,3 z" fill="#f8fafc" stroke="#1f2937" stroke-width="1"/></marker>
-    <linearGradient id="grad-otp_ctrl" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="50%" stop-color="#EF5350"/><stop offset="50%" stop-color="#AB47BC"/></linearGradient>
-    <linearGradient id="grad-lc_ctrl" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="50%" stop-color="#EF5350"/><stop offset="50%" stop-color="#AB47BC"/></linearGradient>
+    <linearGradient id="grad-otp_ctrl" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="50%" stop-color="#AB47BC"/><stop offset="50%" stop-color="#EF5350"/></linearGradient>
+    <linearGradient id="grad-lc_ctrl" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="50%" stop-color="#AB47BC"/><stop offset="50%" stop-color="#EF5350"/></linearGradient>
     <linearGradient id="grad-alert_handler" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="50%" stop-color="#EF5350"/><stop offset="50%" stop-color="#AB47BC"/></linearGradient>
     <linearGradient id="grad-xbar_peri" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="50%" stop-color="#FFA726"/><stop offset="50%" stop-color="#66BB6A"/></linearGradient>
   </defs>

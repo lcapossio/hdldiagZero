@@ -3,7 +3,6 @@
   "top": "eth_mac_top",
   "grid": {"gutter_x": 140},
   "domains": {
-    "pcie": {"freq_mhz": 250, "color": "#42A5F5", "border": "#0D47A1"},
     "sys":  {"freq_mhz": 200, "color": "#66BB6A", "border": "#1B5E20"},
     "gmii": {"freq_mhz": 125, "color": "#FFA726", "border": "#E65100"}
   },
@@ -20,7 +19,7 @@
     {"id": "tx_fifo",      "label": "TX FIFO",       "domain": "sys", "domain_b": "gmii", "row": 1, "col": 2, "sublabel": "sys / gmii CDC",     "group": "tx_path"},
     {"id": "tx_mac",       "label": "TX MAC",        "domain": "gmii",                    "row": 1, "col": 3, "sublabel": "framer + CRC",      "group": "tx_path"},
     {"id": "rx_desc",      "label": "RX Descriptor", "domain": "sys",                     "row": 2, "col": 1, "sublabel": "ring + DMA",        "group": "rx_path"},
-    {"id": "rx_fifo",      "label": "RX FIFO",       "domain": "gmii", "domain_b": "sys", "row": 2, "col": 2, "sublabel": "gmii / sys CDC",    "group": "rx_path"},
+    {"id": "rx_fifo",      "label": "RX FIFO",       "domain": "gmii", "domain_b": "sys", "cdc_side": "left", "row": 2, "col": 2, "sublabel": "gmii / sys CDC",    "group": "rx_path"},
     {"id": "rx_mac",       "label": "RX MAC",        "domain": "gmii",                    "row": 2, "col": 3, "sublabel": "parser + CRC chk",  "group": "rx_path"}
   ],
   "edges": [
