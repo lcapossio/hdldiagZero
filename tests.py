@@ -303,13 +303,23 @@ def test_spec_validator_strict_types() -> None:
             "edges": [],
         }
         _write_and_check(tmp, "grid_float.json", bad, 1, "spec-strict-grid-float")
-        # external block with domain set: rejected
-        bad = {
+        # external blocks may retain a domain fill; domain_b remains invalid.
+        good = {
             "domains": {"d": {"color": "#42A5F5"}},
             "blocks": [{"id": "a", "external": True, "domain": "d", "row": 0, "col": 0}],
             "edges": [],
         }
-        _write_and_check(tmp, "ext_domain.json", bad, 1, "spec-strict-external-domain")
+        _write_and_check(tmp, "ext_domain.json", good, 0, "spec-external-domain")
+        bad = {
+            "domains": {"d": {"color": "#42A5F5"}},
+            "blocks": [
+                {"id": "a", "external": True, "domain": "missing", "row": 0, "col": 0}
+            ],
+            "edges": [],
+        }
+        _write_and_check(
+            tmp, "ext_unknown_domain.json", bad, 1, "spec-external-unknown-domain"
+        )
         # external block with domain_b set: rejected
         bad = {
             "domains": {"d": {"color": "#42A5F5"}, "e": {"color": "#FFA726"}},
@@ -319,6 +329,93 @@ def test_spec_validator_strict_types() -> None:
         _write_and_check(tmp, "ext_domain_b.json", bad, 1, "spec-strict-external-domain-b")
         bad = _spec_with(side="left")
         _write_and_check(tmp, "internal_side.json", bad, 1, "spec-strict-internal-side")
+
+
+def test_spec_validator_authoring_hints() -> None:
+    """Lint warnings are actionable but do not turn a valid spec into a failure."""
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        unused = {
+            "domains": {
+                "used": {"color": "#42A5F5"},
+                "orphan": {"color": "#FFA726"},
+            },
+            "blocks": [{"id": "a", "domain": "used", "row": 0, "col": 0}],
+            "edges": [],
+        }
+        path = tmp / "unused.json"
+        path.write_text(json.dumps(unused), encoding="utf-8")
+        proc = run([PY, VALIDATE_SPEC, str(path)], label="spec-hint-unused-domain")
+        if 'LEGEND_UNUSED: domain "orphan"' not in proc.stdout:
+            FAILURES.append(
+                "[spec-hint-unused-domain] expected LEGEND_UNUSED hint, got: "
+                f"{proc.stdout.strip()!r}"
+            )
+
+        # A domain-colored external block paints that domain and is not orphaned.
+        external = {
+            "domains": {"mii": {"color": "#FFA726"}},
+            "blocks": [
+                {
+                    "id": "phy",
+                    "external": True,
+                    "domain": "mii",
+                    "row": 0,
+                    "col": 0,
+                }
+            ],
+            "edges": [],
+        }
+        path = tmp / "external_used.json"
+        path.write_text(json.dumps(external), encoding="utf-8")
+        proc = run([PY, VALIDATE_SPEC, str(path)], label="spec-hint-external-used")
+        if "LEGEND_UNUSED" in proc.stdout:
+            FAILURES.append(
+                "[spec-hint-external-used] external domain should count as rendered, got: "
+                f"{proc.stdout.strip()!r}"
+            )
+
+        reversed_cdc = {
+            "domains": {
+                "ddr_ui": {"color": "#66BB6A"},
+                "eth_mii": {"color": "#FFA726"},
+            },
+            "blocks": [
+                {"id": "eth_phy", "domain": "eth_mii", "row": 0, "col": 0},
+                {
+                    "id": "emaczero",
+                    "domain": "ddr_ui",
+                    "domain_b": "eth_mii",
+                    "row": 0,
+                    "col": 1,
+                },
+                {"id": "axi_dma", "domain": "ddr_ui", "row": 0, "col": 2},
+            ],
+            "edges": [
+                {"from": "eth_phy", "to": "emaczero"},
+                {"from": "emaczero", "to": "axi_dma"},
+            ],
+        }
+        path = tmp / "reversed_cdc.json"
+        path.write_text(json.dumps(reversed_cdc), encoding="utf-8")
+        proc = run([PY, VALIDATE_SPEC, str(path)], label="spec-hint-cdc-orientation")
+        if proc.stdout.count("CDC_ORIENTATION") != 2:
+            FAILURES.append(
+                "[spec-hint-cdc-orientation] expected one hint per mismatched neighbor, got: "
+                f"{proc.stdout.strip()!r}"
+            )
+
+        corrected = json.loads(json.dumps(reversed_cdc))
+        corrected["blocks"][1]["domain"] = "eth_mii"
+        corrected["blocks"][1]["domain_b"] = "ddr_ui"
+        path = tmp / "corrected_cdc.json"
+        path.write_text(json.dumps(corrected), encoding="utf-8")
+        proc = run([PY, VALIDATE_SPEC, str(path)], label="spec-hint-cdc-corrected")
+        if "CDC_ORIENTATION" in proc.stdout:
+            FAILURES.append(
+                "[spec-hint-cdc-corrected] did not expect orientation hint, got: "
+                f"{proc.stdout.strip()!r}"
+            )
 
 
 def test_spec_validator_rejects_extraction_metadata() -> None:
@@ -623,6 +720,55 @@ def test_external_side_hint_controls_endpoint() -> None:
                     f"(inward) side, got {d!r}"
                 )
             run([PY, VALIDATE, str(out)], label="side-validate")
+
+
+def test_external_domain_fill_and_border() -> None:
+    """A clocked off-chip block keeps its domain fill and a dashed border."""
+    with _tmpdir() as tmp:
+        tmp = Path(tmp)
+        spec = {
+            "domains": {"mii": {"color": "#FFA726", "border": "#E65100"}},
+            "blocks": [
+                {
+                    "id": "phy",
+                    "label": "DP83848",
+                    "external": True,
+                    "domain": "mii",
+                    "row": 0,
+                    "col": 0,
+                }
+            ],
+            "edges": [],
+        }
+        spec_path = tmp / "external_domain.json"
+        out = tmp / "external_domain.svg"
+        spec_path.write_text(json.dumps(spec), encoding="utf-8")
+        run([PY, VALIDATE_SPEC, str(spec_path)], label="external-domain-spec")
+        run([PY, RENDER, str(spec_path), str(out)], label="external-domain-render")
+        if out.is_file():
+            root = ET.parse(out).getroot()
+            rect = next(
+                (
+                    elem
+                    for elem in root.iter()
+                    if _localname(elem.tag) == "rect" and elem.get("id") == "phy"
+                ),
+                None,
+            )
+            if rect is None:
+                FAILURES.append("[external-domain-render] missing phy rect")
+            else:
+                if rect.get("fill") != "#FFA726":
+                    FAILURES.append(
+                        "[external-domain-render] expected domain fill #FFA726, "
+                        f"got {rect.get('fill')!r}"
+                    )
+                if rect.get("stroke-dasharray") != "7,4":
+                    FAILURES.append(
+                        "[external-domain-render] expected dashed off-chip border, "
+                        f"got {rect.get('stroke-dasharray')!r}"
+                    )
+            run([PY, VALIDATE, str(out)], label="external-domain-validate")
 
 
 def test_multiline_block_labels_render() -> None:
@@ -1491,6 +1637,7 @@ def main() -> int:
     test_spec_validator_passes_on_test_spec()
     test_spec_validator_catches_bad_spec()
     test_spec_validator_strict_types()
+    test_spec_validator_authoring_hints()
     test_spec_validator_rejects_extraction_metadata()
     test_renderer_light()
     test_renderer_dark()
@@ -1506,6 +1653,7 @@ def main() -> int:
     test_band_label_can_be_suppressed()
     test_renderer_escapes_attribute_quotes()
     test_external_side_hint_controls_endpoint()
+    test_external_domain_fill_and_border()
     test_multiline_block_labels_render()
     test_renderer_lanes_sample()
     test_renderer_soc_sample()

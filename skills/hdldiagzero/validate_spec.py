@@ -11,7 +11,8 @@ Year:   2026
 Usage:
     python validate_spec.py <spec.json>
 
-Exit code: 0 on PASS, 1 on FAIL (with numbered reasons), 2 on usage error.
+Exit code: 0 on PASS (possibly with warnings), 1 on FAIL (with numbered
+reasons), 2 on usage error.
 """
 
 import json
@@ -268,7 +269,7 @@ def validate(spec):
 
     block_ids = set()
     cells = {}
-    any_non_external = False
+    any_domain_block = False
     for i, b in enumerate(blocks):
         prefix = f"blocks[{i}]"
         if not isinstance(b, dict):
@@ -362,21 +363,24 @@ def validate(spec):
         domain_b = b.get("domain_b")
 
         if external:
-            # External blocks are not part of any internal clock domain. Carrying
-            # `domain` or `domain_b` is semantically wrong - the renderer
-            # ignores them, but accepting them silently makes specs misleading.
+            # A clocked off-chip block may share a rendered domain with an
+            # on-chip interface. `external` remains a placement/style signal;
+            # the dashed border distinguishes it from internal blocks.
             if domain is not None:
-                errors.append(
-                    f"{prefix}: 'external': true blocks cannot also set 'domain' "
-                    f"(got '{domain}'). External implies no internal clock domain."
-                )
+                any_domain_block = True
+                if not isinstance(domain, str):
+                    errors.append(f"{prefix}: 'domain' must be a string")
+                elif domain not in domains:
+                    errors.append(
+                        f"{prefix}: domain '{domain}' is not declared in 'domains'"
+                    )
             if domain_b is not None:
                 errors.append(
                     f"{prefix}: 'external': true blocks cannot set 'domain_b' "
                     f"(got '{domain_b}'). CDC concept doesn't apply to off-chip blocks."
                 )
         else:
-            any_non_external = True
+            any_domain_block = True
             if domain is None:
                 errors.append(f"{prefix}: must set 'domain' or 'external': true")
             elif not isinstance(domain, str):
@@ -398,10 +402,10 @@ def validate(spec):
                         f"(both = '{domain}')"
                     )
 
-    if any_non_external and not domains:
+    if any_domain_block and not domains:
         errors.append(
-            "domains: required when any block isn't external (cannot color "
-            "blocks without declared domains)"
+            "domains: required when any block declares or requires a domain "
+            "(cannot color blocks without declared domains)"
         )
 
     # edges
@@ -540,6 +544,99 @@ def validate(spec):
     return errors
 
 
+def lint(spec):
+    """Return non-fatal authoring hints for a structurally valid spec."""
+    warnings = []
+    if not isinstance(spec, dict):
+        return warnings
+
+    domains = spec.get("domains")
+    blocks = spec.get("blocks")
+    edges = spec.get("edges")
+    if not isinstance(domains, dict) or not isinstance(blocks, list):
+        return warnings
+
+    # Every declared domain appears in the legend, but only domains used by a
+    # block or lane paint diagram pixels. Domain-colored external blocks count:
+    # they now deliberately retain their off-chip identity via a dashed border.
+    legend = spec.get("legend")
+    legend_visible = legend is not False and legend != "none"
+    if legend_visible:
+        used_domains = set()
+        for block in blocks:
+            if not isinstance(block, dict):
+                continue
+            for field in ("domain", "domain_b"):
+                value = block.get(field)
+                if isinstance(value, str):
+                    used_domains.add(value)
+        lanes = spec.get("lanes")
+        if isinstance(lanes, dict):
+            used_domains.update(name for name in lanes if isinstance(name, str))
+        for name in domains:
+            if name not in used_domains:
+                warnings.append(
+                    f'LEGEND_UNUSED: domain "{name}" is declared but no rendered '
+                    "block or lane uses it. Remove it from 'domains', or attach "
+                    "it to a block or lane that runs on this clock."
+                )
+
+    # The default CDC gradient is domain=left and domain_b=right. Look only at
+    # connected neighbors with a clear horizontal relationship; vertical
+    # layouts do not provide enough evidence for a useful orientation hint.
+    if not isinstance(edges, list):
+        return warnings
+    blocks_by_id = {
+        block.get("id"): block
+        for block in blocks
+        if isinstance(block, dict) and isinstance(block.get("id"), str)
+    }
+    neighbors = {bid: [] for bid in blocks_by_id}
+    for edge in edges:
+        if not isinstance(edge, dict):
+            continue
+        src = edge.get("from")
+        dst = edge.get("to")
+        if src in neighbors and dst in blocks_by_id:
+            neighbors[src].append(blocks_by_id[dst])
+        if dst in neighbors and src in blocks_by_id:
+            neighbors[dst].append(blocks_by_id[src])
+
+    for block in blocks:
+        if not isinstance(block, dict):
+            continue
+        domain = block.get("domain")
+        domain_b = block.get("domain_b")
+        bid = block.get("id")
+        col = block.get("col")
+        if not all(isinstance(value, str) for value in (bid, domain, domain_b)):
+            continue
+        if not _is_number(col):
+            continue
+        for neighbor in neighbors.get(bid, []):
+            neighbor_col = neighbor.get("col")
+            neighbor_domain = neighbor.get("domain")
+            neighbor_id = neighbor.get("id")
+            if not _is_number(neighbor_col) or not isinstance(neighbor_id, str):
+                continue
+            side = None
+            expected = None
+            rendered_half = None
+            if neighbor_col < col and neighbor_domain == domain_b:
+                side, expected, rendered_half = "left", domain_b, domain
+            elif neighbor_col > col and neighbor_domain == domain:
+                side, expected, rendered_half = "right", domain, domain_b
+            if side:
+                warnings.append(
+                    f'CDC_ORIENTATION: block "{bid}" splits {domain}|{domain_b}, '
+                    f'but its {expected} neighbor "{neighbor_id}" sits on the '
+                    f'{side}, where the {rendered_half} half renders. Consider '
+                    "swapping 'domain' and 'domain_b'."
+                )
+
+    return warnings
+
+
 def main():
     if len(sys.argv) != 2:
         print("Usage: validate_spec.py <spec.json>", file=sys.stderr)
@@ -559,6 +656,11 @@ def main():
         for n, err in enumerate(errors, 1):
             print(f"  {n}. {err}")
         return 1
+    warnings = lint(spec)
+    if warnings:
+        print(f"WARN: {len(warnings)} authoring hint(s) in {spec_path}")
+        for n, warning in enumerate(warnings, 1):
+            print(f"  {n}. {warning}")
     print(f"PASS: {spec_path}")
     return 0
 

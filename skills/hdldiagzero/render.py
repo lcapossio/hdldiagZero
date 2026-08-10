@@ -85,6 +85,7 @@ def text_width(s, font_size):
 
 BLOCK_RX    = 8
 CDC_DASH    = "6,3"
+EXTERNAL_DASH = "7,4"
 GROUP_DASH  = "6,4"
 GROUP_PAD_X    = 16
 GROUP_PAD_TOP  = 28
@@ -970,7 +971,14 @@ def render(spec_path, out_path, theme_override=None):
     for b in blocks:
         x, y, w, h = block_rect(g, b)
         y += content_y0
-        if b.get("external"):
+        dash_attr = ""
+        if b.get("external") and b.get("domain"):
+            d = domains.get(b["domain"], {})
+            fill = d.get("color", "#cccccc")
+            border_color = theme["ext_border"]
+            text_fill = text_color_for(fill)
+            dash_attr = f' stroke-dasharray="{EXTERNAL_DASH}"'
+        elif b.get("external"):
             fill = theme["ext_fill"]
             border_color = theme["ext_border"]
             text_fill = theme["ext_text"]
@@ -988,7 +996,7 @@ def render(spec_path, out_path, theme_override=None):
         out.append(f'  <rect id="{esc(b["id"])}" x="{x:.0f}" y="{y:.0f}" '
                    f'width="{w}" height="{h}" fill="{fill}" '
                    f'stroke="{border_color}" stroke-width="1.4" '
-                   f'rx="{BLOCK_RX}"/>')
+                   f'rx="{BLOCK_RX}"{dash_attr}/>')
         cx = x + w / 2
         explicit_lines = b.get("lines")
         if explicit_lines:

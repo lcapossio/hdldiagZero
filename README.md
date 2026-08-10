@@ -27,7 +27,7 @@ python render.py --theme dark spec.json out.svg
 python validate.py out.svg
 ```
 
-Each validator exits 0 on PASS, 1 when validation reports violations, and 2 for usage / parse errors. The SVG validator prints the exact violation count in stdout; one bad route may trigger multiple reports. Each violation prints with coordinates so the agent (or a human) can adjust the JSON.
+Each validator exits 0 on PASS, 1 when validation reports violations, and 2 for usage / parse errors. The spec validator may print non-fatal authoring hints (such as unused legend domains or a likely reversed CDC split) while still exiting 0. The SVG validator prints the exact violation count in stdout; one bad route may trigger multiple reports. Each violation prints with coordinates so the agent (or a human) can adjust the JSON.
 
 ## Sample Output
 
@@ -131,7 +131,7 @@ Dark mode:
 
 - **JSON-spec-driven render**: the agent extracts a small architecture spec; the renderer (`render.py`) produces the SVG. The renderer owns geometry - the agent doesn't pick coordinates.
 - **Clock-domain coloring** with a tuned Material-tone palette. Each domain has a separate fill and dark border. CDC blocks (`domain_b: ...`) render with a horizontal-split linear gradient bridging two domains.
-- **External / off-chip blocks** (`external: true`) get a neutral grey fill regardless of domain.
+- **External / off-chip blocks** (`external: true`) use neutral grey without a domain; when clocked, they can retain a domain fill and use a dashed border to preserve the chip-boundary distinction.
 - **Edge-side external blocks** with optional `side` hints (`left`, `right`, `top`, `bottom`) so I/O blocks can sit on canvas edges and expose inward-facing ports.
 - **Per-block sizing** with optional `w` / `h` overrides for compact leaves or larger hub blocks, while `grid.cell_w` / `grid.cell_h` remain the diagram-wide defaults.
 - **Quarter-step placement** with `row` / `col` values like `1.25` or `2.5` for pulling related blocks closer together without compressing the whole diagram.
